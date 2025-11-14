@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { User, LoginRequest, LoginResponse, AuthState } from '../models/user.model';
+import { User, LoginRequest, LoginResponse, AuthState, UserRole } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -25,17 +25,17 @@ export class AuthService {
    * Em produção, substituir por chamada HTTP ao backend NestJS
    */
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    // Mock de validação
+    // Mock de validação - Super Admin (equipe do SaaS)
     if (credentials.email === 'admin@climbdelivery.com' && credentials.password === 'admin123') {
       const mockUser: User = {
         id: '1',
         name: 'Admin ClimbDelivery',
         email: credentials.email,
-        role: 'admin',
-        establishmentId: 'est-001'
+        role: UserRole.SUPER_ADMIN, // Acesso à área administrativa
+        avatar: 'https://i.pravatar.cc/150?img=1'
       };
 
-      const mockToken = 'mock-jwt-token-' + Date.now();
+      const mockToken = 'mock-jwt-token-superadmin-' + Date.now();
       
       const response: LoginResponse = {
         user: mockUser,
@@ -47,6 +47,38 @@ export class AuthService {
         delay(500),
         map(res => {
           this.setAuthState(res.user, res.token);
+          // Redireciona para área administrativa
+          this.router.navigate(['/admin']);
+          return res;
+        })
+      );
+    }
+
+    // Mock de validação - Restaurante
+    if (credentials.email === 'restaurante@climbdelivery.com' && credentials.password === 'rest123') {
+      const mockUser: User = {
+        id: '2',
+        name: 'Restaurante Demo',
+        email: credentials.email,
+        role: UserRole.RESTAURANT_OWNER,
+        establishmentId: 'est-001',
+        avatar: 'https://i.pravatar.cc/150?img=2'
+      };
+
+      const mockToken = 'mock-jwt-token-restaurant-' + Date.now();
+      
+      const response: LoginResponse = {
+        user: mockUser,
+        token: mockToken
+      };
+
+      // Simula delay de rede
+      return of(response).pipe(
+        delay(500),
+        map(res => {
+          this.setAuthState(res.user, res.token);
+          // Redireciona para dashboard do restaurante
+          this.router.navigate(['/dashboard']);
           return res;
         })
       );

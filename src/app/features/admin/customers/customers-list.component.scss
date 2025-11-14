@@ -1,0 +1,41 @@
+.customers-list {
+  padding: 1.5rem;
+
+  .page-header {
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+  }
+
+  ::ng-deep .p-datatable {
+    .p-datatable-thead > tr > th {
+      background-color: var(--surface-50);
+      font-weight: 600;
+    }
+
+    .p-datatable-tbody > tr {
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: var(--surface-100);
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .customers-list {
+    padding: 1rem;
+
+    .page-header h1 {
+      font-size: 1.5rem;
+    }
+  }
+}

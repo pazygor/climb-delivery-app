@@ -1,0 +1,42 @@
+<header class="admin-header">
+  <div class="header-content">
+    <div class="header-left">
+      <h2 class="mb-0">
+        <i class="pi pi-shield text-primary mr-2"></i>
+        Área Administrativa
+      </h2>
+    </div>
+
+    <div class="header-right">
+      <p-button 
+        icon="pi pi-bell" 
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        badge="3"
+        badgeClass="p-badge-danger"
+      ></p-button>
+
+      <div class="user-info">
+        <p-menu #menu [model]="userMenuItems" [popup]="true"></p-menu>
+        <button 
+          pButton 
+          (click)="menu.toggle($event)"
+          class="p-button-text user-button"
+        >
+          <p-avatar 
+            [label]="getUserInitials()" 
+            shape="circle"
+            styleClass="mr-2"
+            [style]="{'background-color': '#2196F3', 'color': '#ffffff'}"
+          ></p-avatar>
+          <div class="user-details">
+            <span class="user-name">{{ currentUser?.name }}</span>
+            <span class="user-role">Administrador</span>
+          </div>
+          <i class="pi pi-angle-down ml-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

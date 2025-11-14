@@ -31,7 +31,6 @@ import { ToastModule } from 'primeng/toast';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   loading = false;
-  returnUrl: string = '/dashboard/orders';
 
   constructor(
     private fb: FormBuilder,
@@ -42,12 +41,14 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Pega a URL de retorno dos query params
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard/orders';
-
-    // Se já está autenticado, redireciona
+    // Se já está autenticado, redireciona baseado no role
     if (this.authService.isAuthenticated()) {
-      this.router.navigate([this.returnUrl]);
+      const user = this.authService.getCurrentUser();
+      if (user?.role === 1) { // SUPER_ADMIN
+        this.router.navigate(['/admin/dashboard']);
+      } else {
+        this.router.navigate(['/dashboard/orders']);
+      }
     }
 
     // Inicializa o formulário
@@ -74,9 +75,9 @@ export class LoginComponent implements OnInit {
           detail: `Bem-vindo, ${response.user.name}!`
         });
         
-        setTimeout(() => {
-          this.router.navigate([this.returnUrl]);
-        }, 500);
+        // O redirecionamento já é feito pelo auth.service.ts baseado no role
+        // Não precisamos fazer nada aqui
+        this.loading = false;
       },
       error: (error) => {
         this.loading = false;

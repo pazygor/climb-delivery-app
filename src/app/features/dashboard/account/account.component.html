@@ -84,7 +84,7 @@
         <span 
           class="inline-block px-3 py-1 bg-blue-100 text-blue-700 border-round font-semibold text-sm"
         >
-          {{ currentUser?.role === 'admin' ? 'Administrador' : 'Usuário' }}
+          {{ getRoleLabel(currentUser?.role) }}
         </span>
 
         <div class="mt-4 pt-4 border-top-1 surface-border">

@@ -1,0 +1,182 @@
+<div class="admin-dashboard">
+  <div class="page-header mb-4">
+    <h1>Dashboard Administrativo</h1>
+    <p class="text-color-secondary">Visão geral da plataforma ClimbDelivery</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-content-center align-items-center" style="min-height: 400px;">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem;"></i>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading">
+    <!-- KPIs Cards -->
+    <div class="grid">
+      <!-- Total Clientes -->
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="h-full">
+          <div class="flex flex-column gap-2">
+            <div class="flex justify-content-between align-items-start">
+              <span class="text-color-secondary text-sm">Total de Clientes</span>
+              <i class="pi pi-users text-blue-500" style="font-size: 1.5rem;"></i>
+            </div>
+            <span class="text-4xl font-bold text-primary">{{ customerStats?.totalCustomers || 0 }}</span>
+            <div class="flex align-items-center gap-2">
+              <p-tag value="Ativos" severity="success" [rounded]="true"></p-tag>
+              <span class="text-sm">{{ customerStats?.activeCustomers || 0 }}</span>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- MRR -->
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="h-full">
+          <div class="flex flex-column gap-2">
+            <div class="flex justify-content-between align-items-start">
+              <span class="text-color-secondary text-sm">MRR</span>
+              <i class="pi pi-chart-line text-green-500" style="font-size: 1.5rem;"></i>
+            </div>
+            <span class="text-4xl font-bold text-green-600">{{ formatCurrency(billingStats?.monthlyRecurringRevenue || 0) }}</span>
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-arrow-up text-green-500 text-xs"></i>
+              <span class="text-sm text-green-500">+12.5% vs mês anterior</span>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Tickets Abertos -->
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="h-full">
+          <div class="flex flex-column gap-2">
+            <div class="flex justify-content-between align-items-start">
+              <span class="text-color-secondary text-sm">Tickets Abertos</span>
+              <i class="pi pi-ticket text-orange-500" style="font-size: 1.5rem;"></i>
+            </div>
+            <span class="text-4xl font-bold text-orange-600">{{ ticketStats?.openTickets || 0 }}</span>
+            <div class="flex align-items-center gap-2">
+              <p-tag value="Em Progresso" severity="warn" [rounded]="true"></p-tag>
+              <span class="text-sm">{{ ticketStats?.inProgressTickets || 0 }}</span>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Churn Rate -->
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="h-full">
+          <div class="flex flex-column gap-2">
+            <div class="flex justify-content-between align-items-start">
+              <span class="text-color-secondary text-sm">Churn Rate</span>
+              <i class="pi pi-chart-bar text-red-500" style="font-size: 1.5rem;"></i>
+            </div>
+            <span class="text-4xl font-bold text-red-600">{{ formatPercentage(billingStats?.churnRate || 0) }}</span>
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-arrow-down text-green-500 text-xs"></i>
+              <span class="text-sm text-green-500">-2.1% vs mês anterior</span>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="grid mt-4">
+      <!-- Gráfico de Crescimento -->
+      <div class="col-12 lg:col-8">
+        <p-card header="Crescimento de Clientes">
+          <p-chart type="line" [data]="growthChartData" [options]="growthChartOptions" [style]="{'height': '300px'}"></p-chart>
+        </p-card>
+      </div>
+
+      <!-- Estatísticas de Suporte -->
+      <div class="col-12 lg:col-4">
+        <p-card header="Suporte">
+          <div class="flex flex-column gap-4">
+            <div class="flex justify-content-between align-items-center">
+              <span class="text-color-secondary">Total de Tickets</span>
+              <span class="font-bold">{{ ticketStats?.totalTickets || 0 }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center">
+              <span class="text-color-secondary">Resolvidos Hoje</span>
+              <span class="font-bold text-green-500">{{ ticketStats?.resolvedToday || 0 }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center">
+              <span class="text-color-secondary">Tempo Médio de Resposta</span>
+              <span class="font-bold">{{ ticketStats?.averageResponseTime || 0 }}min</span>
+            </div>
+            <div class="flex justify-content-between align-items-center">
+              <span class="text-color-secondary">Satisfação do Cliente</span>
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-star-fill text-yellow-500"></i>
+                <span class="font-bold">{{ ticketStats?.customerSatisfaction || 0 }}/5</span>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+
+    <!-- Gráfico de Receita -->
+    <div class="grid mt-4">
+      <div class="col-12">
+        <p-card header="Receita Mensal">
+          <p-chart type="bar" [data]="revenueChartData" [options]="revenueChartOptions" [style]="{'height': '300px'}"></p-chart>
+        </p-card>
+      </div>
+    </div>
+
+    <!-- Métricas Adicionais -->
+    <div class="grid mt-4">
+      <div class="col-12 md:col-6">
+        <p-card header="Estatísticas de Clientes">
+          <div class="flex flex-column gap-3">
+            <div class="flex justify-content-between align-items-center p-3 surface-ground border-round">
+              <div class="flex align-items-center gap-2">
+                <p-tag value="Trial" severity="info" [rounded]="true"></p-tag>
+                <span>Clientes em Trial</span>
+              </div>
+              <span class="font-bold">{{ customerStats?.trialCustomers || 0 }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center p-3 surface-ground border-round">
+              <div class="flex align-items-center gap-2">
+                <p-tag value="Suspenso" severity="danger" [rounded]="true"></p-tag>
+                <span>Clientes Suspensos</span>
+              </div>
+              <span class="font-bold">{{ customerStats?.suspendedCustomers || 0 }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center p-3 surface-ground border-round">
+              <span>Média de Pedidos/Cliente</span>
+              <span class="font-bold">{{ customerStats?.averageOrdersPerCustomer || 0 }}</span>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <div class="col-12 md:col-6">
+        <p-card header="Estatísticas Financeiras">
+          <div class="flex flex-column gap-3">
+            <div class="flex justify-content-between align-items-center p-3 surface-ground border-round">
+              <span>Receita Total</span>
+              <span class="font-bold text-green-600">{{ formatCurrency(billingStats?.totalRevenue || 0) }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center p-3 surface-ground border-round">
+              <span>Pagamentos Pendentes</span>
+              <span class="font-bold text-orange-600">{{ formatCurrency(billingStats?.pendingPayments || 0) }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center p-3 surface-ground border-round">
+              <span>Pagamentos Falhados</span>
+              <span class="font-bold text-red-600">{{ formatCurrency(billingStats?.failedPayments || 0) }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center p-3 surface-ground border-round">
+              <span>Assinaturas Ativas</span>
+              <span class="font-bold">{{ billingStats?.activeSubscriptions || 0 }}</span>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+</div>

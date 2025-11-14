@@ -77,21 +77,51 @@ http://localhost:4200
 
 ## 👤 Credenciais de Teste
 
-Para acessar o sistema, utilize as seguintes credenciais:
-
+### Área Administrativa (Super Admin)
 - **Email:** admin@climbdelivery.com
 - **Senha:** admin123
+- **Acesso:** Área administrativa completa para gerenciar a plataforma SaaS
+
+### Área do Restaurante
+- **Email:** restaurante@climbdelivery.com
+- **Senha:** rest123
+- **Acesso:** Dashboard do restaurante para gerenciar pedidos e cardápio
 
 ## 📱 Funcionalidades Principais
 
 ### 🔐 Autenticação
-- [x] Login com validação de formulário
+- [x] Login com validação de formulário e redirecionamento baseado em role
 - [x] Esqueci a senha (mock)
 - [x] Redefinir senha (mock)
 - [x] Guard de proteção de rotas
 - [x] Interceptor para adicionar token JWT
+- [x] Sistema de permissões (SUPER_ADMIN, RESTAURANT_OWNER, etc)
 
-### 📊 Dashboard
+### 🛡️ Área Administrativa (Super Admin)
+- [x] **Dashboard Admin** - Métricas consolidadas de toda a plataforma
+  - KPIs (Total Clientes, MRR, Tickets, Churn Rate)
+  - Gráficos de crescimento e receita
+  - Estatísticas de suporte e financeiras
+- [x] **Gestão de Clientes** - CRUD completo de restaurantes
+  - Lista com filtros por status
+  - Ativar/Suspender clientes
+  - Visualizar detalhes completos
+- [x] **Assinaturas & Planos** - Estrutura preparada
+  - Planos (Básico R$97, Pro R$197, Enterprise R$497)
+  - Assinaturas ativas e histórico
+  - Gestão de cobranças
+- [x] **Relatórios Consolidados** - Estrutura preparada
+  - Performance geral da plataforma
+  - Receita e faturamento
+  - Análise de churn
+  - Uso da plataforma por cliente
+- [x] **Sistema de Suporte** - Estrutura preparada
+  - Tickets com prioridades e categorias
+  - Base de conhecimento
+  - Métricas de atendimento
+- [x] **Configurações da Plataforma** - Estrutura preparada
+
+### 📊 Dashboard (Restaurantes)
 - [x] **Meus Pedidos** - Gerenciamento de pedidos em kanban (3 colunas)
   - Em Análise
   - Em Produção
@@ -136,10 +166,23 @@ npm test              # Executa testes unitários
 
 ## 🎯 Próximos Passos (Roadmap)
 
+### Integração e Backend
 - [ ] Integração com backend NestJS
+- [ ] Sistema de notificações em tempo real (WebSocket)
+- [ ] Gateway de pagamento (Stripe/Mercado Pago)
+
+### Área Administrativa
+- [ ] Formulário completo de cadastro de clientes
+- [ ] Detalhes avançados do cliente com histórico
+- [ ] Editor de planos e precificação dinâmica
+- [ ] Relatórios com exportação (PDF/Excel)
+- [ ] Sistema de tickets completo com chat
+- [ ] Gestão de usuários admin com permissões granulares
+- [ ] Logs de auditoria
+
+### Área do Restaurante
 - [ ] Implementar CRUD completo de produtos
 - [ ] Implementar CRUD de categorias e adicionais
-- [ ] Sistema de notificações em tempo real (WebSocket)
 - [ ] Impressão de pedidos
 - [ ] Relatórios avançados com gráficos
 - [ ] Módulo de cupons e promoções

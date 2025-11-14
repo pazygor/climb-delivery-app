@@ -26,7 +26,7 @@
         <div class="flex align-items-center justify-content-between">
           <h3 class="text-white m-0 font-semibold">{{ column.title }}</h3>
           <span class="text-white bg-white-alpha-30 px-2 py-1 border-round font-semibold">
-            {{ ordersByColumn[column.title]?.length || 0 }}
+            {{ ordersByColumn[column.title].length || 0 }}
           </span>
         </div>
       </div>
@@ -91,7 +91,7 @@
                 pButton 
                 icon="pi pi-arrow-right"
                 class="p-button-sm p-button-success"
-                [pTooltip]="'Mover para ' + columns[columns.indexOf(column) + 1]?.title"
+                [pTooltip]="'Mover para ' + columns[columns.indexOf(column) + 1].title"
                 tooltipPosition="top"
                 (click)="moveToNextStatus(order, column)"
               ></button>

@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
+import { delay, map, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User, LoginRequest, LoginResponse, AuthState, UserRole } from '../models/user.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -15,77 +17,59 @@ export class AuthService {
   });
 
   public authState$: Observable<AuthState> = this.authStateSubject.asObservable();
+  private apiUrl = environment.api.baseUrl;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private http: HttpClient
+  ) {
     this.loadAuthStateFromStorage();
   }
 
   /**
-   * Mock de login - simula autenticação
-   * Em produção, substituir por chamada HTTP ao backend NestJS
+   * Login real com backend NestJS
    */
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    // Mock de validação - Super Admin (equipe do SaaS)
-    if (credentials.email === 'admin@climbdelivery.com' && credentials.password === 'admin123') {
-      const mockUser: User = {
-        id: '1',
-        name: 'Admin ClimbDelivery',
-        email: credentials.email,
-        role: UserRole.SUPER_ADMIN, // Acesso à área administrativa
-        avatar: 'https://i.pravatar.cc/150?img=1'
-      };
+    return this.http.post<{ access_token: string, user?: any }>(`${this.apiUrl}/auth/login`, {
+      email: credentials.email,
+      senha: credentials.password
+    }).pipe(
+      map(response => {
+        // Decodifica o JWT para extrair informações do usuário
+        const decodedToken = this.decodeToken(response.access_token);
+        
+        // Mapeia permissão do backend para role do frontend
+        const role = this.mapPermissaoToRole(decodedToken.permissaoId);
+        
+        const user: User = {
+          id: decodedToken.sub.toString(),
+          name: decodedToken.nome,
+          email: decodedToken.email,
+          role: role,
+          establishmentId: decodedToken.empresaId?.toString()
+        };
 
-      const mockToken = 'mock-jwt-token-superadmin-' + Date.now();
-      
-      const response: LoginResponse = {
-        user: mockUser,
-        token: mockToken
-      };
+        const loginResponse: LoginResponse = {
+          user: user,
+          token: response.access_token
+        };
 
-      // Simula delay de rede
-      return of(response).pipe(
-        delay(500),
-        map(res => {
-          this.setAuthState(res.user, res.token);
-          // Redireciona para área administrativa
+        this.setAuthState(user, response.access_token);
+        
+        // Redireciona baseado na permissão
+        if (role === UserRole.SUPER_ADMIN) {
           this.router.navigate(['/admin']);
-          return res;
-        })
-      );
-    }
-
-    // Mock de validação - Restaurante
-    if (credentials.email === 'restaurante@climbdelivery.com' && credentials.password === 'rest123') {
-      const mockUser: User = {
-        id: '2',
-        name: 'Restaurante Demo',
-        email: credentials.email,
-        role: UserRole.RESTAURANT_OWNER,
-        establishmentId: 'est-001',
-        avatar: 'https://i.pravatar.cc/150?img=2'
-      };
-
-      const mockToken = 'mock-jwt-token-restaurant-' + Date.now();
-      
-      const response: LoginResponse = {
-        user: mockUser,
-        token: mockToken
-      };
-
-      // Simula delay de rede
-      return of(response).pipe(
-        delay(500),
-        map(res => {
-          this.setAuthState(res.user, res.token);
-          // Redireciona para dashboard do restaurante
+        } else {
           this.router.navigate(['/dashboard']);
-          return res;
-        })
-      );
-    }
+        }
 
-    // Credenciais inválidas
-    return throwError(() => new Error('Credenciais inválidas')).pipe(delay(500));
+        return loginResponse;
+      }),
+      catchError(error => {
+        console.error('Erro no login:', error);
+        return throwError(() => new Error(error.error?.message || 'Credenciais inválidas'));
+      })
+    );
   }
 
   /**
@@ -110,6 +94,45 @@ export class AuthService {
   resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
     // Simula chamada ao backend
     return of({ message: 'Senha redefinida com sucesso' }).pipe(delay(500));
+  }
+
+  /**
+   * Decodifica o JWT token (sem validação - apenas extração)
+   */
+  private decodeToken(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Erro ao decodificar token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Mapeia a permissão do backend para o role do frontend
+   */
+  private mapPermissaoToRole(permissaoId: number): UserRole {
+    // 1 = admin_global
+    // 2 = admin_restaurante
+    // 3 = funcionario_restaurante
+    switch (permissaoId) {
+      case 1:
+        return UserRole.SUPER_ADMIN;
+      case 2:
+        return UserRole.RESTAURANT_OWNER;
+      case 3:
+        return UserRole.RESTAURANT_EMPLOYEE;
+      default:
+        return UserRole.RESTAURANT_EMPLOYEE;
+    }
   }
 
   /**

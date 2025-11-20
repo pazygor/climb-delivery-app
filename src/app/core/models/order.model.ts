@@ -1,38 +1,134 @@
+// Interface que mapeia o modelo Pedido do backend
 export interface Order {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  customerPhone: string;
-  items: OrderItem[];
-  totalAmount: number;
-  status: OrderStatus;
-  deliveryAddress?: string;
-  orderType: 'delivery' | 'pickup';
-  createdAt: Date;
-  estimatedTime?: number; // em minutos
-  notes?: string;
+  id: number;
+  empresaId: number;
+  usuarioId: number;
+  enderecoId: number;
+  numero: string;
+  status: string;
+  subtotal: number;
+  taxaEntrega: number;
+  total: number;
+  formaPagamento: string;
+  observacoes?: string;
+  tempoEstimado?: number;
+  motivoCancelamento?: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  
+  // Relações incluídas nas queries
+  empresa?: {
+    id: number;
+    nomeFantasia: string;
+    logo?: string;
+  };
+  usuario?: {
+    id: number;
+    nome: string;
+    telefone?: string;
+    email?: string;
+  };
+  endereco?: {
+    id: number;
+    logradouro: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    cep: string;
+  };
+  itens?: OrderItem[];
+  _count?: {
+    itens: number;
+  };
 }
 
 export interface OrderItem {
-  id: string;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-  notes?: string;
+  id: number;
+  pedidoId: number;
+  produtoId: number;
+  quantidade: number;
+  precoUnitario: number;
+  subtotal: number;
+  observacoes?: string;
+  
+  produto?: {
+    id: number;
+    nome: string;
+    descricao?: string;
+    preco: number;
+  };
+  adicionais?: ItemAdicional[];
 }
 
+export interface ItemAdicional {
+  id: number;
+  itemPedidoId: number;
+  adicionalId: number;
+  quantidade: number;
+  preco: number;
+  
+  adicional?: {
+    id: number;
+    nome: string;
+    descricao?: string;
+    preco: number;
+  };
+}
+
+// Enum para status dos pedidos (mantém compatibilidade com backend)
 export enum OrderStatus {
-  PENDING = 'pending',           // Em Análise
-  IN_PRODUCTION = 'in_production', // Em Produção
-  READY = 'ready',               // Pronto para Entrega
-  OUT_FOR_DELIVERY = 'out_for_delivery', // Saiu para Entrega
-  DELIVERED = 'delivered',       // Entregue
-  CANCELLED = 'cancelled'        // Cancelado
+  PENDENTE = 'pendente',           // Em Análise
+  CONFIRMADO = 'confirmado',       // Confirmado
+  EM_PREPARO = 'em_preparo',       // Em Produção
+  PRONTO = 'pronto',               // Pronto para Entrega
+  EM_ENTREGA = 'em_entrega',       // Saiu para Entrega
+  ENTREGUE = 'entregue',           // Entregue
+  CANCELADO = 'cancelado'          // Cancelado
 }
 
 export interface OrderStatusColumn {
   title: string;
-  status: OrderStatus[];
+  status: string[];
   color: string;
+}
+
+// DTO para criar pedido
+export interface CreateOrderDto {
+  empresaId: number;
+  usuarioId: number;
+  enderecoId: number;
+  numero: string;
+  status?: string;
+  subtotal: number;
+  taxaEntrega: number;
+  total: number;
+  formaPagamento: string;
+  observacoes?: string;
+  tempoEstimado?: number;
+  itens: CreateOrderItemDto[];
+}
+
+export interface CreateOrderItemDto {
+  produtoId: number;
+  quantidade: number;
+  precoUnitario: number;
+  subtotal: number;
+  observacoes?: string;
+  adicionais?: CreateItemAdicionalDto[];
+}
+
+export interface CreateItemAdicionalDto {
+  adicionalId: number;
+  quantidade: number;
+  preco: number;
+}
+
+// DTO para atualizar pedido
+export interface UpdateOrderDto {
+  status?: string;
+  observacoes?: string;
+  tempoEstimado?: number;
+  motivoCancelamento?: string;
 }

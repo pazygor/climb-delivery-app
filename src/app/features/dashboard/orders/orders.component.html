@@ -40,14 +40,14 @@
           <!-- Cabeçalho do Pedido -->
           <div class="flex align-items-center justify-content-between mb-3">
             <div class="flex align-items-center gap-2">
-              <span class="font-bold text-xl text-primary">{{ order.orderNumber }}</span>
+              <span class="font-bold text-xl text-primary">#{{ order.numero }}</span>
               <span 
                 class="badge px-2 py-1 border-round text-xs font-semibold"
-                [class.badge-delivery]="order.orderType === 'delivery'"
-                [class.badge-pickup]="order.orderType === 'pickup'"
+                [class.badge-delivery]="getOrderType(order) === 'delivery'"
+                [class.badge-pickup]="getOrderType(order) === 'pickup'"
               >
-                <i [class]="order.orderType === 'delivery' ? 'pi pi-car' : 'pi pi-shopping-bag'" class="mr-1"></i>
-                {{ order.orderType === 'delivery' ? 'Entrega' : 'Retirada' }}
+                <i [class]="getOrderType(order) === 'delivery' ? 'pi pi-car' : 'pi pi-shopping-bag'" class="mr-1"></i>
+                {{ getOrderType(order) === 'delivery' ? 'Entrega' : 'Retirada' }}
               </span>
             </div>
             <span class="text-500 text-sm">{{ getOrderTime(order) }}</span>
@@ -55,27 +55,34 @@
 
           <!-- Informações do Cliente -->
           <div class="mb-3">
-            <p class="font-semibold text-900 m-0 mb-1">{{ order.customerName }}</p>
-            <p class="text-600 text-sm m-0 mb-1">
+            <p class="font-semibold text-900 m-0 mb-1">{{ getCustomerName(order) }}</p>
+            <p class="text-600 text-sm m-0 mb-1" *ngIf="getCustomerPhone(order)">
               <i class="pi pi-phone mr-1"></i>
-              {{ order.customerPhone }}
+              {{ getCustomerPhone(order) }}
             </p>
-            <p class="text-600 text-sm m-0" *ngIf="order.deliveryAddress">
+            <p class="text-600 text-sm m-0" *ngIf="getDeliveryAddress(order)">
               <i class="pi pi-map-marker mr-1"></i>
-              {{ order.deliveryAddress }}
+              {{ getDeliveryAddress(order) }}
             </p>
           </div>
 
           <!-- Itens do Pedido -->
           <div class="mb-3 p-2 surface-ground border-round">
-            <div *ngFor="let item of order.items" class="flex justify-content-between text-sm mb-1">
-              <span class="text-700">{{ item.quantity }}x {{ item.productName }}</span>
-              <span class="text-900 font-semibold">{{ orderService.formatCurrency(item.totalPrice) }}</span>
+            <div *ngIf="order.itens && order.itens.length > 0; else itemsCount">
+              <div *ngFor="let item of order.itens" class="flex justify-content-between text-sm mb-1">
+                <span class="text-700">{{ item.quantidade }}x {{ item.produto?.nome || 'Produto' }}</span>
+                <span class="text-900 font-semibold">{{ orderService.formatCurrency(item.subtotal) }}</span>
+              </div>
             </div>
-            <div *ngIf="order.notes" class="mt-2 pt-2 border-top-1 surface-border">
+            <ng-template #itemsCount>
+              <div class="flex justify-content-between text-sm mb-1">
+                <span class="text-700">{{ getTotalItems(order) }} itens no pedido</span>
+              </div>
+            </ng-template>
+            <div *ngIf="order.observacoes" class="mt-2 pt-2 border-top-1 surface-border">
               <p class="text-600 text-sm m-0">
                 <i class="pi pi-info-circle mr-1"></i>
-                <strong>Obs:</strong> {{ order.notes }}
+                <strong>Obs:</strong> {{ order.observacoes }}
               </p>
             </div>
           </div>
@@ -84,7 +91,7 @@
           <div class="flex align-items-center justify-content-between pt-2 border-top-1 surface-border">
             <div>
               <p class="text-xs text-500 m-0 mb-1">Total</p>
-              <p class="text-xl font-bold text-primary m-0">{{ orderService.formatCurrency(order.totalAmount) }}</p>
+              <p class="text-xl font-bold text-primary m-0">{{ orderService.formatCurrency(order.total) }}</p>
             </div>
             <div class="flex gap-2" *ngIf="column.title !== 'Pronto para Entrega'">
               <button 
@@ -99,10 +106,10 @@
           </div>
 
           <!-- Tempo Estimado -->
-          <div *ngIf="order.estimatedTime" class="mt-2 p-2 bg-blue-50 border-round text-center">
+          <div *ngIf="order.tempoEstimado" class="mt-2 p-2 bg-blue-50 border-round text-center">
             <span class="text-sm text-blue-700">
               <i class="pi pi-clock mr-1"></i>
-              Tempo estimado: {{ order.estimatedTime }} min
+              Tempo estimado: {{ order.tempoEstimado }} min
             </span>
           </div>
         </div>

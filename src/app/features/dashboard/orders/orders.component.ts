@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrderService } from '../../../core/services/order.service';
-import { Order, OrderStatus, OrderStatusColumn } from '../../../core/models/order.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { Order, OrderStatusColumn } from '../../../core/models/order.model';
 
 // PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
@@ -18,36 +19,53 @@ export class OrdersComponent implements OnInit {
   columns: OrderStatusColumn[] = [
     {
       title: 'Em Análise',
-      status: [OrderStatus.PENDING],
+      status: ['pendente'],
       color: '#f59e0b'
     },
     {
       title: 'Em Produção',
-      status: [OrderStatus.IN_PRODUCTION],
+      status: ['confirmado', 'em_preparo'],
       color: '#3b82f6'
     },
     {
       title: 'Pronto para Entrega',
-      status: [OrderStatus.READY],
+      status: ['pronto', 'em_entrega'],
       color: '#10b981'
     }
   ];
 
   ordersByColumn: { [key: string]: Order[] } = {};
   loading = false;
+  empresaId: number | null = null;
 
-  constructor(public orderService: OrderService) {}
+  constructor(
+    public orderService: OrderService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    this.loadOrders();
+    // Obtém o ID da empresa do usuário logado
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser?.establishmentId) {
+      this.empresaId = parseInt(currentUser.establishmentId);
+      this.loadOrders();
+    } else {
+      console.error('Usuário não possui empresa associada');
+    }
   }
 
   loadOrders(): void {
+    if (!this.empresaId) {
+      console.error('Empresa ID não disponível');
+      return;
+    }
+
     this.loading = true;
     
-    this.orderService.getOrders().subscribe({
+    // Busca pedidos da empresa logada
+    this.orderService.getOrdersByEmpresa(this.empresaId).subscribe({
       next: (orders) => {
-        // Organiza os pedidos por coluna
+        // Organiza os pedidos por coluna baseado no status
         this.columns.forEach(column => {
           this.ordersByColumn[column.title] = orders.filter(order => 
             column.status.includes(order.status)
@@ -79,17 +97,44 @@ export class OrdersComponent implements OnInit {
     
     if (currentIndex < this.columns.length - 1) {
       const nextColumn = this.columns[currentIndex + 1];
+      // Pega o primeiro status da próxima coluna
       const newStatus = nextColumn.status[0];
       
       this.orderService.updateOrderStatus(order.id, newStatus).subscribe({
         next: () => {
           this.loadOrders();
+        },
+        error: (error) => {
+          console.error('Erro ao atualizar status do pedido:', error);
         }
       });
     }
   }
 
   getTotalItems(order: Order): number {
-    return order.items.reduce((sum, item) => sum + item.quantity, 0);
+    if (!order.itens) {
+      return order._count?.itens || 0;
+    }
+    return order.itens.reduce((sum, item) => sum + item.quantidade, 0);
+  }
+
+  getCustomerName(order: Order): string {
+    return order.usuario?.nome || 'Cliente';
+  }
+
+  getCustomerPhone(order: Order): string {
+    return order.usuario?.telefone || '';
+  }
+
+  getDeliveryAddress(order: Order): string {
+    if (!order.endereco) return '';
+    
+    const { logradouro, numero, bairro, cidade } = order.endereco;
+    return `${logradouro}, ${numero} - ${bairro}, ${cidade}`;
+  }
+
+  // Determina se é delivery ou retirada baseado no endereço
+  getOrderType(order: Order): 'delivery' | 'pickup' {
+    return order.endereco ? 'delivery' : 'pickup';
   }
 }

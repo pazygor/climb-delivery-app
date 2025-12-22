@@ -46,19 +46,9 @@ export class SidebarComponent implements OnInit {
         expanded: false,
         items: [
           {
-            label: 'Produtos',
-            icon: 'pi pi-box',
-            routerLink: '/dashboard/menu/products'
-          },
-          {
-            label: 'Categorias',
-            icon: 'pi pi-tags',
-            routerLink: '/dashboard/menu/categories'
-          },
-          {
-            label: 'Adicionais',
-            icon: 'pi pi-plus-circle',
-            routerLink: '/dashboard/menu/extras'
+            label: 'Gestor',
+            icon: 'pi pi-list',
+            routerLink: '/dashboard/menu/gestor'
           }
         ]
       },

@@ -1,0 +1,194 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{width: '650px', maxHeight: '90vh'}"
+  (onHide)="fechar()">
+  
+  <ng-template pTemplate="header">
+    <h3>{{ tituloModal }}</h3>
+  </ng-template>
+
+  <div class="modal-content">
+    <div class="field">
+      <label for="nome" class="required">Nome do grupo</label>
+      <input 
+        id="nome"
+        type="text" 
+        pInputText 
+        [(ngModel)]="nome"
+        placeholder="Ex.: Ponto da Carne, Adicionais de Hambúrguer..."
+        class="w-full"
+        [disabled]="loading" />
+    </div>
+
+    <div class="field">
+      <label class="required">Tipo de seleção</label>
+      <div class="radio-group">
+        <div class="radio-item">
+          <input 
+            type="radio" 
+            id="radio"
+            name="tipoSelecao"
+            [value]="TipoSelecaoGrupo.RADIO"
+            [(ngModel)]="tipoSelecao"
+            [disabled]="loading" />
+          <label for="radio">
+            <strong>Escolha única</strong>
+            <span>Cliente pode selecionar apenas 1 opção</span>
+          </label>
+        </div>
+        <div class="radio-item">
+          <input 
+            type="radio" 
+            id="checkbox"
+            name="tipoSelecao"
+            [value]="TipoSelecaoGrupo.CHECKBOX"
+            [(ngModel)]="tipoSelecao"
+            [disabled]="loading" />
+          <label for="checkbox">
+            <strong>Múltipla escolha</strong>
+            <span>Cliente pode selecionar várias opções</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-checkbox">
+      <input 
+        type="checkbox" 
+        id="obrigatorio"
+        [(ngModel)]="obrigatorio"
+        [disabled]="loading" />
+      <label for="obrigatorio">Grupo obrigatório (cliente precisa selecionar ao menos 1 item)</label>
+    </div>
+
+    <div class="grid-2" *ngIf="tipoSelecao === TipoSelecaoGrupo.CHECKBOX">
+      <div class="field">
+        <label for="minimo">Mínimo de seleções</label>
+        <p-inputNumber
+          id="minimo"
+          [(ngModel)]="minimoSelecao"
+          [min]="0"
+          [max]="99"
+          [showButtons]="true"
+          [disabled]="loading">
+        </p-inputNumber>
+      </div>
+      <div class="field">
+        <label for="maximo">Máximo de seleções</label>
+        <p-inputNumber
+          id="maximo"
+          [(ngModel)]="maximoSelecao"
+          [min]="0"
+          [max]="99"
+          [showButtons]="true"
+          [disabled]="loading">
+        </p-inputNumber>
+      </div>
+    </div>
+
+    <div class="field-checkbox">
+      <input 
+        type="checkbox" 
+        id="ativo"
+        [(ngModel)]="ativo"
+        [disabled]="loading" />
+      <label for="ativo">Grupo ativo</label>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Seção de Adicionais -->
+    <div class="adicionais-section">
+      <h4>Itens do grupo</h4>
+
+      <!-- Formulário adicionar item -->
+      <div class="add-item-form">
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="novoAdicionalNome"
+          placeholder="Nome do adicional (ex.: Queijo extra)"
+          class="item-nome"
+          [disabled]="loading"
+          (keyup.enter)="adicionarItem()" />
+        
+        <div class="price-input-small">
+          <span class="currency">R$</span>
+          <p-inputNumber
+            [(ngModel)]="novoAdicionalPreco"
+            mode="decimal"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
+            [min]="0"
+            placeholder="0,00"
+            [disabled]="loading"
+            (onKeyDown)="$event.key === 'Enter' && adicionarItem()">
+          </p-inputNumber>
+        </div>
+
+        <button 
+          pButton 
+          icon="pi pi-plus" 
+          label="Adicionar"
+          (click)="adicionarItem()"
+          [disabled]="loading"></button>
+      </div>
+
+      <!-- Lista de adicionais -->
+      <div class="adicionais-list" *ngIf="adicionais.length > 0">
+        <div class="adicional-item" *ngFor="let adicional of adicionais; let i = index">
+          <div class="item-order">
+            <button 
+              pButton 
+              icon="pi pi-angle-up" 
+              class="p-button-text p-button-sm"
+              (click)="moverItemCima(i)"
+              [disabled]="loading || i === 0"></button>
+            <span class="order-number">{{ i + 1 }}</span>
+            <button 
+              pButton 
+              icon="pi pi-angle-down" 
+              class="p-button-text p-button-sm"
+              (click)="moverItemBaixo(i)"
+              [disabled]="loading || i === adicionais.length - 1"></button>
+          </div>
+
+          <div class="item-info">
+            <strong>{{ adicional.nome }}</strong>
+            <span class="price">{{ formatarPreco(adicional.preco) }}</span>
+          </div>
+
+          <button 
+            pButton 
+            icon="pi pi-trash" 
+            class="p-button-danger p-button-text"
+            (click)="removerItem(i)"
+            [disabled]="loading"></button>
+        </div>
+      </div>
+
+      <p class="hint" *ngIf="adicionais.length === 0">
+        Adicione itens ao grupo usando o formulário acima
+      </p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button 
+      pButton 
+      label="Cancelar" 
+      icon="pi pi-times" 
+      (click)="fechar()"
+      class="p-button-text"
+      [disabled]="loading"></button>
+    <button 
+      pButton 
+      [label]="grupo ? 'Salvar' : 'Criar Grupo'" 
+      icon="pi pi-check" 
+      (click)="salvar()"
+      [loading]="loading"></button>
+  </ng-template>
+</p-dialog>

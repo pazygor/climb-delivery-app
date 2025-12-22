@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = `${environment.api.baseUrl}/pedido`;
+  private apiUrl = `${environment.api.baseUrl}/pedidos`;
 
   constructor(private http: HttpClient) { }
 

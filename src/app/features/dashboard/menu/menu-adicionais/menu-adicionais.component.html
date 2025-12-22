@@ -1,0 +1,260 @@
+<div class="menu-adicionais-container">
+  <!-- HEADER -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="title-section">
+        <h2>Grupos de Adicionais</h2>
+        <p class="subtitle">Gerencie grupos reutilizáveis de adicionais para seus produtos</p>
+      </div>
+
+      <button 
+        pButton 
+        label="Novo Grupo" 
+        icon="pi pi-plus" 
+        class="p-button-primary"
+        (click)="criarGrupo()">
+      </button>
+    </div>
+
+    <!-- BUSCA -->
+    <div class="filters-section">
+      <span class="p-input-icon-left flex-1">
+        <i class="pi pi-search"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchTerm"
+          placeholder="Pesquisar grupos..." 
+          class="w-full" />
+      </span>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="loading-state">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>Carregando grupos...</p>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="!loading && grupos.length === 0" class="empty-state">
+    <i class="pi pi-tags" style="font-size: 4rem; color: var(--text-color-secondary)"></i>
+    <h3>Nenhum grupo cadastrado</h3>
+    <p>Crie seu primeiro grupo de adicionais para começar</p>
+    <button 
+      pButton 
+      label="Criar Primeiro Grupo" 
+      icon="pi pi-plus"
+      class="p-button-primary"
+      (click)="criarGrupo()">
+    </button>
+  </div>
+
+  <!-- TABELA DE GRUPOS -->
+  <div *ngIf="!loading && grupos.length > 0" class="grupos-table-wrapper">
+    <p-table 
+      [value]="gruposFiltrados" 
+      styleClass="p-datatable-gridlines">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome do Grupo</th>
+          <th>Tipo</th>
+          <th>Obrigatório</th>
+          <th class="text-center">Itens</th>
+          <th class="text-center">Produtos Usando</th>
+          <th>Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-grupo>
+        <tr>
+          <td>
+            <div class="grupo-info">
+              <strong>{{ grupo.nome }}</strong>
+              <p *ngIf="grupo.descricao" class="grupo-descricao-cell">
+                {{ grupo.descricao }}
+              </p>
+            </div>
+          </td>
+          <td>
+            <p-tag 
+              [icon]="getTipoSelecaoIcon(grupo)"
+              [value]="getTipoSelecaoLabel(grupo)"
+              [severity]="grupo.maximo === 1 ? 'info' : 'success'">
+            </p-tag>
+          </td>
+          <td>
+            <p-tag 
+              [value]="grupo.obrigatorio ? 'Sim' : 'Não'"
+              severity="info">
+            </p-tag>
+          </td>
+          <td class="text-center">
+            <span class="count-badge">{{ grupo._count?.adicionais || 0 }}</span>
+          </td>
+          <td class="text-center">
+            <span class="count-badge">{{ grupo._count?.produtos || 0 }}</span>
+          </td>
+          <td>
+            <p-tag 
+              [value]="grupo.ativo ? 'Ativo' : 'Inativo'"
+              [severity]="grupo.ativo ? 'success' : 'danger'">
+            </p-tag>
+          </td>
+          <td class="text-center">
+            <div class="action-buttons">
+              <button 
+                pButton 
+                icon="pi pi-eye" 
+                class="p-button-rounded p-button-text p-button-info"
+                pTooltip="Visualizar adicionais"
+                (click)="visualizarGrupo(grupo)">
+              </button>
+              <button 
+                pButton 
+                icon="pi pi-pencil" 
+                class="p-button-rounded p-button-text"
+                pTooltip="Editar grupo"
+                (click)="editarGrupo(grupo, $event)">
+              </button>
+              <button 
+                pButton 
+                icon="pi pi-clone" 
+                class="p-button-rounded p-button-text p-button-success"
+                pTooltip="Duplicar grupo"
+                (click)="duplicarGrupo(grupo, $event)">
+              </button>
+              <button 
+                pButton 
+                icon="pi pi-trash" 
+                class="p-button-rounded p-button-text p-button-danger"
+                pTooltip="Excluir grupo"
+                (click)="excluirGrupo(grupo, $event)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center">Nenhum grupo encontrado</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- PAINEL LATERAL: ADICIONAIS DO GRUPO -->
+  <div *ngIf="grupoSelecionado" class="adicionais-sidebar">
+    <div class="sidebar-header">
+      <div>
+        <h3>{{ grupoSelecionado.nome }}</h3>
+        <p class="sidebar-subtitle">Adicionais do grupo</p>
+      </div>
+      <button 
+        pButton 
+        icon="pi pi-times" 
+        class="p-button-rounded p-button-text"
+        (click)="fecharVisualizacao()">
+      </button>
+    </div>
+
+    <div class="sidebar-content">
+      <!-- Informações do Grupo -->
+      <div class="grupo-detalhes">
+        <div class="detalhe-item">
+          <label>Tipo de Seleção:</label>
+          <span>{{ getTipoSelecaoLabel(grupoSelecionado) }}</span>
+        </div>
+        <div class="detalhe-item">
+          <label>Mínimo:</label>
+          <span>{{ grupoSelecionado.minimo }}</span>
+        </div>
+        <div class="detalhe-item">
+          <label>Máximo:</label>
+          <span>{{ grupoSelecionado.maximo }}</span>
+        </div>
+        <div class="detalhe-item">
+          <label>Obrigatório:</label>
+          <span>{{ grupoSelecionado.obrigatorio ? 'Sim' : 'Não' }}</span>
+        </div>
+      </div>
+
+      <!-- Botão Adicionar -->
+      <button 
+        pButton 
+        label="Adicionar Item" 
+        icon="pi pi-plus"
+        class="p-button-outlined w-full mb-3"
+        (click)="criarAdicional()">
+      </button>
+
+      <!-- Loading -->
+      <div *ngIf="loadingAdicionais" class="loading-adicionais">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Carregando...</span>
+      </div>
+
+      <!-- Lista de Adicionais -->
+      <div *ngIf="!loadingAdicionais && adicionaisGrupo.length === 0" class="empty-adicionais">
+        <i class="pi pi-inbox"></i>
+        <p>Nenhum adicional cadastrado</p>
+      </div>
+
+      <div *ngIf="!loadingAdicionais && adicionaisGrupo.length > 0" class="adicionais-list">
+        <div 
+          *ngFor="let adicional of adicionaisGrupo" 
+          class="adicional-card"
+          [class.inativo]="!adicional.ativo">
+          
+          <div class="adicional-info">
+            <strong>{{ adicional.nome }}</strong>
+            <p *ngIf="adicional.descricao" class="adicional-descricao">
+              {{ adicional.descricao }}
+            </p>
+            <span class="adicional-preco">
+              {{ formatarPreco(adicional.preco) }}
+            </span>
+          </div>
+
+          <div class="adicional-actions">
+            <button 
+              pButton 
+              icon="pi pi-pencil" 
+              class="p-button-rounded p-button-text p-button-sm"
+              pTooltip="Editar"
+              (click)="editarAdicional(adicional)">
+            </button>
+            <button 
+              pButton 
+              icon="pi pi-clone" 
+              class="p-button-rounded p-button-text p-button-sm"
+              pTooltip="Duplicar"
+              (click)="duplicarAdicional(adicional)">
+            </button>
+            <button 
+              pButton 
+              icon="pi pi-trash" 
+              class="p-button-rounded p-button-text p-button-sm p-button-danger"
+              pTooltip="Excluir"
+              (click)="excluirAdicional(adicional)">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Componentes de Feedback -->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<!-- Modal -->
+<app-modal-grupo-adicional
+  [(visible)]="modalGrupoVisible"
+  [grupo]="grupoEmEdicao"
+  (salvou)="onGrupoSalvo($event)">
+</app-modal-grupo-adicional>

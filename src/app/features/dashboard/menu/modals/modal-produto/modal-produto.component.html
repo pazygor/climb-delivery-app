@@ -1,0 +1,149 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{width: '700px', maxHeight: '90vh'}"
+  (onHide)="fechar()">
+  
+  <ng-template pTemplate="header">
+    <h3>{{ tituloModal }}</h3>
+    <p class="subtitle">Defina as informações que serão dadas ao seu item</p>
+  </ng-template>
+
+  <div class="modal-content">
+    <div class="grid">
+      <!-- Coluna Esquerda -->
+      <div class="col-left">
+        <div class="field">
+          <label for="categoria" class="required">Categoria</label>
+          <select 
+            id="categoria"
+            [(ngModel)]="categoriaIdSelecionada"
+            class="w-full"
+            [disabled]="loading">
+            <option [ngValue]="undefined">Selecione uma categoria</option>
+            <option *ngFor="let cat of categorias" [ngValue]="cat.id">
+              {{ cat.nome }}
+            </option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="nome" class="required">Nome do item</label>
+          <input 
+            id="nome"
+            type="text" 
+            pInputText 
+            [(ngModel)]="nome"
+            placeholder="Ex.: X-Tudo, Batata Frita, Água mineral etc."
+            class="w-full"
+            maxlength="100"
+            [disabled]="loading" />
+          <small class="counter">{{ nome.length }}/100</small>
+        </div>
+
+        <div class="field">
+          <label for="descricao">Descrição</label>
+          <textarea 
+            id="descricao"
+            pInputText
+            [(ngModel)]="descricao"
+            placeholder="Ex.: Molho, mussarela, tomate finalizado com orégano e azeite."
+            rows="4"
+            maxlength="1000"
+            class="w-full"
+            [disabled]="loading"></textarea>
+          <small class="counter">{{ descricao.length }}/1000</small>
+          <p class="hint">Descreva os ingredientes deste item.</p>
+        </div>
+
+        <div class="field">
+          <label for="preco" class="required">Preço</label>
+          <div class="price-input">
+            <span class="currency">R$</span>
+            <p-inputNumber
+              id="preco"
+              [(ngModel)]="preco"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              [min]="0"
+              placeholder="0,00"
+              [disabled]="loading">
+            </p-inputNumber>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="tempoPreparo">Tempo de preparo (minutos)</label>
+          <p-inputNumber
+            id="tempoPreparo"
+            [(ngModel)]="tempoPreparo"
+            [min]="0"
+            [max]="999"
+            placeholder="Ex.: 15"
+            [showButtons]="true"
+            [disabled]="loading">
+          </p-inputNumber>
+        </div>
+      </div>
+
+      <!-- Coluna Direita - Foto -->
+      <div class="col-right">
+        <div class="field">
+          <label>Foto do item</label>
+          
+          <div class="image-upload-area">
+            <div *ngIf="!imagemPreview" class="upload-placeholder">
+              <i class="pi pi-image"></i>
+              <p>Escolha a foto</p>
+              <small>Clique aqui ou arraste a foto para cá</small>
+              <p-fileUpload
+                mode="basic"
+                chooseLabel="Selecionar"
+                accept="image/*"
+                [maxFileSize]="2000000"
+                (onSelect)="onImagemSelect($event)"
+                [auto]="true"
+                [disabled]="loading">
+              </p-fileUpload>
+            </div>
+
+            <div *ngIf="imagemPreview" class="image-preview">
+              <img [src]="imagemPreview" alt="Preview">
+              <button 
+                pButton 
+                icon="pi pi-times" 
+                class="p-button-rounded p-button-danger remove-btn"
+                (click)="removerImagem()"
+                [disabled]="loading"></button>
+            </div>
+          </div>
+
+          <div class="image-info">
+            <small>Formatos: .png, .jpg, .jpeg, .webp</small>
+            <small>Peso máximo: 2mb</small>
+            <small>Resolução mínima: 200px</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button 
+      pButton 
+      label="Cancelar" 
+      icon="pi pi-times" 
+      (click)="fechar()"
+      class="p-button-text"
+      [disabled]="loading"></button>
+    <button 
+      pButton 
+      [label]="produto ? 'Salvar' : 'Criar Item'" 
+      icon="pi pi-check" 
+      (click)="salvar()"
+      [loading]="loading"></button>
+  </ng-template>
+</p-dialog>

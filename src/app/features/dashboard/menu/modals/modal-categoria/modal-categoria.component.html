@@ -1,0 +1,67 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{width: '500px'}"
+  (onHide)="fechar()">
+  
+  <ng-template pTemplate="header">
+    <h3>{{ tituloModal }}</h3>
+  </ng-template>
+
+  <div class="modal-content">
+    <div class="field">
+      <label for="nome" class="required">Nome da categoria</label>
+      <input 
+        id="nome"
+        type="text" 
+        pInputText 
+        [(ngModel)]="nome"
+        placeholder="Ex.: Bebidas, Lanches, Sobremesas..."
+        class="w-full"
+        [disabled]="loading" />
+    </div>
+
+    <div class="field">
+      <label for="descricao">Descrição (opcional)</label>
+      <textarea 
+        id="descricao"
+        pInputText
+        [(ngModel)]="descricao"
+        placeholder="Descrição da categoria..."
+        rows="3"
+        class="w-full"
+        [disabled]="loading"></textarea>
+    </div>
+
+    <div class="field-checkbox">
+      <input 
+        type="checkbox" 
+        id="ativo"
+        [(ngModel)]="ativo"
+        [disabled]="loading" />
+      <label for="ativo">Categoria disponível</label>
+    </div>
+
+    <p class="hint">
+      Categorias indisponíveis não aparecem no cardápio público
+    </p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button 
+      pButton 
+      label="Cancelar" 
+      icon="pi pi-times" 
+      (click)="fechar()"
+      class="p-button-text"
+      [disabled]="loading"></button>
+    <button 
+      pButton 
+      [label]="categoria ? 'Salvar' : 'Criar'" 
+      icon="pi pi-check" 
+      (click)="salvar()"
+      [loading]="loading"></button>
+  </ng-template>
+</p-dialog>

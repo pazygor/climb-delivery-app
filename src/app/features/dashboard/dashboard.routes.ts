@@ -18,19 +18,13 @@ export const DASHBOARD_ROUTES: Routes = [
   },
   {
     path: 'menu',
-    component: MenuComponent
-  },
-  {
-    path: 'menu/products',
-    component: MenuComponent
-  },
-  {
-    path: 'menu/categories',
-    component: MenuComponent
-  },
-  {
-    path: 'menu/extras',
-    component: MenuComponent
+    component: MenuComponent,
+    children: [
+      {
+        path: '',
+        loadChildren: () => import('./menu/menu.routes').then(m => m.MENU_ROUTES)
+      }
+    ]
   },
   {
     path: 'settings/establishment',

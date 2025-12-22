@@ -157,6 +157,14 @@ export class AuthService {
   }
 
   /**
+   * Retorna o empresaId do usuário logado
+   */
+  getEmpresaId(): number | null {
+    const user = this.getCurrentUser();
+    return user?.establishmentId ? parseInt(user.establishmentId) : null;
+  }
+
+  /**
    * Define o estado de autenticação
    */
   private setAuthState(user: User, token: string): void {

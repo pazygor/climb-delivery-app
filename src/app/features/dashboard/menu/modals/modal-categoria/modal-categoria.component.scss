@@ -1,0 +1,90 @@
+.modal-content {
+  padding: 1rem 0;
+
+  .field {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text-color);
+
+      &.required::after {
+        content: ' *';
+        color: #ef4444;
+      }
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      font-size: 1rem;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+      }
+
+      &::placeholder {
+        color: var(--text-color-secondary);
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      font-family: inherit;
+    }
+  }
+
+  .field-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    label {
+      cursor: pointer;
+      font-weight: 500;
+      margin: 0;
+    }
+  }
+
+  .hint {
+    font-size: 0.875rem;
+    color: var(--text-color-secondary);
+    margin: 0;
+    font-style: italic;
+  }
+}
+
+::ng-deep {
+  .p-dialog-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--surface-border);
+
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+  }
+
+  .p-dialog-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--surface-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}

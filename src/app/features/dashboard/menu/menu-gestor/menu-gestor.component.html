@@ -1,0 +1,272 @@
+<div class="menu-gestor-container">
+  <!-- HEADER -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="title-section">
+        <h2>Gestor de Cardápio</h2>
+        <p class="subtitle">Gerencie categorias e produtos do seu cardápio</p>
+      </div>
+
+      <button 
+        pButton 
+        label="Nova Categoria" 
+        icon="pi pi-plus" 
+        class="p-button-primary"
+        (click)="criarCategoria()">
+      </button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters-section">
+      <span class="p-input-icon-left flex-1">
+        <i class="pi pi-search"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchTerm"
+          placeholder="Pesquisar categoria ou produto..." 
+          class="w-full" />
+      </span>
+
+      <select 
+        [(ngModel)]="filtroStatus"
+        class="filtro-status-select">
+        <option *ngFor="let opt of filtroStatusOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="loading-state">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>Carregando cardápio...</p>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="!loading && categorias.length === 0" class="empty-state">
+    <i class="pi pi-inbox" style="font-size: 4rem; color: var(--text-color-secondary)"></i>
+    <h3>Nenhuma categoria cadastrada</h3>
+    <p>Comece criando sua primeira categoria de produtos</p>
+    <button 
+      pButton 
+      label="Criar Primeira Categoria" 
+      icon="pi pi-plus"
+      class="p-button-primary"
+      (click)="criarCategoria()">
+    </button>
+  </div>
+
+  <!-- LISTA DE CATEGORIAS -->
+  <div *ngIf="!loading && categorias.length > 0" class="categorias-list">
+    <div 
+      *ngFor="let categoria of categoriasFiltradas" 
+      class="categoria-card"
+      [class.expandida]="isCategoriaExpandida(categoria.id)">
+      
+      <!-- HEADER DA CATEGORIA -->
+      <div 
+        class="categoria-header"
+        (click)="toggleCategoria(categoria.id)">
+        
+        <div class="categoria-info">
+          <div class="categoria-nome-section">
+            <i 
+              class="pi categoria-toggle-icon"
+              [class.pi-chevron-right]="!isCategoriaExpandida(categoria.id)"
+              [class.pi-chevron-down]="isCategoriaExpandida(categoria.id)">
+            </i>
+            <h3>{{ categoria.nome }}</h3>
+            <span class="categoria-contador">{{ getContadorProdutos(categoria) }}</span>
+            <span 
+              *ngIf="categoria.produtos && getProdutosFiltrados(categoria.produtos).length === 0 && categoria.produtos.length > 0"
+              class="badge-esgotado">
+              Todos esgotados
+            </span>
+          </div>
+          <p *ngIf="categoria.descricao" class="categoria-descricao">
+            {{ categoria.descricao }}
+          </p>
+        </div>
+
+        <div class="categoria-actions" (click)="$event.stopPropagation()">
+          <!-- Toggle Esgotar Tudo -->
+          <div class="esgotar-tudo-wrapper">
+            <label class="esgotar-tudo-label">Esgotar tudo</label>
+            <p-inputSwitch 
+              [ngModel]="false"
+              (ngModelChange)="esgotarTodosCategoria(categoria, $event, $event)"
+              pTooltip="Esgota todos os produtos desta categoria">
+            </p-inputSwitch>
+          </div>
+
+          <!-- Menu de Ações -->
+          <button 
+            pButton 
+            icon="pi pi-ellipsis-v" 
+            class="p-button-text p-button-rounded"
+            pTooltip="Ações da categoria"
+            [attr.aria-label]="'Ações da categoria ' + categoria.nome"
+            (click)="$event.stopPropagation()">
+          </button>
+          
+          <!-- Dropdown manual (simplificado - ideal seria usar p-menu) -->
+          <div class="actions-dropdown">
+            <button 
+              class="action-item"
+              (click)="editarCategoria(categoria, $event)">
+              <i class="pi pi-pencil"></i>
+              <span>Editar</span>
+            </button>
+            <button 
+              class="action-item"
+              (click)="duplicarCategoria(categoria, $event)">
+              <i class="pi pi-clone"></i>
+              <span>Duplicar</span>
+            </button>
+            <button 
+              class="action-item danger"
+              (click)="excluirCategoria(categoria, $event)">
+              <i class="pi pi-trash"></i>
+              <span>Excluir</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LISTA DE PRODUTOS (quando expandida) -->
+      <div 
+        *ngIf="isCategoriaExpandida(categoria.id)" 
+        class="produtos-list">
+        
+        <button 
+          pButton 
+          label="Adicionar Produto" 
+          icon="pi pi-plus"
+          class="p-button-outlined p-button-sm add-produto-btn"
+          (click)="criarProduto(categoria, $event)">
+        </button>
+
+        <!-- Empty State de Produtos -->
+        <div 
+          *ngIf="!categoria.produtos || categoria.produtos.length === 0"
+          class="empty-produtos">
+          <i class="pi pi-shopping-cart"></i>
+          <p>Nenhum produto nesta categoria</p>
+        </div>
+
+        <!-- Cards de Produtos -->
+        <div 
+          *ngFor="let produto of getProdutosFiltrados(categoria.produtos || [])" 
+          class="produto-card"
+          [class.esgotado]="!produto.disponivel">
+          
+          <div class="produto-imagem">
+            <img 
+              *ngIf="produto.imagem" 
+              [src]="produto.imagem" 
+              [alt]="produto.nome"
+              onerror="this.src='/assets/placeholder-food.png'" />
+            <div *ngIf="!produto.imagem" class="produto-placeholder">
+              <i class="pi pi-image"></i>
+            </div>
+            
+            <span 
+              *ngIf="!produto.disponivel" 
+              class="badge-esgotado-overlay">
+              Esgotado
+            </span>
+          </div>
+
+          <div class="produto-info">
+            <div class="produto-header">
+              <h4>{{ produto.nome }}</h4>
+              <span class="produto-preco">
+                {{ (produto._count?.gruposAdicionais || 0) > 0 ? 'A partir de ' : '' }}
+                {{ formatarPreco(produto.preco) }}
+              </span>
+            </div>
+
+            <p *ngIf="produto.descricao" class="produto-descricao">
+              {{ produto.descricao }}
+            </p>
+
+            <div class="produto-meta">
+              <span 
+                *ngIf="(produto._count?.gruposAdicionais || 0) > 0"
+                class="meta-tag">
+                <i class="pi pi-plus-circle"></i>
+                {{ produto._count?.gruposAdicionais }} grupo(s) de adicionais
+              </span>
+              <span 
+                *ngIf="produto.tempoPreparo"
+                class="meta-tag">
+                <i class="pi pi-clock"></i>
+                {{ produto.tempoPreparo }} min
+              </span>
+            </div>
+          </div>
+
+          <div class="produto-actions">
+            <!-- Toggle Esgotar -->
+            <div class="esgotar-wrapper">
+              <label class="esgotar-label">Esgotar</label>
+              <input 
+                type="checkbox"
+                class="esgotar-checkbox"
+                [checked]="!produto.disponivel"
+                (change)="toggleDisponibilidadeProduto(produto)" />
+            </div>
+
+            <!-- Menu de Ações do Produto -->
+            <div class="produto-actions-menu">
+              <button 
+                class="action-btn"
+                pTooltip="Editar produto"
+                (click)="editarProduto(produto, $event)">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button 
+                class="action-btn"
+                pTooltip="Duplicar produto"
+                (click)="duplicarProduto(produto, $event)">
+                <i class="pi pi-clone"></i>
+              </button>
+              <button 
+                class="action-btn"
+                pTooltip="Editar adicionais"
+                (click)="editarAdicionaisProduto(produto, $event)">
+                <i class="pi pi-plus-circle"></i>
+              </button>
+              <button 
+                class="action-btn danger"
+                pTooltip="Excluir produto"
+                (click)="excluirProduto(produto, $event)">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Componentes de Feedback -->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<!-- Modais -->
+<app-modal-categoria
+  [(visible)]="modalCategoriaVisible"
+  [categoria]="categoriaEmEdicao"
+  (salvou)="onCategoriaSalva($event)">
+</app-modal-categoria>
+
+<app-modal-produto
+  [(visible)]="modalProdutoVisible"
+  [produto]="produtoEmEdicao"
+  [categoriaId]="categoriaIdParaNovoProduto"
+  (salvou)="onProdutoSalvo($event)">
+</app-modal-produto>

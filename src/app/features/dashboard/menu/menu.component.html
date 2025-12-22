@@ -1,56 +1,28 @@
-<div class="p-4">
-  <div class="mb-4">
-    <h1 class="text-3xl font-bold text-900 m-0 mb-2">Gestor de Cardápio</h1>
-    <p class="text-600 m-0">Gerencie produtos, categorias e adicionais do seu cardápio</p>
+<div class="menu-container">
+  <div class="menu-tabs">
+    <button 
+      pButton 
+      type="button" 
+      label="Gestor" 
+      icon="pi pi-th-large"
+      routerLink="/dashboard/menu/gestor" 
+      routerLinkActive="p-button-primary"
+      [routerLinkActiveOptions]="{exact: true}"
+      class="p-button-text">
+    </button>
+    <button 
+      pButton 
+      type="button" 
+      label="Adicionais" 
+      icon="pi pi-plus-circle"
+      routerLink="/dashboard/menu/adicionais" 
+      routerLinkActive="p-button-primary"
+      [routerLinkActiveOptions]="{exact: true}"
+      class="p-button-text">
+    </button>
   </div>
 
-  <div class="grid">
-    <!-- Card Produtos -->
-    <div class="col-12 md:col-4">
-      <div class="surface-card p-4 border-round shadow-2 h-full cursor-pointer hover:shadow-4 transition-all transition-duration-300">
-        <div class="flex align-items-center mb-3">
-          <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 3rem; height: 3rem;">
-            <i class="pi pi-box text-blue-500 text-2xl"></i>
-          </div>
-          <span class="ml-3 text-xl font-semibold text-900">Produtos</span>
-        </div>
-        <p class="text-600 line-height-3 m-0 mb-3">
-          Cadastre e gerencie os produtos do seu cardápio
-        </p>
-        <button pButton label="Gerenciar Produtos" icon="pi pi-arrow-right" class="p-button-text p-button-sm"></button>
-      </div>
-    </div>
-
-    <!-- Card Categorias -->
-    <div class="col-12 md:col-4">
-      <div class="surface-card p-4 border-round shadow-2 h-full cursor-pointer hover:shadow-4 transition-all transition-duration-300">
-        <div class="flex align-items-center mb-3">
-          <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 3rem; height: 3rem;">
-            <i class="pi pi-tags text-orange-500 text-2xl"></i>
-          </div>
-          <span class="ml-3 text-xl font-semibold text-900">Categorias</span>
-        </div>
-        <p class="text-600 line-height-3 m-0 mb-3">
-          Organize seus produtos em categorias
-        </p>
-        <button pButton label="Gerenciar Categorias" icon="pi pi-arrow-right" class="p-button-text p-button-sm"></button>
-      </div>
-    </div>
-
-    <!-- Card Adicionais -->
-    <div class="col-12 md:col-4">
-      <div class="surface-card p-4 border-round shadow-2 h-full cursor-pointer hover:shadow-4 transition-all transition-duration-300">
-        <div class="flex align-items-center mb-3">
-          <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width: 3rem; height: 3rem;">
-            <i class="pi pi-plus-circle text-green-500 text-2xl"></i>
-          </div>
-          <span class="ml-3 text-xl font-semibold text-900">Adicionais</span>
-        </div>
-        <p class="text-600 line-height-3 m-0 mb-3">
-          Configure opções adicionais para seus produtos
-        </p>
-        <button pButton label="Gerenciar Adicionais" icon="pi pi-arrow-right" class="p-button-text p-button-sm"></button>
-      </div>
-    </div>
+  <div class="menu-content">
+    <router-outlet></router-outlet>
   </div>
 </div>

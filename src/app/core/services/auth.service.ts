@@ -85,19 +85,30 @@ export class AuthService {
   }
 
   /**
-   * Mock de recuperação de senha
+   * Solicita recuperação de senha
    */
   forgotPassword(email: string): Observable<{ message: string }> {
-    // Simula chamada ao backend
-    return of({ message: 'Link de recuperação enviado para o email' }).pipe(delay(500));
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/forgot-password`, { email }).pipe(
+      catchError(error => {
+        console.error('Erro ao solicitar recuperação de senha:', error);
+        return throwError(() => new Error(error.error?.message || 'Erro ao enviar email de recuperação'));
+      })
+    );
   }
 
   /**
-   * Mock de redefinição de senha
+   * Redefine a senha usando o token
    */
-  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
-    // Simula chamada ao backend
-    return of({ message: 'Senha redefinida com sucesso' }).pipe(delay(500));
+  resetPassword(token: string, novaSenha: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/reset-password`, {
+      token,
+      novaSenha
+    }).pipe(
+      catchError(error => {
+        console.error('Erro ao redefinir senha:', error);
+        return throwError(() => new Error(error.error?.message || 'Erro ao redefinir senha'));
+      })
+    );
   }
 
   /**

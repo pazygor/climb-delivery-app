@@ -266,7 +266,7 @@ Total do item: R$ 25,00 + R$ 3,00 + R$ 4,00 = R$ 32,00
 - [ ] Visualização do link público: `https://climbdelivery.app/{slug}`
 
 ---
-
+Configurações → Impressões (CORE)
 ### 4️⃣ Minha Conta
 
 **Status:** ✅ Tela básica implementada | 🔴 Precisa funcionalidades
@@ -315,7 +315,8 @@ Total do item: R$ 25,00 + R$ 3,00 + R$ 4,00 = R$ 32,00
 ---
 
 ## 🌐 Link Público do Restaurante (CORE) ⭐
-
+## Cliente final do restaurante:
+Deverá ter uma tabela somente para eles criando meio que um usuario logado baseado no nome, telefone e endereço sendo obrigatorios para fazer o pedido uma vez que ele fez o pedido eu ja crio ele no sistema e meio que logo ele no sistema sem ele perceber.
 **Status:** 🔴 Não implementado
 
 ### URL Pública
@@ -420,6 +421,9 @@ https://climbdelivery.app/{slug-do-restaurante}
 
 ---
 
+## Chatbot automação whatsapp.
+Para enviar cardapio e consultar status do pedido.
+ 
 ## 🧾 Impressão de Pedidos (CORE) ⭐
 
 **Status:** 🔴 Não implementado

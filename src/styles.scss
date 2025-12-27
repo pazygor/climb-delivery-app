@@ -7,12 +7,31 @@
 // Importar fontes do Google (Poppins)
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-// Variáveis globais
+// Variáveis globais - ClimbCodes Identity
 :root {
-  --primary-color: #3B82F6;
-  --surface-ground: #f8fafc;
-  --text-color: #1e293b;
-  --text-color-secondary: #64748b;
+  // Cores principais da identidade visual
+  --primary-color: #91DB24;          // Verde ClimbCodes
+  --primary-dark: #7BC41F;           // Verde escuro para hover
+  --secondary-color: #505050;        // Cinza ClimbCodes
+  --light-bg: #FFFFFF;               // Branco
+  
+  // Cores de superfície
+  --surface-ground: #F8F9FA;         // Fundo claro
+  --surface-card: #FFFFFF;           // Cards brancos
+  --surface-hover: #F1F3F4;          // Hover sutil
+  --surface-border: #E5E7EB;         // Bordas
+  
+  // Cores de texto
+  --text-color: #2D2D2D;             // Texto principal (mais escuro que cinza)
+  --text-color-secondary: #505050;   // Texto secundário (cinza)
+  --text-color-muted: #9CA3AF;       // Texto desabilitado
+  --text-on-primary: #FFFFFF;        // Texto sobre verde
+  
+  // Cores de feedback
+  --success-color: #91DB24;
+  --error-color: #EF4444;
+  --warning-color: #F59E0B;
+  --info-color: #3B82F6;
 }
 
 // Reset e estilos globais
@@ -36,16 +55,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #F8F9FA;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #91DB24;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #7BC41F;
 }
 
 // Utilidades de layout
@@ -59,4 +78,276 @@ body {
 
 .card-shadow-lg {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+// Personalização PrimeNG - ClimbCodes Identity
+::ng-deep {
+  // Botões Primários
+  .p-button {
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &.p-button-primary,
+    &.p-button-success {
+      background-color: #91DB24 !important;
+      border-color: #91DB24 !important;
+      color: #FFFFFF !important;
+
+      &:enabled:hover {
+        background-color: #7BC41F !important;
+        border-color: #7BC41F !important;
+        box-shadow: 0 4px 12px rgba(145, 219, 36, 0.25) !important;
+      }
+
+      &:enabled:active {
+        background-color: #6CAC1A !important;
+        border-color: #6CAC1A !important;
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(145, 219, 36, 0.5) !important;
+      }
+    }
+
+    &.p-button-outlined {
+      &.p-button-primary {
+        border-color: #91DB24 !important;
+        color: #91DB24 !important;
+
+        &:enabled:hover {
+          background-color: rgba(145, 219, 36, 0.1) !important;
+        }
+      }
+    }
+
+    &.p-button-text {
+      &.p-button-primary {
+        color: #91DB24 !important;
+
+        &:enabled:hover {
+          background-color: rgba(145, 219, 36, 0.1) !important;
+        }
+      }
+    }
+
+    &.p-button-secondary {
+      background-color: #505050 !important;
+      border-color: #505050 !important;
+
+      &:enabled:hover {
+        background-color: #2D2D2D !important;
+        border-color: #2D2D2D !important;
+      }
+    }
+  }
+
+  // Links
+  a {
+    color: #91DB24;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #7BC41F;
+    }
+  }
+
+  .text-primary {
+    color: #91DB24 !important;
+  }
+
+  // Inputs
+  .p-inputtext,
+  .p-dropdown,
+  .p-multiselect,
+  .p-inputnumber-input {
+    border-color: #E5E7EB;
+    transition: all 0.2s;
+
+    &:enabled:focus {
+      border-color: #91DB24 !important;
+      box-shadow: 0 0 0 0.2rem rgba(145, 219, 36, 0.2) !important;
+    }
+  }
+
+  // Checkboxes e Radio Buttons
+  .p-checkbox .p-checkbox-box.p-highlight,
+  .p-radiobutton .p-radiobutton-box.p-highlight {
+    border-color: #91DB24 !important;
+    background: #91DB24 !important;
+  }
+
+  .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover,
+  .p-radiobutton:not(.p-radiobutton-disabled) .p-radiobutton-box.p-highlight:hover {
+    border-color: #7BC41F !important;
+    background: #7BC41F !important;
+  }
+
+  .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover,
+  .p-radiobutton:not(.p-radiobutton-disabled) .p-radiobutton-box:hover {
+    border-color: #91DB24 !important;
+  }
+
+  // Toggle Switch
+  .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+    background: #91DB24 !important;
+  }
+
+  .p-inputswitch:not(.p-disabled):hover .p-inputswitch-slider {
+    background: #7BC41F !important;
+  }
+
+  // Tabela
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: #F8F9FA;
+      color: #2D2D2D;
+      border-bottom: 2px solid #E5E7EB;
+      font-weight: 600;
+    }
+
+    .p-datatable-tbody > tr {
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #F8F9FA !important;
+      }
+
+      &.p-highlight {
+        background: rgba(145, 219, 36, 0.1) !important;
+        color: #2D2D2D !important;
+      }
+    }
+  }
+
+  // Toast
+  .p-toast {
+    .p-toast-message {
+      &.p-toast-message-success {
+        .p-toast-message-icon,
+        .p-toast-icon-close {
+          color: #91DB24;
+        }
+        background: rgba(145, 219, 36, 0.1);
+        border-left: 4px solid #91DB24;
+      }
+    }
+  }
+
+  // Dialog
+  .p-dialog {
+    .p-dialog-header {
+      background: #FFFFFF;
+      border-bottom: 2px solid #E5E7EB;
+      color: #2D2D2D;
+    }
+
+    .p-dialog-content {
+      background: #FFFFFF;
+    }
+  }
+
+  // Menu e Dropdown
+  .p-menu,
+  .p-dropdown-panel,
+  .p-multiselect-panel {
+    .p-menuitem-link:hover,
+    .p-dropdown-item:hover,
+    .p-multiselect-item:hover {
+      background: rgba(145, 219, 36, 0.1) !important;
+      color: #2D2D2D !important;
+    }
+
+    .p-menuitem-link.p-highlight,
+    .p-dropdown-item.p-highlight,
+    .p-multiselect-item.p-highlight {
+      background: #91DB24 !important;
+      color: #FFFFFF !important;
+    }
+  }
+
+  // Progress Bar
+  .p-progressbar {
+    background: #E5E7EB;
+
+    .p-progressbar-value {
+      background: #91DB24;
+    }
+  }
+
+  // Spinner
+  .p-progress-spinner-circle {
+    stroke: #91DB24 !important;
+  }
+
+  // Badge
+  .p-badge {
+    &.p-badge-success {
+      background-color: #91DB24;
+    }
+
+    &.p-badge-secondary {
+      background-color: #505050;
+    }
+  }
+
+  // Chips
+  .p-chip {
+    background-color: rgba(145, 219, 36, 0.1);
+    color: #2D2D2D;
+
+    &.p-chip-removable .p-chip-remove-icon:hover {
+      color: #91DB24;
+    }
+  }
+
+  // Timeline
+  .p-timeline {
+    .p-timeline-event-marker {
+      border-color: #91DB24;
+      background-color: #91DB24;
+    }
+
+    .p-timeline-event-connector {
+      background-color: #E5E7EB;
+    }
+  }
+
+  // Tabs
+  .p-tabview {
+    .p-tabview-nav {
+      li {
+        .p-tabview-nav-link {
+          &:not(.p-disabled):focus {
+            box-shadow: inset 0 0 0 0.2rem rgba(145, 219, 36, 0.2) !important;
+          }
+        }
+
+        &.p-highlight .p-tabview-nav-link {
+          border-color: #91DB24 !important;
+          color: #91DB24 !important;
+        }
+      }
+    }
+  }
+
+  // Panel
+  .p-panel {
+    .p-panel-header {
+      background: #F8F9FA;
+      border: 1px solid #E5E7EB;
+      color: #2D2D2D;
+    }
+  }
+
+  // Card
+  .p-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(145, 219, 36, 0.1);
+    }
+  }
 }

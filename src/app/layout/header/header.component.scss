@@ -4,20 +4,23 @@
   left: 280px;
   right: 0;
   z-index: 99;
-  border-bottom: 1px solid var(--surface-border);
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .user-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #91DB24 0%, #7BC41F 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   font-size: 0.875rem;
+  border: 2px solid #E5E7EB;
 }
 
 .user-menu-container {

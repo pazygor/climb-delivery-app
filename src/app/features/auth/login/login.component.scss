@@ -1,14 +1,24 @@
 .login-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%);
+  
+  .login-logo {
+    width: 150px;
+    height: 150px;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
   
   .grid {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     border-radius: 1rem;
     overflow: hidden;
+    border: 1px solid #E5E7EB;
   }
 
   .bg-primary {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #91DB24 0%, #7BC41F 100%);
+    color: #FFFFFF;
   }
 }
 

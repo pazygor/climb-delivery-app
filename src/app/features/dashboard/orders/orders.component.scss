@@ -17,14 +17,24 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #91DB24;
     border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #7BC41F;
   }
 }
 
 .order-card {
-  border-left: 4px solid var(--primary-color);
+  border-left: 4px solid #91DB24;
   animation: slideInUp 0.3s ease-out;
+  background-color: #FFFFFF;
+  transition: all 0.2s;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(145, 219, 36, 0.15);
+  }
 }
 
 .badge {

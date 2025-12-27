@@ -10,8 +10,16 @@
 }
 
 .sidebar-header {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #505050 0%, #2D2D2D 100%);
   color: white;
+  border-bottom: 3px solid #91DB24;
+
+  .logo-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
 }
 
 .menu-item {
@@ -54,8 +62,9 @@
   }
 
   &.active {
-    background-color: var(--primary-color);
+    background-color: #91DB24;
     color: white;
+    border-left: 4px solid #7BC41F;
   }
 }
 
@@ -70,11 +79,19 @@
 }
 
 // Scrollbar personalizada para a sidebar
+.sidebar-container {
+  background-color: #FFFFFF;
+}
+
 .sidebar-container::-webkit-scrollbar {
   width: 6px;
 }
 
 .sidebar-container::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #91DB24;
   border-radius: 3px;
+}
+
+.sidebar-container::-webkit-scrollbar-thumb:hover {
+  background: #7BC41F;
 }

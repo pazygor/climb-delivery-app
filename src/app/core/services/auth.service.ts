@@ -42,10 +42,14 @@ export class AuthService {
         const role = this.mapPermissaoToRole(decodedToken.permissaoId);
         
         const user: User = {
-          id: decodedToken.sub.toString(),
+          id: decodedToken.sub,
           name: decodedToken.nome,
+          nome: decodedToken.nome,
           email: decodedToken.email,
           role: role,
+          empresaId: decodedToken.empresaId,
+          permissaoId: decodedToken.permissaoId,
+          ativo: true,
           establishmentId: decodedToken.empresaId?.toString()
         };
 

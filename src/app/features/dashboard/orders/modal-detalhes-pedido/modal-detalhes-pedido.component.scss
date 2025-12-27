@@ -1,0 +1,194 @@
+::ng-deep .pedido-modal {
+  .p-dialog-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600) 100%);
+    color: white;
+    padding: 1.5rem;
+
+    .p-dialog-header-icon {
+      color: white;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    h3 {
+      color: white;
+    }
+  }
+
+  .p-dialog-content {
+    padding: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .p-dialog-footer {
+    padding: 1rem 1.5rem;
+    background-color: var(--surface-50);
+    border-top: 1px solid var(--surface-border);
+  }
+}
+
+.pedido-detalhes {
+  padding: 1.5rem;
+
+  .surface-section {
+    background-color: var(--surface-0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  h4 {
+    color: var(--text-color);
+    font-size: 1rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+  }
+
+  .p-divider {
+    margin: 1rem 0;
+
+    &.p-divider-horizontal {
+      &::before {
+        border-top: 1px solid var(--surface-border);
+      }
+    }
+  }
+}
+
+// Modal de Cancelamento
+::ng-deep .modal-cancelamento {
+  .p-dialog-header {
+    background: linear-gradient(135deg, var(--red-500) 0%, var(--red-600) 100%);
+    color: white;
+    padding: 1.5rem;
+
+    .p-dialog-header-icon {
+      color: white;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    h3 {
+      color: white;
+      font-size: 1.25rem;
+    }
+
+    i {
+      color: white;
+    }
+  }
+
+  .p-dialog-content {
+    background-color: var(--surface-0);
+  }
+
+  .p-dialog-footer {
+    background-color: var(--surface-50);
+    border-top: 1px solid var(--surface-border);
+    padding: 1rem 1.5rem;
+  }
+
+  .field {
+    label {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+
+      .text-red-500 {
+        color: var(--red-500);
+      }
+    }
+
+    textarea {
+      border: 2px solid var(--surface-300);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.5;
+      transition: all 0.3s ease;
+      resize: vertical;
+      min-height: 100px;
+      
+      &::placeholder {
+        color: var(--text-color-secondary);
+        opacity: 0.6;
+      }
+
+      &:hover {
+        border-color: var(--surface-400);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(var(--primary-color), 0.25), 
+                    0 2px 8px rgba(0, 0, 0, 0.1);
+        background-color: white;
+      }
+
+      &:disabled {
+        background-color: var(--surface-100);
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+
+    small {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Animações
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+::ng-deep .pedido-modal .p-dialog {
+  animation: slideInDown 0.3s ease-out;
+}
+
+// Responsivo
+@media screen and (max-width: 768px) {
+  ::ng-deep .pedido-modal {
+    .p-dialog {
+      width: 95vw !important;
+      max-width: none !important;
+    }
+
+    .p-dialog-content {
+      max-height: 60vh;
+    }
+
+    .p-dialog-footer {
+      .flex {
+        flex-direction: column;
+        width: 100%;
+
+        > div {
+          width: 100%;
+        }
+
+        button {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .pedido-detalhes {
+    padding: 1rem;
+  }
+}

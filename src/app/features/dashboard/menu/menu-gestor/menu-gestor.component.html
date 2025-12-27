@@ -183,7 +183,7 @@
             <div class="produto-header">
               <h4>{{ produto.nome }}</h4>
               <span class="produto-preco">
-                {{ (produto._count?.gruposAdicionais || 0) > 0 ? 'A partir de ' : '' }}
+                {{ (produto._count?.gruposProduto || 0) > 0 ? 'A partir de ' : '' }}
                 {{ formatarPreco(produto.preco) }}
               </span>
             </div>
@@ -194,10 +194,10 @@
 
             <div class="produto-meta">
               <span 
-                *ngIf="(produto._count?.gruposAdicionais || 0) > 0"
+                *ngIf="(produto._count?.gruposProduto || 0) > 0"
                 class="meta-tag">
                 <i class="pi pi-plus-circle"></i>
-                {{ produto._count?.gruposAdicionais }} grupo(s) de adicionais
+                {{ produto._count?.gruposProduto }} grupo(s) de adicionais
               </span>
               <span 
                 *ngIf="produto.tempoPreparo"

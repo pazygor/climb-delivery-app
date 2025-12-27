@@ -16,9 +16,9 @@ export interface Produto {
   
   // Relacionamentos
   categoria?: Categoria;
-  gruposAdicionais?: ProdutoGrupoAdicional[];
+  gruposProduto?: ProdutoGrupoAdicional[];
   _count?: {
-    gruposAdicionais: number;
+    gruposProduto: number;
   };
 }
 

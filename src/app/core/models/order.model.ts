@@ -5,7 +5,15 @@ export interface Order {
   usuarioId: number;
   enderecoId: number;
   numero: string;
-  status: string;
+  status: {
+    id: number;
+    codigo: string;
+    nome: string;
+    descricao?: string;
+    cor?: string;
+    ordem: number;
+    ativo: boolean;
+  };
   subtotal: number;
   taxaEntrega: number;
   total: number;
@@ -100,7 +108,7 @@ export interface CreateOrderDto {
   usuarioId: number;
   enderecoId: number;
   numero: string;
-  status?: string;
+  statusId: number;
   subtotal: number;
   taxaEntrega: number;
   total: number;

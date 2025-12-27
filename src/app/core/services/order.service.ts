@@ -62,6 +62,14 @@ export class OrderService {
   }
 
   /**
+   * Cria um pedido manual (atendente registrando pedido de telefone/balcão)
+   * @param pedidoManual Dados do pedido manual
+   */
+  createManualOrder(pedidoManual: any): Observable<Order> {
+    return this.http.post<Order>(`${this.apiUrl}/manual`, pedidoManual);
+  }
+
+  /**
    * Atualiza o status de um pedido
    * @param id ID do pedido
    * @param status Novo status

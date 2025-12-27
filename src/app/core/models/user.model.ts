@@ -6,14 +6,20 @@ export enum UserRole {
 }
 
 export interface User {
-  id: string;
+  id: number;
   name: string;
+  nome: string;
   email: string;
   role: UserRole;
+  empresaId: number;
+  permissaoId: number;
   establishmentId?: string; // Opcional para SUPER_ADMIN
   avatar?: string;
   phone?: string;
+  telefone?: string;
+  ativo: boolean;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface LoginRequest {

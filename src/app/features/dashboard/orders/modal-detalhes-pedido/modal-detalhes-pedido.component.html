@@ -1,0 +1,315 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '90vw', maxWidth: '800px' }"
+  styleClass="pedido-modal"
+  (onHide)="fecharModal()"
+>
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center gap-3 w-full">
+      <i class="pi pi-shopping-bag text-2xl text-primary"></i>
+      <div class="flex-1">
+        <h3 class="m-0 text-xl font-bold">Pedido #{{ pedido?.numero }}</h3>
+        <p class="m-0 text-sm text-500" *ngIf="pedido?.createdAt">{{ formatarData(pedido!.createdAt) }}</p>
+      </div>
+      <p-tag 
+        *ngIf="pedido?.status"
+        [value]="pedido!.status.nome" 
+        [severity]="getStatusSeverity(pedido!.status.codigo)"
+      ></p-tag>
+    </div>
+  </ng-template>
+
+  <div *ngIf="pedido" class="pedido-detalhes">
+    <!-- Informações do Cliente -->
+    <div class="surface-section p-3 border-round mb-3">
+      <h4 class="mt-0 mb-3 flex align-items-center gap-2">
+        <i class="pi pi-user text-primary"></i>
+        Cliente
+      </h4>
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <p class="text-600 text-sm m-0 mb-1">Nome</p>
+          <p class="text-900 font-semibold m-0">{{ pedido.usuario?.nome || 'Cliente' }}</p>
+        </div>
+        <div class="col-12 md:col-6" *ngIf="pedido.usuario?.telefone">
+          <p class="text-600 text-sm m-0 mb-1">Telefone</p>
+          <p class="text-900 font-semibold m-0">
+            <i class="pi pi-phone mr-1"></i>
+            {{ pedido.usuario!.telefone }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Endereço de Entrega -->
+    <div class="surface-section p-3 border-round mb-3">
+      <h4 class="mt-0 mb-3 flex align-items-center gap-2">
+        <i class="pi pi-map-marker text-primary"></i>
+        {{ pedido.endereco ? 'Endereço de Entrega' : 'Tipo de Pedido' }}
+      </h4>
+      <div *ngIf="pedido.endereco">
+        <p class="text-900 m-0 mb-2">{{ getDeliveryAddress() }}</p>
+        <p class="text-600 text-sm m-0" *ngIf="pedido.endereco.cep">
+          CEP: {{ pedido.endereco.cep }}
+        </p>
+      </div>
+      <div *ngIf="!pedido.endereco">
+        <p class="text-900 font-semibold m-0">
+          <i class="pi pi-shopping-bag mr-2"></i>
+          Retirada no Local
+        </p>
+      </div>
+    </div>
+
+    <!-- Itens do Pedido -->
+    <div class="surface-section p-3 border-round mb-3">
+      <h4 class="mt-0 mb-3 flex align-items-center gap-2">
+        <i class="pi pi-list text-primary"></i>
+        Itens ({{ getTotalItens() }} {{ getTotalItens() === 1 ? 'item' : 'itens' }})
+      </h4>
+      
+      <div *ngIf="pedido.itens && pedido.itens.length > 0">
+        <div *ngFor="let item of pedido.itens; let last = last" class="mb-3">
+          <div class="flex justify-content-between align-items-start mb-2">
+            <div class="flex-1">
+              <p class="text-900 font-semibold m-0 mb-1">
+                {{ item.quantidade }}x {{ item.produto?.nome || 'Produto' }}
+              </p>
+              <p class="text-600 text-sm m-0">
+                {{ orderService.formatCurrency(item.precoUnitario) }} cada
+              </p>
+            </div>
+            <p class="text-900 font-bold m-0">
+              {{ orderService.formatCurrency(item.subtotal) }}
+            </p>
+          </div>
+
+          <!-- Adicionais -->
+          <div *ngIf="item.adicionais && item.adicionais.length > 0" class="ml-3 mb-2">
+            <div *ngFor="let adicional of item.adicionais" class="text-sm text-600 mb-1">
+              <i class="pi pi-plus text-xs mr-1"></i>
+              {{ adicional.quantidade }}x {{ adicional.adicional?.nome }}
+              <span class="text-500">
+                ({{ orderService.formatCurrency(adicional.preco) }})
+              </span>
+            </div>
+          </div>
+
+          <!-- Observações -->
+          <div *ngIf="item.observacoes" class="ml-3 p-2 bg-yellow-50 border-left-3 border-yellow-500 border-round-sm">
+            <p class="text-sm text-700 m-0">
+              <i class="pi pi-info-circle mr-1"></i>
+              <strong>Obs:</strong> {{ item.observacoes }}
+            </p>
+          </div>
+
+          <p-divider *ngIf="!last"></p-divider>
+        </div>
+      </div>
+
+      <div *ngIf="!pedido.itens || pedido.itens.length === 0" class="text-center p-3">
+        <p class="text-500 m-0">Nenhum item no pedido</p>
+      </div>
+    </div>
+
+    <!-- Observações Gerais -->
+    <div *ngIf="pedido.observacoes" class="surface-section p-3 border-round mb-3">
+      <h4 class="mt-0 mb-3 flex align-items-center gap-2">
+        <i class="pi pi-comment text-primary"></i>
+        Observações do Pedido
+      </h4>
+      <p class="text-900 m-0">{{ pedido.observacoes }}</p>
+    </div>
+
+    <!-- Resumo Financeiro -->
+    <div class="surface-section p-3 border-round mb-3">
+      <h4 class="mt-0 mb-3 flex align-items-center gap-2">
+        <i class="pi pi-dollar text-primary"></i>
+        Resumo
+      </h4>
+      
+      <div class="flex justify-content-between mb-2">
+        <span class="text-600">Subtotal</span>
+        <span class="text-900 font-semibold">{{ orderService.formatCurrency(pedido.subtotal) }}</span>
+      </div>
+      
+      <div class="flex justify-content-between mb-2">
+        <span class="text-600">Taxa de Entrega</span>
+        <span class="text-900 font-semibold">{{ orderService.formatCurrency(pedido.taxaEntrega) }}</span>
+      </div>
+      
+      <p-divider></p-divider>
+      
+      <div class="flex justify-content-between align-items-center">
+        <span class="text-900 font-bold text-lg">Total</span>
+        <span class="text-primary font-bold text-2xl">{{ orderService.formatCurrency(pedido.total) }}</span>
+      </div>
+
+      <p-divider></p-divider>
+
+      <div class="flex justify-content-between align-items-center">
+        <span class="text-600">Forma de Pagamento</span>
+        <span class="text-900 font-semibold">{{ pedido.formaPagamento }}</span>
+      </div>
+
+      <div *ngIf="pedido.tempoEstimado" class="flex justify-content-between align-items-center mt-2">
+        <span class="text-600">Tempo Estimado</span>
+        <span class="text-900 font-semibold">
+          <i class="pi pi-clock mr-1"></i>
+          {{ pedido.tempoEstimado }} min
+        </span>
+      </div>
+    </div>
+
+    <!-- Motivo de Cancelamento -->
+    <div *ngIf="pedido.motivoCancelamento" class="surface-section p-3 border-round mb-3 bg-red-50 border-red-500 border-1">
+      <h4 class="mt-0 mb-2 flex align-items-center gap-2 text-red-700">
+        <i class="pi pi-times-circle"></i>
+        Motivo do Cancelamento
+      </h4>
+      <p class="text-red-900 m-0">{{ pedido.motivoCancelamento }}</p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex flex-wrap gap-2 justify-content-between w-full">
+      <!-- Botões de Ação Principal -->
+      <div class="flex flex-wrap gap-2 flex-1">
+        <button 
+          *ngIf="podeAceitar()"
+          pButton 
+          label="Aceitar Pedido"
+          icon="pi pi-check"
+          class="p-button-success"
+          [loading]="processando"
+          (click)="aceitarPedido()"
+        ></button>
+
+        <button 
+          *ngIf="podeMarcarComoPreparando()"
+          pButton 
+          label="Iniciar Preparo"
+          icon="pi pi-play"
+          class="p-button-info"
+          [loading]="processando"
+          (click)="marcarComoPreparando()"
+        ></button>
+
+        <button 
+          *ngIf="podeMarcarComoPronto()"
+          pButton 
+          label="Marcar como Pronto"
+          icon="pi pi-check-circle"
+          class="p-button-success"
+          [loading]="processando"
+          (click)="marcarComoPronto()"
+        ></button>
+
+        <button 
+          *ngIf="podeMarcarComoEntregue()"
+          pButton 
+          label="Finalizar Pedido"
+          icon="pi pi-check"
+          class="p-button-success"
+          [loading]="processando"
+          (click)="marcarComoEntregue()"
+        ></button>
+
+        <button 
+          *ngIf="podeCancelar()"
+          pButton 
+          label="Cancelar Pedido"
+          icon="pi pi-times"
+          class="p-button-danger p-button-outlined"
+          [disabled]="processando"
+          (click)="abrirModalCancelamento()"
+        ></button>
+      </div>
+
+      <!-- Botões Secundários -->
+      <div class="flex gap-2">
+        <button 
+          pButton 
+          label="Reimprimir"
+          icon="pi pi-print"
+          class="p-button-outlined"
+          [disabled]="processando"
+          (click)="reimprimir()"
+        ></button>
+
+        <button 
+          pButton 
+          label="Fechar"
+          icon="pi pi-times"
+          class="p-button-text"
+          [disabled]="processando"
+          (click)="fecharModal()"
+        ></button>
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal de Confirmação de Cancelamento -->
+<p-dialog
+  [(visible)]="modalCancelamentoVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '90vw', maxWidth: '500px' }"
+  styleClass="modal-cancelamento"
+  (onHide)="fecharModalCancelamento()"
+>
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center gap-2">
+      <i class="pi pi-exclamation-triangle text-2xl" style="color: var(--red-500)"></i>
+      <h3 class="m-0">Cancelar Pedido #{{ pedido?.numero }}</h3>
+    </div>
+  </ng-template>
+
+  <div class="p-3">
+    <p class="text-700 mb-3">
+      Você está prestes a <strong>cancelar</strong> este pedido. Esta ação não poderá ser desfeita.
+    </p>
+    
+    <div class="field">
+      <label for="motivo" class="block text-900 font-semibold mb-2">
+        Motivo do cancelamento <span class="text-red-500">*</span>
+      </label>
+      <textarea
+        id="motivo"
+        [(ngModel)]="motivoCancelamento"
+        rows="4"
+        placeholder="Ex: Cliente desistiu, erro no pedido, item indisponível..."
+        class="w-full p-3 border-round"
+        [disabled]="processando"
+      ></textarea>
+      <small class="text-500">Mínimo de 3 caracteres</small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <button
+        pButton
+        label="Voltar"
+        icon="pi pi-arrow-left"
+        class="p-button-text"
+        [disabled]="processando"
+        (click)="fecharModalCancelamento()"
+      ></button>
+      <button
+        pButton
+        label="Confirmar Cancelamento"
+        icon="pi pi-times"
+        class="p-button-danger"
+        [disabled]="!motivoCancelamento.trim() || motivoCancelamento.trim().length < 3 || processando"
+        [loading]="processando"
+        (click)="confirmarCancelamento()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

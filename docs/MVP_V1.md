@@ -26,6 +26,13 @@ Entregar um sistema SaaS funcional para restaurantes, permitindo:
 
 **Status:** ✅ Tela básica implementada | 🔴 Precisa melhorias
 
+**Header da Tela:**
+- [ ] Botão **"Atualizar"** - Recarrega a lista de pedidos
+- [ ] Botão **"+ Novo Pedido"** - Abre modal para criar pedido manualmente
+  - [ ] Modal deve conter formulário completo de pedido
+  - [ ] Permite selecionar cliente, produtos, adicionais, forma de pagamento
+  - [ ] Ao criar, pedido entra com status `ANALISE`
+
 **Funcionalidades:**
 - [ ] Listagem de pedidos em tempo real
 - [ ] Filtros por status (Análise, Preparando, Pronto, Entregue, Cancelado)
@@ -43,6 +50,7 @@ Entregar um sistema SaaS funcional para restaurantes, permitindo:
 
 **Regras de Negócio:**
 - Novos pedidos entram com status `ANALISE`
+- Pedidos criados manualmente via "+ Novo Pedido" também entram em `ANALISE`
 - Apenas pedidos em `ANALISE` podem ser aceitos ou cancelados
 - Fluxo: `ANALISE` → `PREPARANDO` → `PRONTO` → `ENTREGUE`
 - Pedidos aparecem em ordem cronológica (mais recentes primeiro)

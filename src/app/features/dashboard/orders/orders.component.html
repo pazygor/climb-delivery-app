@@ -2,17 +2,35 @@
   <!-- Cabeçalho -->
   <div class="flex align-items-center justify-content-between mb-4">
     <div>
-      <h1 class="text-3xl font-bold text-900 m-0 mb-2">Meus Pedidos</h1>
+      <h1 class="text-3xl font-bold text-900 m-0 mb-2">
+        Meus Pedidos
+        <span 
+          *ngIf="getPedidosPendentesCount() > 0" 
+          class="p-badge p-badge-danger ml-2"
+          style="vertical-align: middle;"
+        >
+          {{ getPedidosPendentesCount() }}
+        </span>
+      </h1>
       <p class="text-600 m-0">Gerencie os pedidos em tempo real</p>
     </div>
-    <button 
-      pButton 
-      icon="pi pi-refresh" 
-      label="Atualizar"
-      class="p-button-outlined"
-      (click)="loadOrders()"
-      [loading]="loading"
-    ></button>
+    <div class="flex gap-2">
+      <button 
+        pButton 
+        icon="pi pi-refresh" 
+        label="Atualizar"
+        class="p-button-outlined"
+        (click)="loadOrders()"
+        [loading]="loading"
+      ></button>
+      <button 
+        pButton 
+        icon="pi pi-plus" 
+        label="Novo Pedido"
+        class="p-button-success"
+        (click)="abrirModalNovoPedido()"
+      ></button>
+    </div>
   </div>
 
   <!-- Grid de Colunas de Status -->
@@ -36,6 +54,7 @@
         <div 
           *ngFor="let order of ordersByColumn[column.title]" 
           class="order-card surface-card p-3 mb-3 border-round shadow-2 cursor-pointer hover:shadow-4 transition-all transition-duration-300"
+          (click)="abrirDetalhesPedido(order)"
         >
           <!-- Cabeçalho do Pedido -->
           <div class="flex align-items-center justify-content-between mb-3">
@@ -100,9 +119,20 @@
                 class="p-button-sm p-button-success"
                 [pTooltip]="'Mover para ' + columns[columns.indexOf(column) + 1].title"
                 tooltipPosition="top"
-                (click)="moveToNextStatus(order, column)"
+                (click)="moveToNextStatus(order, column); $event.stopPropagation()"
               ></button>
             </div>
+          </div>
+
+          <!-- Botão Finalizar Pedido (apenas na coluna Pronto para Entrega) -->
+          <div *ngIf="column.title === 'Pronto para Entrega'" class="mt-3">
+            <button 
+              pButton 
+              label="Finalizar Pedido"
+              icon="pi pi-check"
+              class="p-button-success w-full btn-finalizar-pedido"
+              (click)="finalizarPedido(order); $event.stopPropagation()"
+            ></button>
           </div>
 
           <!-- Tempo Estimado -->
@@ -125,9 +155,17 @@
       </div>
     </div>
   </div>
-
-  <!-- Loading Overlay -->
-  <div class="loading-overlay" *ngIf="loading">
-    <i class="pi pi-spin pi-spinner text-6xl text-primary"></i>
-  </div>
 </div>
+
+<!-- Modal Novo Pedido -->
+<app-modal-novo-pedido
+  [(visible)]="modalNovoPedidoVisible"
+  (pedidoCriado)="onPedidoCriado()">
+</app-modal-novo-pedido>
+
+<!-- Modal Detalhes do Pedido -->
+<app-modal-detalhes-pedido
+  [(visible)]="modalDetalhesPedidoVisible"
+  [pedido]="pedidoSelecionado"
+  (pedidoAtualizado)="onPedidoAtualizado()">
+</app-modal-detalhes-pedido>

@@ -3,19 +3,26 @@ import { CommonModule } from '@angular/common';
 import { OrderService } from '../../../core/services/order.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Order, OrderStatusColumn } from '../../../core/models/order.model';
+import { ModalNovoPedidoComponent } from './modal-novo-pedido/modal-novo-pedido.component';
+import { ModalDetalhesPedidoComponent } from './modal-detalhes-pedido/modal-detalhes-pedido.component';
 
 // PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, ButtonModule, TooltipModule],
+  imports: [CommonModule, ButtonModule, TooltipModule, BadgeModule, ModalNovoPedidoComponent, ModalDetalhesPedidoComponent],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss'
 })
 export class OrdersComponent implements OnInit {
+  modalNovoPedidoVisible = false;
+  modalDetalhesPedidoVisible = false;
+  pedidoSelecionado: Order | null = null;
+  
   columns: OrderStatusColumn[] = [
     {
       title: 'Em Análise',
@@ -68,7 +75,7 @@ export class OrdersComponent implements OnInit {
         // Organiza os pedidos por coluna baseado no status
         this.columns.forEach(column => {
           this.ordersByColumn[column.title] = orders.filter(order => 
-            column.status.includes(order.status)
+            column.status.includes(order.status?.codigo || '')
           );
         });
         this.loading = false;
@@ -111,6 +118,19 @@ export class OrdersComponent implements OnInit {
     }
   }
 
+  finalizarPedido(order: Order): void {
+    // Atualiza o status para "entregue"
+    this.orderService.updateOrderStatus(order.id, 'entregue').subscribe({
+      next: () => {
+        this.loadOrders();
+      },
+      error: (error) => {
+        console.error('Erro ao finalizar pedido:', error);
+        alert('Erro ao finalizar pedido. Por favor, tente novamente.');
+      }
+    });
+  }
+
   getTotalItems(order: Order): number {
     if (!order.itens) {
       return order._count?.itens || 0;
@@ -136,5 +156,38 @@ export class OrdersComponent implements OnInit {
   // Determina se é delivery ou retirada baseado no endereço
   getOrderType(order: Order): 'delivery' | 'pickup' {
     return order.endereco ? 'delivery' : 'pickup';
+  }
+
+  /**
+   * Abre modal para criar novo pedido manualmente
+   */
+  abrirModalNovoPedido(): void {
+    this.modalNovoPedidoVisible = true;
+  }
+
+  onPedidoCriado(): void {
+    this.modalNovoPedidoVisible = false;
+    this.loadOrders();
+  }
+
+  /**
+   * Abre modal de detalhes do pedido
+   */
+  abrirDetalhesPedido(pedido: Order): void {
+    this.pedidoSelecionado = pedido;
+    this.modalDetalhesPedidoVisible = true;
+  }
+
+  onPedidoAtualizado(): void {
+    this.loadOrders();
+  }
+
+  /**
+   * Retorna a quantidade total de pedidos pendentes (em análise)
+   */
+  getPedidosPendentesCount(): number {
+    const pendentesColumn = this.columns.find(col => col.status.includes('pendente'));
+    if (!pendentesColumn) return 0;
+    return this.ordersByColumn[pendentesColumn.title]?.length || 0;
   }
 }

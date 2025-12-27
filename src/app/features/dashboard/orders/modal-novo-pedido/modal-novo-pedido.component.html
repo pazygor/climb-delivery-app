@@ -1,0 +1,347 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="modal-novo-pedido"
+  (onShow)="onShow()"
+  (onHide)="fecharModal()">
+  
+  <ng-template pTemplate="header">
+    <div class="modal-header-content">
+      <h3>Novo Pedido</h3>
+      <div class="etapa-indicator">
+        <span class="etapa-label">{{ getEtapaLabel() }}</span>
+        <span class="etapa-numero">Etapa {{ etapaAtual }} de 3</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- ETAPA 1: DADOS DO CLIENTE -->
+  <div *ngIf="etapaAtual === 1" class="etapa-container">
+    <div class="form-section">
+      <h4>Dados do Cliente</h4>
+      
+      <div class="form-field">
+        <label for="nome">Nome do Cliente *</label>
+        <input
+          id="nome"
+          type="text"
+          pInputText
+          [(ngModel)]="cliente.nome"
+          placeholder="Digite o nome do cliente"
+          class="w-full" />
+      </div>
+
+      <div class="form-field">
+        <label for="telefone">Telefone *</label>
+        <input
+          id="telefone"
+          type="text"
+          pInputText
+          [(ngModel)]="cliente.telefone"
+          placeholder="(00) 00000-0000"
+          class="w-full" />
+      </div>
+
+      <div class="form-field">
+        <label for="endereco">Endereço de Entrega *</label>
+        <input
+          id="endereco"
+          type="text"
+          pInputText
+          [(ngModel)]="cliente.endereco"
+          placeholder="Rua, número, complemento, bairro"
+          class="w-full" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPA 2: PRODUTOS -->
+  <div *ngIf="etapaAtual === 2" class="etapa-container">
+    
+    <!-- Modo de configuração de produto -->
+    <div *ngIf="produtoEmConfiguracao" class="configuracao-produto">
+      <div class="config-header">
+        <h4>{{ produtoEmConfiguracao.nome }}</h4>
+        <button
+          pButton
+          icon="pi pi-times"
+          class="p-button-text p-button-sm"
+          (click)="cancelarConfiguracao()"></button>
+      </div>
+
+      <div class="config-body">
+        <!-- Quantidade -->
+        <div class="form-field">
+          <label>Quantidade</label>
+          <p-inputNumber
+            [(ngModel)]="quantidadeAtual"
+            [min]="1"
+            [max]="99"
+            [showButtons]="true"
+            buttonLayout="horizontal"
+            decrementButtonClass="p-button-secondary"
+            incrementButtonClass="p-button-secondary"
+            incrementButtonIcon="pi pi-plus"
+            decrementButtonIcon="pi pi-minus"
+            class="w-full">
+          </p-inputNumber>
+        </div>
+
+        <!-- Grupos de Adicionais -->
+        <div *ngIf="produtoEmConfiguracao.gruposAdicionais && produtoEmConfiguracao.gruposAdicionais.length > 0"
+          class="grupos-adicionais">
+          <div *ngFor="let grupo of produtoEmConfiguracao.gruposAdicionais; let i = index" class="grupo-adicional">
+            <div class="grupo-header">
+              <h5>{{ grupo.nome }}</h5>
+              <span class="grupo-info">
+                {{ grupo.tipoSelecao === 'RADIO' ? 'Escolha 1' : 
+                   'Escolha até ' + grupo.maximoSelecao }}
+              </span>
+            </div>
+            
+            <div class="adicionais-list">
+              <div *ngFor="let adicional of grupo.adicionais" class="adicional-item">
+                <div class="adicional-checkbox">
+                  <input
+                    type="checkbox"
+                    [id]="'adicional-' + adicional.id"
+                    [checked]="isAdicionalSelecionado(i, adicional.id)"
+                    (change)="toggleAdicional(i, adicional, grupo)" />
+                  <label [for]="'adicional-' + adicional.id">
+                    {{ adicional.nome }}
+                    <span class="adicional-valor">+ R$ {{ adicional.preco.toFixed(2) }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Observação -->
+        <div class="form-field">
+          <label for="observacao">Observação</label>
+          <input
+            id="observacao"
+            type="text"
+            pInputText
+            [(ngModel)]="observacaoAtual"
+            placeholder="Ex: Sem cebola, bem passado..."
+            class="w-full" />
+        </div>
+
+        <!-- Subtotal -->
+        <div class="subtotal-info">
+          <span>Subtotal:</span>
+          <strong>R$ {{ calcularSubtotalProduto().toFixed(2) }}</strong>
+        </div>
+
+        <!-- Botão Adicionar -->
+        <button
+          pButton
+          label="Adicionar ao Pedido"
+          icon="pi pi-check"
+          class="p-button-success w-full"
+          (click)="adicionarProdutoAoPedido()"></button>
+      </div>
+    </div>
+
+    <!-- Modo de seleção de produtos -->
+    <div *ngIf="!produtoEmConfiguracao" class="selecao-produtos">
+      
+      <!-- Lista de produtos adicionados -->
+      <div *ngIf="produtosSelecionados.length > 0" class="produtos-adicionados">
+        <h4>Produtos no Pedido ({{ produtosSelecionados.length }})</h4>
+        <div class="produto-adicionado" *ngFor="let produto of produtosSelecionados; let i = index">
+          <div class="produto-info">
+            <div class="produto-nome">{{ produto.quantidade }}x {{ produto.nome }}</div>
+            <div class="produto-detalhes">
+              <span *ngIf="produto.gruposAdicionais.length > 0" class="adicionais-resumo">
+                Adicionais:
+                <span *ngFor="let grupo of produto.gruposAdicionais">
+                  <span *ngFor="let adicional of grupo.adicionais">
+                    {{ adicional.nome }}
+                  </span>
+                </span>
+              </span>
+              <span *ngIf="produto.observacao" class="observacao-resumo">
+                Obs: {{ produto.observacao }}
+              </span>
+            </div>
+          </div>
+          <div class="produto-acoes">
+            <span class="produto-subtotal">R$ {{ produto.subtotal.toFixed(2) }}</span>
+            <button
+              pButton
+              icon="pi pi-pencil"
+              class="p-button-text p-button-sm"
+              (click)="editarProduto(i)"></button>
+            <button
+              pButton
+              icon="pi pi-trash"
+              class="p-button-text p-button-sm p-button-danger"
+              (click)="removerProduto(i)"></button>
+          </div>
+        </div>
+        <div class="total-parcial">
+          <span>Total:</span>
+          <strong>R$ {{ calcularTotal().toFixed(2) }}</strong>
+        </div>
+      </div>
+
+      <!-- Catálogo de produtos -->
+      <div class="catalogo-produtos">
+        <h4>Adicionar Produtos</h4>
+        <div *ngFor="let categoria of categorias" class="categoria-grupo">
+          <h5 class="categoria-titulo">{{ categoria.nome }}</h5>
+          <div class="produtos-grid">
+            <div *ngFor="let produto of categoria.produtos" 
+              class="produto-card"
+              (click)="selecionarProduto(produto)">
+              <div *ngIf="produto.imagem" class="produto-imagem">
+                <img [src]="produto.imagem" [alt]="produto.nome" />
+              </div>
+              <div class="produto-card-info">
+                <div class="produto-card-nome">{{ produto.nome }}</div>
+                <div class="produto-card-preco">R$ {{ produto.preco.toFixed(2) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPA 3: PAGAMENTO -->
+  <div *ngIf="etapaAtual === 3" class="etapa-container">
+    <div class="form-section">
+      <h4>Forma de Pagamento</h4>
+      
+      <div class="formas-pagamento">
+        <div 
+          class="forma-pagamento-item"
+          [class.selected]="formaPagamento === 'PIX'"
+          (click)="formaPagamento = 'PIX'; onFormaPagamentoChange()">
+          <i class="pi pi-qrcode"></i>
+          <span>PIX</span>
+        </div>
+        <div 
+          class="forma-pagamento-item"
+          [class.selected]="formaPagamento === 'CARTAO'"
+          (click)="formaPagamento = 'CARTAO'; onFormaPagamentoChange()">
+          <i class="pi pi-credit-card"></i>
+          <span>Cartão</span>
+        </div>
+        <div 
+          class="forma-pagamento-item"
+          [class.selected]="formaPagamento === 'DINHEIRO'"
+          (click)="formaPagamento = 'DINHEIRO'; onFormaPagamentoChange()">
+          <i class="pi pi-money-bill"></i>
+          <span>Dinheiro</span>
+        </div>
+      </div>
+
+      <!-- Troco para dinheiro -->
+      <div *ngIf="formaPagamento === 'DINHEIRO'" class="troco-section">
+        <div class="form-field">
+          <label>
+            <input type="checkbox" [(ngModel)]="trocoNecessario" />
+            Precisa de troco
+          </label>
+        </div>
+        
+        <div *ngIf="trocoNecessario" class="form-field">
+          <label for="valorTroco">Troco para quanto?</label>
+          <p-inputNumber
+            id="valorTroco"
+            [(ngModel)]="valorTroco"
+            mode="currency"
+            currency="BRL"
+            locale="pt-BR"
+            [min]="calcularTotal()"
+            class="w-full">
+          </p-inputNumber>
+        </div>
+      </div>
+
+      <!-- Resumo do pedido -->
+      <div class="resumo-pedido">
+        <h4>Resumo do Pedido</h4>
+        
+        <div class="resumo-item">
+          <span>Cliente:</span>
+          <span>{{ cliente.nome }}</span>
+        </div>
+        <div class="resumo-item">
+          <span>Telefone:</span>
+          <span>{{ cliente.telefone }}</span>
+        </div>
+        <div class="resumo-item">
+          <span>Endereço:</span>
+          <span>{{ cliente.endereco }}</span>
+        </div>
+        <div class="resumo-divider"></div>
+        <div class="resumo-item">
+          <span>Itens:</span>
+          <span>{{ produtosSelecionados.length }} produto(s)</span>
+        </div>
+        <div class="resumo-item resumo-total">
+          <span>Total:</span>
+          <strong>R$ {{ calcularTotal().toFixed(2) }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer-content">
+      <button
+        *ngIf="etapaAtual > 1"
+        pButton
+        label="Voltar"
+        icon="pi pi-arrow-left"
+        class="p-button-text"
+        (click)="voltarEtapa()"
+        [disabled]="salvando"></button>
+      
+      <div class="footer-right">
+        <button
+          pButton
+          label="Cancelar"
+          class="p-button-text"
+          (click)="fecharModal()"
+          [disabled]="salvando"></button>
+        
+        <button
+          *ngIf="etapaAtual === 1"
+          pButton
+          label="Próximo"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          (click)="proximaEtapa()"
+          [disabled]="!validarCliente()"></button>
+        
+        <button
+          *ngIf="etapaAtual === 2"
+          pButton
+          label="Próximo"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          (click)="proximaEtapa()"
+          [disabled]="produtosSelecionados.length === 0"></button>
+        
+        <button
+          *ngIf="etapaAtual === 3"
+          pButton
+          label="Confirmar Pedido"
+          icon="pi pi-check"
+          class="p-button-success"
+          (click)="salvarPedido()"
+          [disabled]="salvando"
+          [loading]="salvando"></button>
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>

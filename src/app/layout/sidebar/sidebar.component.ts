@@ -69,11 +69,11 @@ export class SidebarComponent implements OnInit {
         icon: 'pi pi-user',
         routerLink: '/dashboard/account'
       },
-      // {
-      //   label: 'Entregadores',
-      //   icon: 'pi pi-car',
-      //   routerLink: '/dashboard/delivery'
-      // },
+      {
+        label: 'Entregadores',
+        icon: 'pi pi-car',
+        routerLink: '/dashboard/delivery'
+      },
       {
         label: 'Relatórios',
         icon: 'pi pi-chart-bar',

@@ -1,117 +1,201 @@
 <div class="p-4">
+  <p-toast></p-toast>
+  
   <div class="mb-4">
     <h1 class="text-3xl font-bold text-900 m-0 mb-2">Relatórios de Pedidos</h1>
     <p class="text-600 m-0">Visualize estatísticas e métricas dos seus pedidos</p>
   </div>
 
-  <!-- Cards de Estatísticas -->
-  <div class="grid mb-4">
-    <div class="col-12 md:col-6 lg:col-3">
-      <div class="surface-card p-3 border-round shadow-2">
-        <div class="flex align-items-center justify-content-between mb-2">
-          <span class="text-600 font-medium">Pedidos Hoje</span>
-          <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem;">
-            <i class="pi pi-shopping-cart text-blue-500"></i>
+  <!-- Filtro de Data -->
+  <div class="surface-card p-4 border-round shadow-2 mb-4">
+    <div class="flex flex-wrap align-items-end gap-3">
+      <div class="flex-1" style="min-width: 250px;">
+        <label for="dateRange" class="block text-900 font-medium mb-2">
+          Período (máximo 31 dias)
+        </label>
+        <p-datepicker
+          [(ngModel)]="dateRange"
+          id="dateRange"
+          selectionMode="range"
+          [maxDate]="maxDate"
+          [showIcon]="true"
+          placeholder="Selecione o período"
+          dateFormat="dd/mm/yy"
+          [readonlyInput]="true"
+          styleClass="w-full"
+        ></p-datepicker>
+      </div>
+      <div>
+        <p-button
+          [label]="loading ? 'Gerando Relatório...' : 'Gerar Relatório'"
+          icon="pi pi-search"
+          [loading]="loading"
+          [disabled]="loading"
+          (onClick)="loadReport()"
+        ></p-button>
+      </div>
+    </div>
+    <p-message 
+      *ngIf="dateRange && dateRange.length === 2"
+      severity="info" 
+      [text]="'Período selecionado: ' + formatDate(dateRange[0].toISOString()) + ' a ' + formatDate(dateRange[1].toISOString())"
+      styleClass="mt-3"
+    ></p-message>
+  </div>
+
+  <div *ngIf="reportData">
+    <!-- Cards de Estatísticas -->
+    <div class="grid mb-4">
+      <div class="col-12 md:col-6 lg:col-3">
+        <div class="surface-card p-3 border-round shadow-2">
+          <div class="flex align-items-center justify-content-between mb-2">
+            <span class="text-600 font-medium">Total de Pedidos</span>
+            <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem;">
+              <i class="pi pi-shopping-cart text-blue-500"></i>
+            </div>
           </div>
+          <span class="text-3xl font-bold text-900">{{ reportData.resumo.totalPedidos }}</span>
+          <p class="text-500 text-sm m-0 mt-2">
+            No período selecionado
+          </p>
         </div>
-        <span class="text-3xl font-bold text-900">42</span>
-        <p class="text-green-500 text-sm m-0 mt-2">
-          <i class="pi pi-arrow-up mr-1"></i>
-          12% vs. ontem
-        </p>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <div class="surface-card p-3 border-round shadow-2">
+          <div class="flex align-items-center justify-content-between mb-2">
+            <span class="text-600 font-medium">Faturamento Total</span>
+            <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width: 2.5rem; height: 2.5rem;">
+              <i class="pi pi-dollar text-green-500"></i>
+            </div>
+          </div>
+          <span class="text-3xl font-bold text-900">{{ formatCurrency(reportData.resumo.faturamentoTotal) }}</span>
+          <p class="text-500 text-sm m-0 mt-2">
+            No período selecionado
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <div class="surface-card p-3 border-round shadow-2">
+          <div class="flex align-items-center justify-content-between mb-2">
+            <span class="text-600 font-medium">Ticket Médio</span>
+            <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem;">
+              <i class="pi pi-chart-bar text-orange-500"></i>
+            </div>
+          </div>
+          <span class="text-3xl font-bold text-900">{{ formatCurrency(reportData.resumo.ticketMedio) }}</span>
+          <p class="text-500 text-sm m-0 mt-2">
+            Por pedido
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <div class="surface-card p-3 border-round shadow-2">
+          <div class="flex align-items-center justify-content-between mb-2">
+            <span class="text-600 font-medium">Tempo Médio</span>
+            <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width: 2.5rem; height: 2.5rem;">
+              <i class="pi pi-clock text-purple-500"></i>
+            </div>
+          </div>
+          <span class="text-3xl font-bold text-900">{{ reportData.resumo.tempoMedioEntrega }} min</span>
+          <p class="text-500 text-sm m-0 mt-2">
+            Tempo de entrega
+          </p>
+        </div>
       </div>
     </div>
 
-    <div class="col-12 md:col-6 lg:col-3">
-      <div class="surface-card p-3 border-round shadow-2">
-        <div class="flex align-items-center justify-content-between mb-2">
-          <span class="text-600 font-medium">Faturamento</span>
-          <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width: 2.5rem; height: 2.5rem;">
-            <i class="pi pi-dollar text-green-500"></i>
+    <!-- Gráficos e Listas -->
+    <div class="grid">
+      <!-- Pedidos por Dia -->
+      <div class="col-12 lg:col-8">
+        <div class="surface-card p-4 border-round shadow-2">
+          <h3 class="text-xl font-semibold text-900 mb-3">Pedidos por Dia</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-bottom-1 surface-border">
+                  <th class="text-left p-2 text-600">Data</th>
+                  <th class="text-right p-2 text-600">Quantidade</th>
+                  <th class="text-right p-2 text-600">Faturamento</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let dia of reportData.pedidosPorDia" class="border-bottom-1 surface-border">
+                  <td class="p-2 text-900">{{ formatDate(dia.data) }}</td>
+                  <td class="p-2 text-right text-900 font-semibold">{{ dia.quantidade }}</td>
+                  <td class="p-2 text-right text-900 font-semibold">{{ formatCurrency(dia.faturamento) }}</td>
+                </tr>
+                <tr *ngIf="reportData.pedidosPorDia.length === 0">
+                  <td colspan="3" class="p-2 text-center text-500">Nenhum pedido no período</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-        <span class="text-3xl font-bold text-900">R$ 2.450</span>
-        <p class="text-green-500 text-sm m-0 mt-2">
-          <i class="pi pi-arrow-up mr-1"></i>
-          8% vs. ontem
-        </p>
       </div>
-    </div>
 
-    <div class="col-12 md:col-6 lg:col-3">
-      <div class="surface-card p-3 border-round shadow-2">
-        <div class="flex align-items-center justify-content-between mb-2">
-          <span class="text-600 font-medium">Ticket Médio</span>
-          <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem;">
-            <i class="pi pi-chart-bar text-orange-500"></i>
-          </div>
+      <!-- Produtos Mais Vendidos -->
+      <div class="col-12 lg:col-4">
+        <div class="surface-card p-4 border-round shadow-2 mb-4">
+          <h3 class="text-xl font-semibold text-900 mb-3">Produtos Mais Vendidos</h3>
+          <ul class="list-none p-0 m-0">
+            <li *ngFor="let produto of reportData.produtosMaisVendidos; let last = last" 
+                [class.border-bottom-1]="!last"
+                [class.surface-border]="!last"
+                class="flex align-items-center justify-content-between py-2">
+              <div class="flex-1">
+                <span class="text-900 block">{{ produto.nome }}</span>
+                <span class="text-500 text-sm">{{ formatCurrency(produto.faturamento) }}</span>
+              </div>
+              <span class="text-primary font-bold">{{ produto.quantidade }}</span>
+            </li>
+            <li *ngIf="reportData.produtosMaisVendidos.length === 0" class="py-2 text-center text-500">
+              Nenhum produto vendido
+            </li>
+          </ul>
         </div>
-        <span class="text-3xl font-bold text-900">R$ 58,33</span>
-        <p class="text-red-500 text-sm m-0 mt-2">
-          <i class="pi pi-arrow-down mr-1"></i>
-          3% vs. ontem
-        </p>
-      </div>
-    </div>
 
-    <div class="col-12 md:col-6 lg:col-3">
-      <div class="surface-card p-3 border-round shadow-2">
-        <div class="flex align-items-center justify-content-between mb-2">
-          <span class="text-600 font-medium">Tempo Médio</span>
-          <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width: 2.5rem; height: 2.5rem;">
-            <i class="pi pi-clock text-purple-500"></i>
-          </div>
+        <!-- Status dos Pedidos -->
+        <div class="surface-card p-4 border-round shadow-2">
+          <h3 class="text-xl font-semibold text-900 mb-3">Status dos Pedidos</h3>
+          <ul class="list-none p-0 m-0">
+            <li *ngFor="let status of reportData.pedidosPorStatus; let last = last" 
+                [class.border-bottom-1]="!last"
+                [class.surface-border]="!last"
+                class="flex align-items-center justify-content-between py-2">
+              <div class="flex align-items-center gap-2">
+                <span [class]="'inline-block w-2rem h-2rem border-circle bg-' + getStatusColor(status.status) + '-100 flex align-items-center justify-content-center'">
+                  <i [class]="'pi pi-circle-fill text-' + getStatusColor(status.status) + '-500 text-xs'"></i>
+                </span>
+                <span class="text-900">{{ getStatusLabel(status.status) }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-900 font-bold block">{{ status.quantidade }}</span>
+                <span class="text-500 text-sm">{{ status.percentual }}%</span>
+              </div>
+            </li>
+            <li *ngIf="reportData.pedidosPorStatus.length === 0" class="py-2 text-center text-500">
+              Nenhum pedido
+            </li>
+          </ul>
         </div>
-        <span class="text-3xl font-bold text-900">38 min</span>
-        <p class="text-green-500 text-sm m-0 mt-2">
-          <i class="pi pi-arrow-down mr-1"></i>
-          5 min vs. ontem
-        </p>
       </div>
     </div>
   </div>
 
-  <!-- Gráficos Placeholder -->
-  <div class="grid">
-    <div class="col-12 lg:col-8">
-      <div class="surface-card p-4 border-round shadow-2">
-        <h3 class="text-xl font-semibold text-900 mb-3">Pedidos por Período</h3>
-        <div class="flex align-items-center justify-content-center" style="height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px;">
-          <div class="text-center text-white">
-            <i class="pi pi-chart-line text-6xl mb-3"></i>
-            <p class="text-xl m-0">Gráfico de Pedidos</p>
-            <p class="text-sm opacity-80 m-0">(Implementação futura)</p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Mensagem de Loading -->
+  <div *ngIf="loading && !reportData" class="surface-card p-6 border-round shadow-2 text-center">
+    <i class="pi pi-spin pi-spinner text-4xl text-primary mb-3"></i>
+    <p class="text-xl text-900 m-0">Carregando relatório...</p>
+  </div>
 
-    <div class="col-12 lg:col-4">
-      <div class="surface-card p-4 border-round shadow-2">
-        <h3 class="text-xl font-semibold text-900 mb-3">Produtos Mais Vendidos</h3>
-        <ul class="list-none p-0 m-0">
-          <li class="flex align-items-center justify-content-between py-2 border-bottom-1 surface-border">
-            <span class="text-900">Pizza Margherita</span>
-            <span class="text-primary font-bold">128</span>
-          </li>
-          <li class="flex align-items-center justify-content-between py-2 border-bottom-1 surface-border">
-            <span class="text-900">Hambúrguer Artesanal</span>
-            <span class="text-primary font-bold">95</span>
-          </li>
-          <li class="flex align-items-center justify-content-between py-2 border-bottom-1 surface-border">
-            <span class="text-900">Sushi Combo</span>
-            <span class="text-primary font-bold">87</span>
-          </li>
-          <li class="flex align-items-center justify-content-between py-2 border-bottom-1 surface-border">
-            <span class="text-900">Açaí 500ml</span>
-            <span class="text-primary font-bold">76</span>
-          </li>
-          <li class="flex align-items-center justify-content-between py-2">
-            <span class="text-900">Pastel de Carne</span>
-            <span class="text-primary font-bold">64</span>
-          </li>
-        </ul>
-      </div>
-    </div>
+  <!-- Mensagem quando não há dados -->
+  <div *ngIf="!loading && !reportData" class="surface-card p-6 border-round shadow-2 text-center">
+    <i class="pi pi-chart-line text-6xl text-400 mb-3"></i>
+    <p class="text-xl text-900 m-0 mb-2">Selecione um período</p>
+    <p class="text-600 m-0">Escolha as datas e clique em "Gerar Relatório"</p>
   </div>
 </div>

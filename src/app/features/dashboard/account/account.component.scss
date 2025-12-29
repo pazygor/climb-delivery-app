@@ -1,0 +1,34 @@
+::ng-deep {
+  .p-password {
+    width: 100%;
+
+    input {
+      width: 100%;
+    }
+  }
+
+  .p-fileupload {
+    .p-button {
+      width: auto;
+    }
+  }
+}
+
+.field {
+  small.p-error {
+    display: block;
+    margin-top: 0.25rem;
+  }
+}
+
+.ng-invalid.ng-dirty {
+  border-color: #f44336;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}

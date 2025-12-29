@@ -6,7 +6,7 @@
 /out-tsc
 /bazel-out
 /.angular
-
+/climb-delivery-api/
 # Node
 /node_modules
 npm-debug.log

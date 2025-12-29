@@ -1,53 +1,428 @@
 <div class="p-4">
+  <p-toast></p-toast>
+  
   <div class="mb-4">
     <h1 class="text-3xl font-bold text-900 m-0 mb-2">Configurações do Estabelecimento</h1>
     <p class="text-600 m-0">Configure as informações do seu estabelecimento</p>
   </div>
 
-  <div class="surface-card p-4 border-round shadow-2">
-    <div class="grid">
-      <div class="col-12">
-        <h3 class="text-xl font-semibold text-900 mb-3">Informações Básicas</h3>
-      </div>
-
-      <div class="col-12 md:col-6">
-        <div class="field">
-          <label class="block text-900 font-medium mb-2">Nome do Estabelecimento</label>
-          <input type="text" pInputText class="w-full" placeholder="Digite o nome" />
+  <form [formGroup]="empresaForm" (ngSubmit)="onSubmit()">
+    <!-- Logo -->
+    <div class="surface-card p-4 border-round shadow-2 mb-4">
+      <h3 class="text-xl font-semibold text-900 mb-3">Logo do Estabelecimento</h3>
+      
+      <div class="flex flex-column align-items-center gap-3">
+        <div *ngIf="logoPreview" class="relative">
+          <img [src]="logoPreview" alt="Logo" class="border-round" style="max-width: 200px; max-height: 200px;">
+          <button
+            type="button"
+            pButton
+            icon="pi pi-times"
+            class="p-button-rounded p-button-danger p-button-sm absolute"
+            [style]="{'top': '-10px', 'right': '-10px'}"
+            (click)="removeLogo()"
+            [disabled]="loading">
+          </button>
         </div>
-      </div>
-
-      <div class="col-12 md:col-6">
-        <div class="field">
-          <label class="block text-900 font-medium mb-2">CNPJ</label>
-          <input type="text" pInputText class="w-full" placeholder="00.000.000/0000-00" />
-        </div>
-      </div>
-
-      <div class="col-12">
-        <div class="field">
-          <label class="block text-900 font-medium mb-2">Endereço</label>
-          <input type="text" pInputText class="w-full" placeholder="Digite o endereço completo" />
-        </div>
-      </div>
-
-      <div class="col-12 md:col-6">
-        <div class="field">
-          <label class="block text-900 font-medium mb-2">Telefone</label>
-          <input type="text" pInputText class="w-full" placeholder="(00) 00000-0000" />
-        </div>
-      </div>
-
-      <div class="col-12 md:col-6">
-        <div class="field">
-          <label class="block text-900 font-medium mb-2">Email</label>
-          <input type="email" pInputText class="w-full" placeholder="contato@estabelecimento.com" />
-        </div>
-      </div>
-
-      <div class="col-12">
-        <button pButton label="Salvar Configurações" icon="pi pi-check" class="p-button-success"></button>
+        
+        <p-fileUpload
+          mode="basic"
+          chooseLabel="Selecionar Logo"
+          chooseIcon="pi pi-upload"
+          accept="image/*"
+          [maxFileSize]="2000000"
+          [auto]="true"
+          (onSelect)="onLogoSelect($event)"
+          [disabled]="loading">
+        </p-fileUpload>
+        
+        <small class="text-600">Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB</small>
       </div>
     </div>
-  </div>
+
+    <!-- Informações Básicas -->
+    <div class="surface-card p-4 border-round shadow-2 mb-4">
+      <h3 class="text-xl font-semibold text-900 mb-3">Informações Básicas</h3>
+      
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              Razão Social <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="razaoSocial"
+              [class.ng-invalid]="isFieldInvalid('razaoSocial')"
+              [class.ng-dirty]="isFieldInvalid('razaoSocial')"
+              placeholder="Digite a razão social" />
+            <small class="p-error" *ngIf="isFieldInvalid('razaoSocial')">
+              Razão social é obrigatória
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Nome Fantasia</label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="nomeFantasia"
+              placeholder="Digite o nome fantasia" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              CNPJ <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="cnpj"
+              [class.ng-invalid]="isFieldInvalid('cnpj')"
+              [class.ng-dirty]="isFieldInvalid('cnpj')"
+              placeholder="00000000000000"
+              maxlength="14" />
+            <small class="p-error" *ngIf="isFieldInvalid('cnpj')">
+              CNPJ é obrigatório (14 dígitos)
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Telefone</label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="telefone"
+              placeholder="(00) 00000-0000" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Email</label>
+            <input
+              type="email"
+              pInputText
+              class="w-full"
+              formControlName="email"
+              [class.ng-invalid]="isFieldInvalid('email')"
+              [class.ng-dirty]="isFieldInvalid('email')"
+              placeholder="contato@estabelecimento.com" />
+            <small class="p-error" *ngIf="isFieldInvalid('email')">
+              Email inválido
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Descrição</label>
+            <textarea
+              pInputTextarea
+              class="w-full"
+              formControlName="descricao"
+              rows="3"
+              placeholder="Descreva seu estabelecimento...">
+            </textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Endereço -->
+    <div class="surface-card p-4 border-round shadow-2 mb-4">
+      <h3 class="text-xl font-semibold text-900 mb-3">Endereço</h3>
+      
+      <div class="grid">
+        <div class="col-12 md:col-3">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              CEP <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="cep"
+              [class.ng-invalid]="isFieldInvalid('cep')"
+              [class.ng-dirty]="isFieldInvalid('cep')"
+              placeholder="00000000"
+              maxlength="8" />
+            <small class="p-error" *ngIf="isFieldInvalid('cep')">
+              CEP é obrigatório (8 dígitos)
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-7">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              Endereço <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="endereco"
+              [class.ng-invalid]="isFieldInvalid('endereco')"
+              [class.ng-dirty]="isFieldInvalid('endereco')"
+              placeholder="Rua, Avenida..." />
+            <small class="p-error" *ngIf="isFieldInvalid('endereco')">
+              Endereço é obrigatório
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-2">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Número</label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="numero"
+              placeholder="123" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Complemento</label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="complemento"
+              placeholder="Sala, andar..." />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              Bairro <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="bairro"
+              [class.ng-invalid]="isFieldInvalid('bairro')"
+              [class.ng-dirty]="isFieldInvalid('bairro')"
+              placeholder="Digite o bairro" />
+            <small class="p-error" *ngIf="isFieldInvalid('bairro')">
+              Bairro é obrigatório
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-8">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              Cidade <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="cidade"
+              [class.ng-invalid]="isFieldInvalid('cidade')"
+              [class.ng-dirty]="isFieldInvalid('cidade')"
+              placeholder="Digite a cidade" />
+            <small class="p-error" *ngIf="isFieldInvalid('cidade')">
+              Cidade é obrigatória
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              UF <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="uf"
+              [class.ng-invalid]="isFieldInvalid('uf')"
+              [class.ng-dirty]="isFieldInvalid('uf')"
+              placeholder="SP"
+              maxlength="2"
+              style="text-transform: uppercase;" />
+            <small class="p-error" *ngIf="isFieldInvalid('uf')">
+              UF é obrigatória (2 letras)
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configurações de Funcionamento -->
+    <div class="surface-card p-4 border-round shadow-2 mb-4">
+      <h3 class="text-xl font-semibold text-900 mb-3">Configurações de Funcionamento</h3>
+      
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Horário de Abertura</label>
+            <input
+              type="time"
+              pInputText
+              class="w-full"
+              formControlName="horarioAbertura" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Horário de Fechamento</label>
+            <input
+              type="time"
+              pInputText
+              class="w-full"
+              formControlName="horarioFechamento" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Tempo Médio de Entrega (minutos)</label>
+            <p-inputNumber
+              formControlName="tempoMedioEntrega"
+              [min]="0"
+              [showButtons]="true"
+              suffix=" min"
+              styleClass="w-full">
+            </p-inputNumber>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Taxa de Entrega (R$)</label>
+            <p-inputNumber
+              formControlName="taxaEntrega"
+              mode="currency"
+              currency="BRL"
+              locale="pt-BR"
+              [min]="0"
+              styleClass="w-full">
+            </p-inputNumber>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">Pedido Mínimo (R$)</label>
+            <p-inputNumber
+              formControlName="pedidoMinimo"
+              mode="currency"
+              currency="BRL"
+              locale="pt-BR"
+              [min]="0"
+              styleClass="w-full">
+            </p-inputNumber>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagamento e Redes Sociais -->
+    <div class="surface-card p-4 border-round shadow-2 mb-4">
+      <h3 class="text-xl font-semibold text-900 mb-3">Pagamento e Redes Sociais</h3>
+      
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              <i class="pi pi-money-bill mr-2"></i>Chave PIX
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="chavePix"
+              placeholder="Digite a chave PIX (CPF, CNPJ, Email ou Telefone)" />
+            <small class="text-600">Para receber pagamentos via PIX</small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              <i class="pi pi-whatsapp mr-2"></i>WhatsApp
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="whatsapp"
+              placeholder="(00) 00000-0000" />
+            <small class="text-600">Para contato direto com clientes</small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              <i class="pi pi-instagram mr-2"></i>Instagram
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="instagram"
+              placeholder="@seurestaurante" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label class="block text-900 font-medium mb-2">
+              <i class="pi pi-facebook mr-2"></i>Facebook
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="facebook"
+              placeholder="facebook.com/seurestaurante" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="flex justify-content-end gap-2">
+      <button
+        type="button"
+        pButton
+        label="Cancelar"
+        icon="pi pi-times"
+        class="p-button-outlined"
+        [disabled]="loading">
+      </button>
+      <button
+        type="submit"
+        pButton
+        label="Salvar Configurações"
+        icon="pi pi-check"
+        class="p-button-success"
+        [disabled]="loading"
+        [loading]="loading">
+      </button>
+    </div>
+  </form>
 </div>

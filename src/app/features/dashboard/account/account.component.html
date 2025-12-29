@@ -1,4 +1,6 @@
 <div class="p-4">
+  <p-toast></p-toast>
+  
   <div class="mb-4">
     <h1 class="text-3xl font-bold text-900 m-0 mb-2">Minha Conta</h1>
     <p class="text-600 m-0">Gerencie suas informações pessoais e preferências</p>
@@ -10,62 +12,135 @@
       <div class="surface-card p-4 border-round shadow-2 mb-4">
         <h3 class="text-xl font-semibold text-900 mb-3">Informações Pessoais</h3>
         
-        <div class="field mb-3">
-          <label class="block text-900 font-medium mb-2">Nome Completo</label>
-          <input type="text" pInputText class="w-full" [value]="currentUser?.name || ''" />
-        </div>
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmitProfile()">
+          <div class="field mb-3">
+            <label class="block text-900 font-medium mb-2">
+              Nome Completo <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="nome"
+              [class.ng-invalid]="isFieldInvalid('profile', 'nome')"
+              [class.ng-dirty]="isFieldInvalid('profile', 'nome')"
+              placeholder="Digite seu nome completo" />
+            <small class="p-error" *ngIf="isFieldInvalid('profile', 'nome')">
+              Nome é obrigatório
+            </small>
+          </div>
 
-        <div class="field mb-3">
-          <label class="block text-900 font-medium mb-2">Email</label>
-          <input type="email" pInputText class="w-full" [value]="currentUser?.email || ''" />
-        </div>
+          <div class="field mb-3">
+            <label class="block text-900 font-medium mb-2">
+              Email <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              pInputText
+              class="w-full"
+              formControlName="email"
+              [class.ng-invalid]="isFieldInvalid('profile', 'email')"
+              [class.ng-dirty]="isFieldInvalid('profile', 'email')"
+              placeholder="seu@email.com" />
+            <small class="p-error" *ngIf="isFieldInvalid('profile', 'email')">
+              Email é obrigatório e deve ser válido
+            </small>
+          </div>
 
-        <div class="field mb-3">
-          <label class="block text-900 font-medium mb-2">Telefone</label>
-          <input type="text" pInputText class="w-full" placeholder="(00) 00000-0000" />
-        </div>
+          <div class="field mb-3">
+            <label class="block text-900 font-medium mb-2">Telefone</label>
+            <input
+              type="text"
+              pInputText
+              class="w-full"
+              formControlName="telefone"
+              placeholder="(00) 00000-0000" />
+          </div>
 
-        <button pButton label="Salvar Alterações" icon="pi pi-check" class="p-button-success"></button>
+          <button
+            type="submit"
+            pButton
+            label="Salvar Alterações"
+            icon="pi pi-check"
+            class="p-button-success"
+            [disabled]="loadingProfile"
+            [loading]="loadingProfile">
+          </button>
+        </form>
       </div>
 
       <!-- Alterar Senha -->
       <div class="surface-card p-4 border-round shadow-2">
         <h3 class="text-xl font-semibold text-900 mb-3">Alterar Senha</h3>
         
-        <div class="field mb-3">
-          <label class="block text-900 font-medium mb-2">Senha Atual</label>
-          <p-password 
-            placeholder="Digite sua senha atual"
-            [toggleMask]="true"
-            [feedback]="false"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-          ></p-password>
-        </div>
+        <form [formGroup]="passwordForm" (ngSubmit)="onSubmitPassword()">
+          <div class="field mb-3">
+            <label class="block text-900 font-medium mb-2">
+              Senha Atual <span class="text-red-500">*</span>
+            </label>
+            <p-password
+              formControlName="senhaAtual"
+              placeholder="Digite sua senha atual"
+              [toggleMask]="true"
+              [feedback]="false"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              [class.ng-invalid]="isFieldInvalid('password', 'senhaAtual')"
+              [class.ng-dirty]="isFieldInvalid('password', 'senhaAtual')">
+            </p-password>
+            <small class="p-error" *ngIf="isFieldInvalid('password', 'senhaAtual')">
+              Senha atual é obrigatória
+            </small>
+          </div>
 
-        <div class="field mb-3">
-          <label class="block text-900 font-medium mb-2">Nova Senha</label>
-          <p-password 
-            placeholder="Digite sua nova senha"
-            [toggleMask]="true"
-            [feedback]="true"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-          ></p-password>
-        </div>
+          <div class="field mb-3">
+            <label class="block text-900 font-medium mb-2">
+              Nova Senha <span class="text-red-500">*</span>
+            </label>
+            <p-password
+              formControlName="novaSenha"
+              placeholder="Digite sua nova senha"
+              [toggleMask]="true"
+              [feedback]="true"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              [class.ng-invalid]="isFieldInvalid('password', 'novaSenha')"
+              [class.ng-dirty]="isFieldInvalid('password', 'novaSenha')">
+            </p-password>
+            <small class="p-error" *ngIf="isFieldInvalid('password', 'novaSenha')">
+              Nova senha deve ter no mínimo 6 caracteres
+            </small>
+          </div>
 
-        <div class="field mb-3">
-          <label class="block text-900 font-medium mb-2">Confirmar Nova Senha</label>
-          <p-password 
-            placeholder="Confirme sua nova senha"
-            [toggleMask]="true"
-            [feedback]="false"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-          ></p-password>
-        </div>
+          <div class="field mb-3">
+            <label class="block text-900 font-medium mb-2">
+              Confirmar Nova Senha <span class="text-red-500">*</span>
+            </label>
+            <p-password
+              formControlName="confirmarSenha"
+              placeholder="Confirme sua nova senha"
+              [toggleMask]="true"
+              [feedback]="false"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              [class.ng-invalid]="isFieldInvalid('password', 'confirmarSenha')"
+              [class.ng-dirty]="isFieldInvalid('password', 'confirmarSenha')">
+            </p-password>
+            <small class="p-error" *ngIf="passwordForm.get('confirmarSenha')?.hasError('passwordMismatch') && passwordForm.get('confirmarSenha')?.touched">
+              As senhas não coincidem
+            </small>
+          </div>
 
-        <button pButton label="Alterar Senha" icon="pi pi-lock" class="p-button-warning"></button>
+          <button
+            type="submit"
+            pButton
+            label="Alterar Senha"
+            icon="pi pi-lock"
+            class="p-button-warning"
+            [disabled]="loadingPassword"
+            [loading]="loadingPassword">
+          </button>
+        </form>
       </div>
     </div>
 
@@ -73,12 +148,38 @@
     <div class="col-12 md:col-4">
       <div class="surface-card p-4 border-round shadow-2 text-center">
         <div class="mb-3">
-          <div class="inline-flex align-items-center justify-content-center border-circle bg-primary" style="width: 100px; height: 100px;">
-            <span class="text-4xl font-bold text-white">{{ (currentUser?.name?.substring(0, 2)?.toUpperCase()) || 'U' }}</span>
+          <div class="relative inline-block">
+            <div *ngIf="!photoPreview" class="inline-flex align-items-center justify-content-center border-circle bg-primary" style="width: 100px; height: 100px;">
+              <span class="text-4xl font-bold text-white">{{ (currentUser?.nome?.substring(0, 2)?.toUpperCase()) || 'U' }}</span>
+            </div>
+            <img *ngIf="photoPreview" [src]="photoPreview" alt="Avatar" class="border-circle" style="width: 100px; height: 100px; object-fit: cover;">
+            
+            <button
+              *ngIf="photoPreview"
+              type="button"
+              pButton
+              icon="pi pi-times"
+              class="p-button-rounded p-button-danger p-button-sm absolute"
+              [style]="{'top': '-5px', 'right': '-5px'}"
+              (click)="removePhoto()">
+            </button>
           </div>
         </div>
+
+        <div class="mb-3">
+          <p-fileUpload
+            mode="basic"
+            chooseLabel="Alterar Foto"
+            chooseIcon="pi pi-camera"
+            accept="image/*"
+            [maxFileSize]="1000000"
+            [auto]="true"
+            (onSelect)="onPhotoSelect($event)">
+          </p-fileUpload>
+          <small class="text-600 block mt-2">Formatos: JPG, PNG (máx. 1MB)</small>
+        </div>
         
-        <h3 class="text-xl font-semibold text-900 mb-1">{{ currentUser?.name }}</h3>
+        <h3 class="text-xl font-semibold text-900 mb-1">{{ currentUser?.nome }}</h3>
         <p class="text-600 mb-2">{{ currentUser?.email }}</p>
         
         <span 
@@ -89,7 +190,7 @@
 
         <div class="mt-4 pt-4 border-top-1 surface-border">
           <p class="text-600 text-sm m-0">Membro desde</p>
-          <p class="text-900 font-semibold m-0">Novembro 2025</p>
+          <p class="text-900 font-semibold m-0">{{ getFormattedDate() }}</p>
         </div>
       </div>
     </div>

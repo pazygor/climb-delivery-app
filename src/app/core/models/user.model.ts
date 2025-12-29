@@ -15,6 +15,7 @@ export interface User {
   permissaoId: number;
   establishmentId?: string; // Opcional para SUPER_ADMIN
   avatar?: string;
+  foto?: string;
   phone?: string;
   telefone?: string;
   ativo: boolean;

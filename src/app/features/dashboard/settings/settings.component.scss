@@ -1,0 +1,31 @@
+::ng-deep {
+  .p-inputnumber {
+    width: 100%;
+
+    input {
+      width: 100%;
+    }
+  }
+
+  .p-fileupload {
+    .p-button {
+      width: auto;
+    }
+  }
+}
+
+.field {
+  small.p-error {
+    display: block;
+    margin-top: 0.25rem;
+  }
+
+  small.text-600 {
+    display: block;
+    margin-top: 0.25rem;
+  }
+}
+
+.ng-invalid.ng-dirty {
+  border-color: #f44336;
+}

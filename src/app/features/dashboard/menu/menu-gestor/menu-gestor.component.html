@@ -94,43 +94,29 @@
           <div class="esgotar-tudo-wrapper">
             <label class="esgotar-tudo-label">Esgotar tudo</label>
             <p-inputSwitch 
-              [ngModel]="false"
+              [ngModel]="todosEsgotados(categoria)"
               (ngModelChange)="esgotarTodosCategoria(categoria, $event)"
-              pTooltip="Esgota todos os produtos desta categoria">
+              [pTooltip]="todosEsgotados(categoria) ? 'Disponibilizar todos os produtos' : 'Esgotar todos os produtos desta categoria'">
             </p-inputSwitch>
           </div>
 
           <!-- Menu de Ações -->
           <button 
+            #menuButton
             pButton 
             icon="pi pi-ellipsis-v" 
             class="p-button-text p-button-rounded"
             pTooltip="Ações da categoria"
             [attr.aria-label]="'Ações da categoria ' + categoria.nome"
-            (click)="$event.stopPropagation()">
+            (click)="configurarMenuCategoria(categoria, menu, $event)">
           </button>
           
-          <!-- Dropdown manual (simplificado - ideal seria usar p-menu) -->
-          <div class="actions-dropdown">
-            <button 
-              class="action-item"
-              (click)="editarCategoria(categoria, $event)">
-              <i class="pi pi-pencil"></i>
-              <span>Editar</span>
-            </button>
-            <button 
-              class="action-item"
-              (click)="duplicarCategoria(categoria, $event)">
-              <i class="pi pi-clone"></i>
-              <span>Duplicar</span>
-            </button>
-            <button 
-              class="action-item danger"
-              (click)="excluirCategoria(categoria, $event)">
-              <i class="pi pi-trash"></i>
-              <span>Excluir</span>
-            </button>
-          </div>
+          <p-menu 
+            #menu 
+            [model]="menuItemsCategoria" 
+            [popup]="true"
+            appendTo="body">
+          </p-menu>
         </div>
       </div>
 
@@ -253,7 +239,11 @@
 
 <!-- Componentes de Feedback -->
 <p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
+<p-confirmDialog 
+  [style]="{width: '450px'}"
+  acceptLabel="Sim"
+  rejectLabel="Não">
+</p-confirmDialog>
 
 <!-- Modais -->
 <app-modal-categoria

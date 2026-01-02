@@ -9,7 +9,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { InputSwitchModule } from 'primeng/inputswitch';
+import { MenuModule } from 'primeng/menu';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import type { MenuItem } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 
 import { AuthService } from '../../../../core/services/auth.service';
@@ -34,6 +36,7 @@ import { ModalProdutoComponent } from '../modals/modal-produto/modal-produto.com
     ToastModule,
     SelectButtonModule,
     InputSwitchModule,
+    MenuModule,
     ModalCategoriaComponent,
     ModalProdutoComponent
   ],
@@ -58,6 +61,9 @@ export class MenuGestorComponent implements OnInit {
   categoriaEmEdicao?: Categoria;
   produtoEmEdicao?: Produto;
   categoriaIdParaNovoProduto?: number;
+
+  // Menu de ações
+  menuItemsCategoria: MenuItem[] = [];
 
   // Opções do filtro
   filtroStatusOptions = [
@@ -174,6 +180,35 @@ export class MenuGestorComponent implements OnInit {
   criarCategoria(): void {
     this.categoriaEmEdicao = undefined;
     this.modalCategoriaVisible = true;
+  }
+
+  /**
+   * Configura o menu de ações da categoria
+   */
+  configurarMenuCategoria(categoria: Categoria, menu: any, event: Event): void {
+    event.stopPropagation();
+    this.menuItemsCategoria = [
+      {
+        label: 'Editar',
+        icon: 'pi pi-pencil',
+        command: () => this.editarCategoria(categoria, event)
+      },
+      {
+        label: 'Duplicar',
+        icon: 'pi pi-clone',
+        command: () => this.duplicarCategoria(categoria, event)
+      },
+      {
+        separator: true
+      },
+      {
+        label: 'Excluir',
+        icon: 'pi pi-trash',
+        styleClass: 'menu-item-danger',
+        command: () => this.excluirCategoria(categoria, event)
+      }
+    ];
+    menu.toggle(event);
   }
 
   /**
@@ -392,6 +427,16 @@ export class MenuGestorComponent implements OnInit {
         });
       }
     });
+  }
+
+  /**
+   * Verifica se todos os produtos da categoria estão esgotados
+   */
+  todosEsgotados(categoria: Categoria): boolean {
+    if (!categoria.produtos || categoria.produtos.length === 0) {
+      return false;
+    }
+    return categoria.produtos.every((p: Produto) => !p.disponivel);
   }
 
   /**

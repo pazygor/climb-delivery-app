@@ -49,7 +49,7 @@ export class CategoriaService {
    * Atualiza categoria existente
    */
   update(id: number, data: UpdateCategoriaDto): Observable<Categoria> {
-    return this.http.put<Categoria>(`${this.API_URL}/categorias/${id}`, data);
+    return this.http.patch<Categoria>(`${this.API_URL}/categorias/${id}`, data);
   }
 
   /**

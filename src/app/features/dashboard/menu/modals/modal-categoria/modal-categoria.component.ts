@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { CategoriaService } from '../../../../../core/services/categoria.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 import { Categoria, CreateCategoriaDto, UpdateCategoriaDto } from '../../../../../core/models/categoria.model';
 
 @Component({
@@ -31,13 +32,18 @@ export class ModalCategoriaComponent implements OnInit {
   descricao: string = '';
   ativo: boolean = true;
   loading: boolean = false;
+  empresaId: number | null = null;
 
   constructor(
     private categoriaService: CategoriaService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    this.empresaId = user?.empresaId || null;
+    
     if (this.categoria) {
       this.carregarDados();
     }
@@ -114,7 +120,18 @@ export class ModalCategoriaComponent implements OnInit {
       });
     } else {
       // Criar
+      if (!this.empresaId) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Empresa não identificada'
+        });
+        this.loading = false;
+        return;
+      }
+
       const dto: CreateCategoriaDto = {
+        empresaId: this.empresaId,
         nome: this.nome.trim(),
         descricao: this.descricao.trim() || undefined,
         ativo: this.ativo,

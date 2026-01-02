@@ -6,7 +6,7 @@
   // ============================================
   // HEADER
   // ============================================
-  
+
   .header-section {
     margin-bottom: 2rem;
 
@@ -69,7 +69,7 @@
   // ============================================
   // STATES
   // ============================================
-  
+
   .loading-state,
   .empty-state {
     display: flex;
@@ -97,7 +97,7 @@
   // ============================================
   // CATEGORIAS
   // ============================================
-  
+
   .categorias-list {
     display: flex;
     flex-direction: column;
@@ -229,11 +229,11 @@
               background-color: var(--surface-hover);
             }
 
-            &.danger {
+            &.teste {
               color: var(--red-500);
 
               &:hover {
-                background-color: var(--red-50);
+                background-color: #FEE2E2 !important;
               }
             }
 
@@ -249,10 +249,16 @@
       }
     }
 
+    .teste:hover {
+      background-color: red !important;
+      color: red !important;
+      border: solid red 1px !important;
+    }
+
     // ============================================
     // PRODUTOS
     // ============================================
-    
+
     .produtos-list {
       padding: 1rem 1.5rem 1.5rem;
       background: var(--surface-ground);
@@ -305,7 +311,7 @@
 
         &.esgotado {
           opacity: 0.65;
-          
+
           .produto-imagem {
             filter: grayscale(100%);
           }
@@ -486,8 +492,9 @@
               }
 
               &.danger:hover {
-                background: var(--red-500);
-                border-color: var(--red-500);
+                background-color: red;
+                border-color: red;
+                transform: translateY(-2px);
                 box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
               }
             }
@@ -500,7 +507,7 @@
   // ============================================
   // RESPONSIVE
   // ============================================
-  
+
   @media (max-width: 768px) {
     padding: 1rem;
 
@@ -546,6 +553,27 @@
             justify-content: space-between;
             width: 100%;
           }
+        }
+      }
+    }
+  }
+}
+// ============================================
+// ESTILOS GLOBAIS PARA P-MENU
+// ============================================
+::ng-deep {
+  .p-menu {
+    .menu-item-danger {
+      .p-menuitem-link {
+        color: #ef4444 !important;
+
+        &:hover {
+          background-color: #fef2f2 !important;
+          color: #dc2626 !important;
+        }
+
+        .p-menuitem-icon {
+          color: #ef4444 !important;
         }
       }
     }

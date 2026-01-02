@@ -56,7 +56,7 @@ export class ProdutoService {
    * Atualiza produto existente
    */
   update(id: number, data: UpdateProdutoDto): Observable<Produto> {
-    return this.http.put<Produto>(`${this.API_URL}/produtos/${id}`, data);
+    return this.http.patch<Produto>(`${this.API_URL}/produtos/${id}`, data);
   }
 
   /**

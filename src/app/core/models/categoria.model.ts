@@ -16,6 +16,7 @@ export interface Categoria {
 }
 
 export interface CreateCategoriaDto {
+  empresaId: number;
   nome: string;
   descricao?: string;
   ordem?: number;

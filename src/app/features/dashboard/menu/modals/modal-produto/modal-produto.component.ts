@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -30,7 +30,7 @@ import { Categoria } from '../../../../../core/models/categoria.model';
   templateUrl: './modal-produto.component.html',
   styleUrl: './modal-produto.component.scss'
 })
-export class ModalProdutoComponent implements OnInit {
+export class ModalProdutoComponent implements OnInit, OnChanges {
   @Input() visible: boolean = false;
   @Input() produto?: Produto;
   @Input() categoriaId?: number;
@@ -66,8 +66,9 @@ export class ModalProdutoComponent implements OnInit {
     }
   }
 
-  ngOnChanges(): void {
-    if (this.visible) {
+  ngOnChanges(changes: SimpleChanges): void {
+    // Quando o modal é aberto
+    if (changes['visible'] && this.visible) {
       if (this.produto) {
         this.carregarDados();
       } else {
@@ -77,10 +78,20 @@ export class ModalProdutoComponent implements OnInit {
         }
       }
     }
+    
+    // Quando o produto muda
+    if (changes['produto'] && this.produto && this.visible) {
+      this.carregarDados();
+    }
   }
 
   carregarCategorias(): void {
-    this.categoriaService.getAll().subscribe({
+    if (!this.empresaId) {
+      console.error('EmpresaId não encontrado');
+      return;
+    }
+
+    this.categoriaService.getByEmpresa(this.empresaId).subscribe({
       next: (categorias: Categoria[]) => {
         this.categorias = categorias.filter((c: Categoria) => c.ativo);
       },
@@ -91,6 +102,7 @@ export class ModalProdutoComponent implements OnInit {
   }
 
   carregarDados(): void {
+    console.log('Carregando dados do produto:', this.produto);
     if (this.produto) {
       this.nome = this.produto.nome;
       this.descricao = this.produto.descricao || '';
@@ -98,6 +110,11 @@ export class ModalProdutoComponent implements OnInit {
       this.preco = this.produto.preco;
       this.tempoPreparo = this.produto.tempoPreparo || undefined;
       this.imagemPreview = this.produto.imagem || undefined;
+      console.log('Dados carregados:', {
+        nome: this.nome,
+        preco: this.preco,
+        categoriaId: this.categoriaIdSelecionada
+      });
     }
   }
 
@@ -114,12 +131,23 @@ export class ModalProdutoComponent implements OnInit {
   onImagemSelect(event: any): void {
     const file = event.files[0];
     if (file) {
-      // Validar tamanho (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
+      // Validar tipo de arquivo
+      const tiposAceitos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!tiposAceitos.includes(file.type)) {
         this.messageService.add({
           severity: 'warn',
           summary: 'Atenção',
-          detail: 'A imagem deve ter no máximo 2MB'
+          detail: 'Apenas arquivos JPG, JPEG, PNG e WEBP são aceitos'
+        });
+        return;
+      }
+
+      // Validar tamanho (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Atenção',
+          detail: 'A imagem deve ter no máximo 5MB'
         });
         return;
       }

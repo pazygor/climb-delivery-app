@@ -7,6 +7,8 @@ import { CardModule } from 'primeng/card';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { InputSwitchModule } from 'primeng/inputswitch';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 
@@ -30,6 +32,8 @@ import { ModalProdutoComponent } from '../modals/modal-produto/modal-produto.com
     TooltipModule,
     ConfirmDialogModule,
     ToastModule,
+    SelectButtonModule,
+    InputSwitchModule,
     ModalCategoriaComponent,
     ModalProdutoComponent
   ],
@@ -254,9 +258,7 @@ export class MenuGestorComponent implements OnInit {
     });
   }
 
-  esgotarTodosCategoria(categoria: Categoria, esgotado: boolean, event: Event): void {
-    event.stopPropagation();
-    
+  esgotarTodosCategoria(categoria: Categoria, esgotado: boolean): void {
     this.categoriaService.esgotarTodos(categoria.id, esgotado).subscribe({
       next: () => {
         this.messageService.add({

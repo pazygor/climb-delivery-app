@@ -117,7 +117,7 @@ O sistema redireciona automaticamente após login baseado no papel do usuário:
 
 ### Usuário Administrador SaaS
 **Email:** admin@climbdelivery.com  
-**Senha:** admin123  
+**Senha:** 123456  
 **Permissão:** SUPER_ADMIN (1)  
 **Acesso:** Área administrativa completa
 

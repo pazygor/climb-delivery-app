@@ -31,6 +31,7 @@ export interface ProdutoGrupoAdicional {
 }
 
 export interface CreateProdutoDto {
+  empresaId: number;
   categoriaId: number;
   nome: string;
   descricao?: string;

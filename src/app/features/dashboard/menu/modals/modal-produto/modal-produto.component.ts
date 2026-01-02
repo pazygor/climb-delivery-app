@@ -6,9 +6,11 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FileUploadModule } from 'primeng/fileupload';
+import { DropdownModule } from 'primeng/dropdown';
 import { MessageService } from 'primeng/api';
 import { ProdutoService } from '../../../../../core/services/produto.service';
 import { CategoriaService } from '../../../../../core/services/categoria.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 import { Produto, CreateProdutoDto, UpdateProdutoDto } from '../../../../../core/models/produto.model';
 import { Categoria } from '../../../../../core/models/categoria.model';
 
@@ -22,7 +24,8 @@ import { Categoria } from '../../../../../core/models/categoria.model';
     ButtonModule,
     InputTextModule,
     InputNumberModule,
-    FileUploadModule
+    FileUploadModule,
+    DropdownModule
   ],
   templateUrl: './modal-produto.component.html',
   styleUrl: './modal-produto.component.scss'
@@ -42,16 +45,19 @@ export class ModalProdutoComponent implements OnInit {
   imagemFile?: File;
   imagemPreview?: string;
   loading: boolean = false;
+  empresaId: number | null = null;
 
   categorias: Categoria[] = [];
 
   constructor(
     private produtoService: ProdutoService,
     private categoriaService: CategoriaService,
+    private authService: AuthService,
     private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
+    this.empresaId = this.authService.getEmpresaId();
     this.carregarCategorias();
     if (this.produto) {
       this.carregarDados();
@@ -178,15 +184,49 @@ export class ModalProdutoComponent implements OnInit {
   }
 
   criarProduto(): void {
+    if (!this.empresaId) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Empresa não identificada'
+      });
+      this.loading = false;
+      return;
+    }
+
+    // Garantir que preco seja um número válido
+    const precoString = String(this.preco).replace(',', '.');
+    const precoNumero = parseFloat(precoString);
+
+    console.log('Valor do preco original:', this.preco);
+    console.log('Valor do preco convertido:', precoNumero);
+    console.log('Tipo do preco:', typeof precoNumero);
+
+    if (isNaN(precoNumero) || precoNumero <= 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'O preço deve ser um número válido maior que zero'
+      });
+      this.loading = false;
+      return;
+    }
+
+    // Formatar preço como string decimal com 2 casas decimais
+    const precoFormatado = precoNumero.toFixed(2);
+
     const dto: CreateProdutoDto = {
+      empresaId: this.empresaId,
       nome: this.nome.trim(),
       descricao: this.descricao.trim() || undefined,
       categoriaId: this.categoriaIdSelecionada!,
-      preco: this.preco,
-      tempoPreparo: this.tempoPreparo || undefined,
+      preco: precoFormatado as any,
+      tempoPreparo: this.tempoPreparo ? Number(this.tempoPreparo) : undefined,
       disponivel: true,
       ordem: 0
     };
+
+    console.log('DTO enviado:', JSON.stringify(dto, null, 2));
 
     this.produtoService.create(dto).subscribe({
       next: (novoProduto: Produto) => {
@@ -210,12 +250,19 @@ export class ModalProdutoComponent implements OnInit {
   }
 
   atualizarProduto(): void {
+    // Garantir que preco seja um número válido
+    const precoString = String(this.preco).replace(',', '.');
+    const precoNumero = parseFloat(precoString);
+
+    // Formatar preço como string decimal com 2 casas decimais
+    const precoFormatado = precoNumero.toFixed(2);
+
     const dto: UpdateProdutoDto = {
       nome: this.nome.trim(),
       descricao: this.descricao.trim() || undefined,
       categoriaId: this.categoriaIdSelecionada!,
-      preco: this.preco,
-      tempoPreparo: this.tempoPreparo || undefined
+      preco: precoFormatado as any,
+      tempoPreparo: this.tempoPreparo ? Number(this.tempoPreparo) : undefined
     };
 
     this.produtoService.update(this.produto!.id, dto).subscribe({

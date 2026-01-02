@@ -19,15 +19,17 @@
       .title-section {
         h2 {
           margin: 0 0 0.25rem 0;
-          font-size: 1.75rem;
-          font-weight: 600;
+          font-size: 1.875rem;
+          font-weight: 700;
           color: var(--text-color);
+          letter-spacing: -0.025em;
         }
 
         .subtitle {
           margin: 0;
           color: var(--text-color-secondary);
           font-size: 0.95rem;
+          font-weight: 400;
         }
       }
     }
@@ -40,6 +42,26 @@
       .flex-1 {
         flex: 1;
         max-width: 400px;
+      }
+
+      ::ng-deep .p-selectbutton {
+        .p-button {
+          padding: 0.625rem 1.25rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          border-radius: 6px;
+          transition: all 0.2s ease;
+
+          &:not(.p-highlight):hover {
+            background: var(--surface-hover);
+          }
+
+          &.p-highlight {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color-text);
+          }
+        }
       }
     }
   }
@@ -85,21 +107,26 @@
   .categoria-card {
     background: var(--surface-card);
     border: 1px solid var(--surface-border);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--primary-color-light, var(--primary-200));
+    }
 
     &.expandida {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-color: var(--primary-color-light, var(--primary-200));
     }
 
     .categoria-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.25rem 1.5rem;
+      padding: 1.5rem;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: all 0.3s ease;
 
       &:hover {
         background-color: var(--surface-hover);
@@ -116,7 +143,8 @@
 
           .categoria-toggle-icon {
             color: var(--text-color-secondary);
-            transition: transform 0.2s;
+            transition: transform 0.3s ease;
+            font-size: 1rem;
           }
 
           h3 {
@@ -129,18 +157,20 @@
           .categoria-contador {
             color: var(--text-color-secondary);
             font-size: 0.875rem;
-            padding: 0.25rem 0.75rem;
+            font-weight: 500;
+            padding: 0.375rem 0.875rem;
             background: var(--surface-ground);
-            border-radius: 12px;
+            border-radius: 16px;
           }
 
           .badge-esgotado {
-            padding: 0.25rem 0.75rem;
-            background: var(--orange-100);
+            padding: 0.375rem 0.875rem;
+            background: linear-gradient(135deg, var(--orange-100), var(--orange-50));
             color: var(--orange-700);
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 0.75rem;
             font-weight: 600;
+            box-shadow: 0 2px 4px rgba(255, 152, 0, 0.2);
           }
         }
 
@@ -159,15 +189,23 @@
         .esgotar-tudo-wrapper {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.75rem;
           padding: 0.5rem 1rem;
           background: var(--surface-ground);
-          border-radius: 6px;
+          border-radius: 8px;
+          border: 1px solid var(--surface-border);
 
           .esgotar-tudo-label {
             font-size: 0.875rem;
-            color: var(--text-color-secondary);
+            font-weight: 500;
+            color: var(--text-color);
             white-space: nowrap;
+          }
+
+          ::ng-deep .p-inputswitch {
+            &.p-inputswitch-checked .p-inputswitch-slider {
+              background: var(--orange-500);
+            }
           }
         }
 
@@ -222,6 +260,13 @@
 
       .add-produto-btn {
         margin-bottom: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(var(--primary-color-rgb, 59, 130, 246), 0.3);
+        }
       }
 
       .empty-produtos {
@@ -246,19 +291,20 @@
       .produto-card {
         display: flex;
         gap: 1rem;
-        padding: 1rem;
+        padding: 1.25rem;
         background: var(--surface-card);
         border: 1px solid var(--surface-border);
-        border-radius: 8px;
+        border-radius: 10px;
         margin-bottom: 0.75rem;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
 
         &:hover {
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+          transform: translateY(-2px);
         }
 
         &.esgotado {
-          opacity: 0.6;
+          opacity: 0.65;
           
           .produto-imagem {
             filter: grayscale(100%);
@@ -273,9 +319,10 @@
           position: relative;
           width: 120px;
           height: 120px;
-          border-radius: 6px;
+          border-radius: 10px;
           overflow: hidden;
           flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
           img {
             width: 100%;
@@ -289,11 +336,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--surface-ground);
+            background: linear-gradient(135deg, var(--surface-ground), var(--surface-100));
             color: var(--text-color-secondary);
 
             i {
-              font-size: 2rem;
+              font-size: 2.5rem;
+              opacity: 0.5;
             }
           }
 
@@ -301,12 +349,14 @@
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
-            padding: 0.25rem 0.75rem;
-            background: rgba(0, 0, 0, 0.8);
+            padding: 0.375rem 0.875rem;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
             color: white;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 0.75rem;
             font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
           }
         }
 
@@ -356,15 +406,18 @@
             .meta-tag {
               display: flex;
               align-items: center;
-              gap: 0.25rem;
-              padding: 0.25rem 0.75rem;
-              background: var(--surface-ground);
-              border-radius: 12px;
+              gap: 0.375rem;
+              padding: 0.375rem 0.875rem;
+              background: linear-gradient(135deg, var(--surface-ground), var(--surface-50));
+              border: 1px solid var(--surface-border);
+              border-radius: 16px;
               font-size: 0.75rem;
+              font-weight: 500;
               color: var(--text-color-secondary);
 
               i {
                 font-size: 0.75rem;
+                color: var(--primary-color);
               }
             }
           }
@@ -379,15 +432,23 @@
           .esgotar-wrapper {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 0.75rem;
+            gap: 0.75rem;
+            padding: 0.625rem 1rem;
             background: var(--surface-ground);
-            border-radius: 6px;
+            border-radius: 8px;
+            border: 1px solid var(--surface-border);
 
             .esgotar-label {
-              font-size: 0.8rem;
-              color: var(--text-color-secondary);
+              font-size: 0.875rem;
+              font-weight: 500;
+              color: var(--text-color);
               white-space: nowrap;
+            }
+
+            ::ng-deep .p-inputswitch {
+              &.p-inputswitch-checked .p-inputswitch-slider {
+                background: var(--orange-500);
+              }
             }
           }
 
@@ -400,21 +461,24 @@
               height: 2.5rem;
               border: 1px solid var(--surface-border);
               background: var(--surface-card);
-              border-radius: 6px;
+              border-radius: 8px;
               cursor: pointer;
               display: flex;
               align-items: center;
               justify-content: center;
-              transition: all 0.2s;
+              transition: all 0.25s ease;
 
               i {
                 font-size: 0.875rem;
                 color: var(--text-color-secondary);
+                transition: all 0.25s ease;
               }
 
               &:hover {
                 background: var(--primary-color);
                 border-color: var(--primary-color);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(var(--primary-color-rgb, 59, 130, 246), 0.3);
 
                 i {
                   color: white;
@@ -424,6 +488,7 @@
               &.danger:hover {
                 background: var(--red-500);
                 border-color: var(--red-500);
+                box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
               }
             }
           }

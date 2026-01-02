@@ -10,7 +10,7 @@ A área administrativa foi criada para gerenciar a plataforma ClimbDelivery de f
 
 **Área Administrativa (Super Admin):**
 - **Email:** `admin@climbdelivery.com`
-- **Senha:** `admin123`
+- **Senha:** `123456`
 - **Acesso:** `/admin`
 
 **Área do Restaurante:**

@@ -19,7 +19,7 @@
     <!-- FILTROS -->
     <div class="filters-section">
       <span class="p-input-icon-left flex-1">
-        <i class="pi pi-search"></i>
+        <!-- <i class="pi pi-search"></i> -->
         <input 
           type="text" 
           pInputText 
@@ -28,13 +28,12 @@
           class="w-full" />
       </span>
 
-      <select 
+      <p-selectButton 
         [(ngModel)]="filtroStatus"
-        class="filtro-status-select">
-        <option *ngFor="let opt of filtroStatusOptions" [value]="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
+        [options]="filtroStatusOptions"
+        optionLabel="label"
+        optionValue="value">
+      </p-selectButton>
     </div>
   </div>
 
@@ -96,7 +95,7 @@
             <label class="esgotar-tudo-label">Esgotar tudo</label>
             <p-inputSwitch 
               [ngModel]="false"
-              (ngModelChange)="esgotarTodosCategoria(categoria, $event, $event)"
+              (ngModelChange)="esgotarTodosCategoria(categoria, $event)"
               pTooltip="Esgota todos os produtos desta categoria">
             </p-inputSwitch>
           </div>
@@ -212,11 +211,10 @@
             <!-- Toggle Esgotar -->
             <div class="esgotar-wrapper">
               <label class="esgotar-label">Esgotar</label>
-              <input 
-                type="checkbox"
-                class="esgotar-checkbox"
-                [checked]="!produto.disponivel"
-                (change)="toggleDisponibilidadeProduto(produto)" />
+              <p-inputSwitch 
+                [ngModel]="!produto.disponivel"
+                (ngModelChange)="toggleDisponibilidadeProduto(produto)">
+              </p-inputSwitch>
             </div>
 
             <!-- Menu de Ações do Produto -->

@@ -17,16 +17,19 @@
       <div class="col-left">
         <div class="field">
           <label for="categoria" class="required">Categoria</label>
-          <select 
+          <p-dropdown
             id="categoria"
             [(ngModel)]="categoriaIdSelecionada"
+            [options]="categorias"
+            optionLabel="nome"
+            optionValue="id"
+            placeholder="Selecione uma categoria"
+            [filter]="true"
+            filterBy="nome"
+            [showClear]="false"
             class="w-full"
             [disabled]="loading">
-            <option [ngValue]="undefined">Selecione uma categoria</option>
-            <option *ngFor="let cat of categorias" [ngValue]="cat.id">
-              {{ cat.nome }}
-            </option>
-          </select>
+          </p-dropdown>
         </div>
 
         <div class="field">
@@ -66,10 +69,11 @@
               id="preco"
               [(ngModel)]="preco"
               mode="decimal"
+              locale="en-US"
               [minFractionDigits]="2"
               [maxFractionDigits]="2"
               [min]="0"
-              placeholder="0,00"
+              placeholder="0.00"
               [disabled]="loading">
             </p-inputNumber>
           </div>

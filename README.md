@@ -79,7 +79,7 @@ http://localhost:4200
 
 ### Área Administrativa (Super Admin)
 - **Email:** admin@climbdelivery.com
-- **Senha:** admin123
+- **Senha:** 123456
 - **Acesso:** Área administrativa completa para gerenciar a plataforma SaaS
 
 ### Área do Restaurante

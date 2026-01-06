@@ -1,0 +1,28 @@
+.public-header {
+  background-color: var(--color-header-bg, #cc0000);
+  color: var(--color-header-text, #ffffff);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section {
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}

@@ -10,7 +10,7 @@ import { CardapioResponse, PublicRestaurant } from '../models/public-restaurant.
 })
 export class PublicRestaurantService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/public`;
+  private apiUrl = `${environment.api.baseUrl}/public`;
   
   private restaurantSubject = new BehaviorSubject<PublicRestaurant | null>(null);
   public restaurant$ = this.restaurantSubject.asObservable();

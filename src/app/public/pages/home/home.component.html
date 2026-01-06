@@ -1,0 +1,13 @@
+<div class="home-page">
+  <div class="container">
+    @if (loading) {
+      <div class="loading">Carregando cardápio...</div>
+    } @else if (error) {
+      <div class="error">Erro ao carregar cardápio</div>
+    } @else {
+      <h1>Página Home</h1>
+      <p>Slug: {{ slug }}</p>
+      <p>TODO: Implementar na Sprint 6</p>
+    }
+  </div>
+</div>

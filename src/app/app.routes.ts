@@ -5,6 +5,7 @@ import { homeGuard } from './core/guards/home.guard';
 import { LoginComponent } from './features/auth/login/login.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
+import { publicRoutes } from './public/public.routes';
 
 export const routes: Routes = [
   {
@@ -39,6 +40,10 @@ export const routes: Routes = [
     path: 'admin',
     canActivate: [authGuard],
     loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES)
+  },
+  {
+    path: 'p',
+    children: publicRoutes
   },
   {
     path: '**',

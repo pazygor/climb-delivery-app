@@ -1,0 +1,18 @@
+@if (drawerOpen$ | async) {
+  <div class="cart-overlay" (click)="closeDrawer()"></div>
+  
+  <div class="cart-drawer">
+    <div class="cart-header">
+      <h2>Meu Carrinho</h2>
+      <button (click)="closeDrawer()" class="close-btn">✕</button>
+    </div>
+    
+    <div class="cart-content">
+      <p>TODO: Implementar na Sprint 7</p>
+      @if (cart$ | async; as cart) {
+        <p>Itens: {{ cart.quantidadeItens }}</p>
+        <p>Total: {{ cart.total | currency:'BRL' }}</p>
+      }
+    </div>
+  </div>
+}

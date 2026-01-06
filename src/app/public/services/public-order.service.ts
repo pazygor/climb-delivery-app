@@ -9,7 +9,7 @@ import { PublicOrderRequest, PublicOrderResponse } from '../models/public-order.
 })
 export class PublicOrderService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/public`;
+  private apiUrl = `${environment.api.baseUrl}/public`;
 
   createPedido(slug: string, orderData: PublicOrderRequest): Observable<PublicOrderResponse> {
     // TODO: Implementar na Sprint 8

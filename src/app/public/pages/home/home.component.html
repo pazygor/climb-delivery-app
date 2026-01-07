@@ -1,13 +1,197 @@
 <div class="home-page">
-  <div class="container">
-    @if (loading) {
-      <div class="loading">Carregando cardápio...</div>
-    } @else if (error) {
-      <div class="error">Erro ao carregar cardápio</div>
-    } @else {
-      <h1>Página Home</h1>
-      <p>Slug: {{ slug }}</p>
-      <p>TODO: Implementar na Sprint 6</p>
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-container">
+      <div class="loading-content">
+        <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: var(--primary-color)"></i>
+        <p>Carregando cardápio...</p>
+      </div>
+    </div>
+  }
+
+  <!-- Error State -->
+  @else if (error) {
+    <div class="error-container">
+      <div class="error-content">
+        <i class="pi pi-exclamation-circle" style="font-size: 4rem; color: #ef4444"></i>
+        <h2>{{ errorMessage }}</h2>
+        <p>Verifique o endereço e tente novamente</p>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @else if (restaurant) {
+    <!-- Banner Hero -->
+    @if (restaurant.configuracao?.exibirBanner && restaurant.configuracao?.mensagemBanner) {
+      <div class="hero-banner" 
+           [style.background-image]="restaurant.configuracao?.urlBannerDesktop ? 'url(' + restaurant.configuracao?.urlBannerDesktop + ')' : 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))'">
+        <div class="banner-overlay">
+          <h2 class="banner-message">{{ restaurant.configuracao?.mensagemBanner }}</h2>
+        </div>
+      </div>
     }
-  </div>
+
+    <!-- Restaurant Info Section -->
+    <div class="restaurant-info-section">
+      <div class="container">
+        <div class="restaurant-info">
+          @if (restaurant.configuracao?.urlLogoPrincipal) {
+            <img [src]="restaurant.configuracao?.urlLogoPrincipal" [alt]="restaurant.nomeFantasia" class="restaurant-logo-main">
+          }
+          <div class="restaurant-details">
+            <h1 class="restaurant-title">{{ restaurant.nomeFantasia }}</h1>
+            <div class="restaurant-meta">
+              <span class="meta-item">
+                <i class="pi pi-clock"></i>
+                {{ restaurant.tempoMedioEntrega }} min
+              </span>
+              <span class="meta-item">
+                <i class="pi pi-map-marker"></i>
+                Taxa: R$ {{ formatPrice(restaurant.taxaEntrega) }}
+              </span>
+              @if (!isRestaurantOpen()) {
+                <span class="meta-item closed-badge">
+                  <i class="pi pi-times-circle"></i>
+                  Fechado no momento
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-section sticky">
+      <div class="container">
+        <div class="search-wrapper">
+          <i class="pi pi-search search-icon"></i>
+          <input 
+            type="text" 
+            pInputText
+            [(ngModel)]="searchTerm"
+            placeholder="Buscar produtos..."
+            class="search-input">
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Navigation -->
+    @if (categorias && categorias.length > 0) {
+      <div class="category-nav sticky-nav">
+        <div class="container">
+          <div class="category-scroll">
+            @for (categoria of categorias; track categoria.id) {
+              <button 
+                class="category-btn"
+                [class.active]="selectedCategory === categoria.id"
+                (click)="scrollToCategory(categoria.id)">
+                {{ categoria.nome }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Products Content -->
+    <div class="products-container">
+      <div class="container">
+        
+        <!-- Destaques Section -->
+        @if (destaques.length > 0 && restaurant.configuracao?.exibirDestaques) {
+          <section class="featured-section">
+            <h2 class="section-title">
+              <i class="pi pi-star-fill"></i>
+              Destaques
+            </h2>
+            <div class="products-grid">
+              @for (produto of destaques; track produto.id) {
+                <div class="product-card" [attr.data-estilo]="restaurant.configuracao?.estiloCard || 'shadow'">
+                  @if (produto.imagemUrl) {
+                    <div class="product-image">
+                      <img [src]="produto.imagemUrl" [alt]="produto.nome">
+                      @if (!produto.disponivel) {
+                        <div class="unavailable-badge">Esgotado</div>
+                      }
+                    </div>
+                  }
+                  <div class="product-info">
+                    <h3 class="product-name">{{ produto.nome }}</h3>
+                    @if (produto.descricao) {
+                      <p class="product-description">{{ produto.descricao }}</p>
+                    }
+                    <div class="product-footer">
+                      <span class="product-price">R$ {{ formatPrice(produto.preco) }}</span>
+                      <button 
+                        class="add-btn"
+                        [attr.data-estilo]="restaurant.configuracao?.estiloBotao || 'rounded'"
+                        [disabled]="!produto.disponivel">
+                        <i class="pi pi-plus"></i>
+                        Adicionar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Categories and Products -->
+        @for (categoria of filteredCategorias; track categoria.id) {
+          <section class="category-section" [id]="'category-' + categoria.id">
+            <h2 class="section-title">
+              {{ categoria.nome }}
+            </h2>
+            @if (categoria.descricao) {
+              <p class="section-description">{{ categoria.descricao }}</p>
+            }
+            <div class="products-grid">
+              @for (produto of categoria.produtos; track produto.id) {
+                <div class="product-card" [attr.data-estilo]="restaurant.configuracao?.estiloCard || 'shadow'">
+                  @if (produto.imagemUrl) {
+                    <div class="product-image">
+                      <img [src]="produto.imagemUrl" [alt]="produto.nome">
+                      @if (!produto.disponivel) {
+                        <div class="unavailable-badge">Esgotado</div>
+                      }
+                    </div>
+                  }
+                  <div class="product-info">
+                    <h3 class="product-name">{{ produto.nome }}</h3>
+                    @if (produto.descricao) {
+                      <p class="product-description">{{ produto.descricao }}</p>
+                    }
+                    <div class="product-footer">
+                      <span class="product-price">R$ {{ formatPrice(produto.preco) }}</span>
+                      <button 
+                        class="add-btn"
+                        [attr.data-estilo]="restaurant.configuracao?.estiloBotao || 'rounded'"
+                        [disabled]="!produto.disponivel || !isRestaurantOpen()">
+                        <i class="pi pi-plus"></i>
+                        Adicionar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Empty State -->
+        @if (searchTerm && filteredCategorias.length === 0) {
+          <div class="empty-state">
+            <i class="pi pi-search" style="font-size: 4rem; color: #ccc"></i>
+            <h3>Nenhum produto encontrado</h3>
+            <p>Tente buscar por outro termo</p>
+          </div>
+        }
+
+      </div>
+    </div>
+  }
 </div>
+

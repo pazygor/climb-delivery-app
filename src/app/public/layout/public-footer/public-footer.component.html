@@ -1,10 +1,63 @@
 <footer class="public-footer">
-  <div class="container">
-    <div class="footer-content">
-      <p>&copy; {{ currentYear }} ClimbDelivery. Todos os direitos reservados.</p>
-      <div class="social-links">
-        <!-- Links de redes sociais -->
+  <div class="footer-container">
+    <!-- Informações do Restaurante -->
+    <div class="footer-section restaurant-info" *ngIf="restaurant">
+      <h3>{{ restaurant.nomeFantasia }}</h3>
+      <div class="info-item">
+        <i class="pi pi-map-marker"></i>
+        <span>{{ restaurant.endereco }}, {{ restaurant.numero }} - {{ restaurant.bairro }}</span>
       </div>
+      <div class="info-item">
+        <i class="pi pi-phone"></i>
+        <span>{{ restaurant.telefone }}</span>
+      </div>
+      <div class="info-item" *ngIf="restaurant.email">
+        <i class="pi pi-envelope"></i>
+        <span>{{ restaurant.email }}</span>
+      </div>
+      <div class="info-item">
+        <i class="pi pi-clock"></i>
+        <span>{{ restaurant.horarioAbertura }} às {{ restaurant.horarioFechamento }}</span>
+      </div>
+    </div>
+
+    <!-- Redes Sociais -->
+    <div class="footer-section social-section" *ngIf="restaurant?.configuracao">
+      <h3>Siga-nos</h3>
+      <div class="social-links">
+        <button 
+          *ngIf="restaurant?.whatsapp"
+          (click)="openWhatsApp()"
+          class="social-btn whatsapp"
+          title="WhatsApp">
+          <i class="pi pi-whatsapp"></i>
+        </button>
+        <button 
+          *ngIf="restaurant?.configuracao?.urlInstagram"
+          (click)="openSocial(restaurant?.configuracao?.urlInstagram || '')"
+          class="social-btn instagram"
+          title="Instagram">
+          <i class="pi pi-instagram"></i>
+        </button>
+        <button 
+          *ngIf="restaurant?.configuracao?.urlFacebook"
+          (click)="openSocial(restaurant?.configuracao?.urlFacebook || '')"
+          class="social-btn facebook"
+          title="Facebook">
+          <i class="pi pi-facebook"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Informações Legais -->
+    <div class="footer-section legal-section">
+      <p class="powered-by">
+        Powered by <strong>ClimbDelivery</strong>
+      </p>
+      <p class="copyright">
+        &copy; {{ currentYear }} Todos os direitos reservados.
+      </p>
     </div>
   </div>
 </footer>
+

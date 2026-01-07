@@ -1,0 +1,397 @@
+<div class="link-public-container">
+  <p-toast></p-toast>
+
+  <!-- Cabeçalho com Ações -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1>
+        <i class="pi pi-globe"></i>
+        Configuração do Link Público
+      </h1>
+      <p>Personalize a aparência do seu cardápio público</p>
+    </div>
+    
+    <div class="header-actions" *ngIf="publicUrl">
+      <button 
+        pButton 
+        label="Copiar Link" 
+        icon="pi pi-copy" 
+        class="p-button-outlined p-button-secondary"
+        (click)="copyPublicUrl()">
+      </button>
+      <button 
+        pButton 
+        label="Abrir Link" 
+        icon="pi pi-external-link" 
+        class="p-button-outlined p-button-info"
+        (click)="openPublicUrl()">
+      </button>
+    </div>
+  </div>
+
+  <!-- URL Pública -->
+  <div class="public-url-card" *ngIf="publicUrl">
+    <div class="url-content">
+      <i class="pi pi-link"></i>
+      <span class="url-text">{{ publicUrl }}</span>
+    </div>
+  </div>
+
+  <!-- Formulário -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="config-form">
+
+    <!-- Seção 1: Banners -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="pi pi-image"></i>
+        <h2>Banners</h2>
+      </div>
+      
+      <div class="section-content">
+        <div class="field-group">
+          <label class="toggle-label">
+            <p-inputSwitch formControlName="exibirBanner"></p-inputSwitch>
+            <span>Exibir Banner</span>
+          </label>
+        </div>
+
+        <div class="field-group" *ngIf="form.get('exibirBanner')?.value">
+          <label>Mensagem do Banner</label>
+          <textarea 
+            pInputTextarea 
+            formControlName="mensagemBanner"
+            placeholder="Ex: Bem-vindo ao nosso delivery! 🍕"
+            rows="2">
+          </textarea>
+        </div>
+
+        <div class="field-group" *ngIf="form.get('exibirBanner')?.value">
+          <label>URL Banner Desktop</label>
+          <input 
+            type="url" 
+            pInputText 
+            formControlName="urlBannerDesktop"
+            placeholder="https://exemplo.com/banner-desktop.jpg">
+          <small class="field-hint">Imagem recomendada: 1920x400px</small>
+        </div>
+
+        <div class="field-group" *ngIf="form.get('exibirBanner')?.value">
+          <label>URL Banner Mobile</label>
+          <input 
+            type="url" 
+            pInputText 
+            formControlName="urlBannerMobile"
+            placeholder="https://exemplo.com/banner-mobile.jpg">
+          <small class="field-hint">Imagem recomendada: 800x600px</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção 2: Logos -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="pi pi-star"></i>
+        <h2>Logos</h2>
+      </div>
+      
+      <div class="section-content">
+        <div class="field-group">
+          <label>Logo do Header</label>
+          <input 
+            type="url" 
+            pInputText 
+            formControlName="urlLogoHeader"
+            placeholder="https://exemplo.com/logo-header.png">
+          <small class="field-hint">Imagem recomendada: 200x60px (fundo transparente)</small>
+        </div>
+
+        <div class="field-group">
+          <label>Logo Principal</label>
+          <input 
+            type="url" 
+            pInputText 
+            formControlName="urlLogoPrincipal"
+            placeholder="https://exemplo.com/logo-principal.png">
+          <small class="field-hint">Imagem recomendada: 400x400px</small>
+        </div>
+
+        <div class="field-group">
+          <label>Favicon</label>
+          <input 
+            type="url" 
+            pInputText 
+            formControlName="urlFavicon"
+            placeholder="https://exemplo.com/favicon.ico">
+          <small class="field-hint">Imagem recomendada: 32x32px ou 64x64px</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção 3: Cores -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="pi pi-palette"></i>
+        <h2>Cores</h2>
+      </div>
+      
+      <div class="section-content colors-grid">
+        <div class="color-field">
+          <label>Cor Primária *</label>
+          <div class="color-input-wrapper">
+            <p-colorPicker formControlName="corPrimaria"></p-colorPicker>
+            <input 
+              type="text" 
+              pInputText 
+              formControlName="corPrimaria"
+              placeholder="#E63946"
+              maxlength="7">
+          </div>
+        </div>
+
+        <div class="color-field">
+          <label>Cor Secundária *</label>
+          <div class="color-input-wrapper">
+            <p-colorPicker formControlName="corSecundaria"></p-colorPicker>
+            <input 
+              type="text" 
+              pInputText 
+              formControlName="corSecundaria"
+              placeholder="#C2263B"
+              maxlength="7">
+          </div>
+        </div>
+
+        <div class="color-field">
+          <label>Cor de Acento *</label>
+          <div class="color-input-wrapper">
+            <p-colorPicker formControlName="corAcento"></p-colorPicker>
+            <input 
+              type="text" 
+              pInputText 
+              formControlName="corAcento"
+              placeholder="#FF5964"
+              maxlength="7">
+          </div>
+        </div>
+
+        <div class="color-field">
+          <label>Cor do Texto *</label>
+          <div class="color-input-wrapper">
+            <p-colorPicker formControlName="corTexto"></p-colorPicker>
+            <input 
+              type="text" 
+              pInputText 
+              formControlName="corTexto"
+              placeholder="#212121"
+              maxlength="7">
+          </div>
+        </div>
+
+        <div class="color-field">
+          <label>Cor de Fundo *</label>
+          <div class="color-input-wrapper">
+            <p-colorPicker formControlName="corFundo"></p-colorPicker>
+            <input 
+              type="text" 
+              pInputText 
+              formControlName="corFundo"
+              placeholder="#FFFFFF"
+              maxlength="7">
+          </div>
+        </div>
+
+        <div class="color-field">
+          <label>Cor Fundo Header *</label>
+          <div class="color-input-wrapper">
+            <p-colorPicker formControlName="corHeaderBackground"></p-colorPicker>
+            <input 
+              type="text" 
+              pInputText 
+              formControlName="corHeaderBackground"
+              placeholder="#E63946"
+              maxlength="7">
+          </div>
+        </div>
+
+        <div class="color-field">
+          <label>Cor Texto Header *</label>
+          <div class="color-input-wrapper">
+            <p-colorPicker formControlName="corHeaderTexto"></p-colorPicker>
+            <input 
+              type="text" 
+              pInputText 
+              formControlName="corHeaderTexto"
+              placeholder="#FFFFFF"
+              maxlength="7">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção 4: Estilos -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="pi pi-sliders-h"></i>
+        <h2>Estilos</h2>
+      </div>
+      
+      <div class="section-content">
+        <div class="field-group">
+          <label>Estilo dos Botões *</label>
+          <p-dropdown 
+            formControlName="estiloBotao"
+            [options]="estilosBotao"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione o estilo"
+            styleClass="w-full">
+          </p-dropdown>
+        </div>
+
+        <div class="field-group">
+          <label>Estilo dos Cards *</label>
+          <p-dropdown 
+            formControlName="estiloCard"
+            [options]="estilosCard"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione o estilo"
+            styleClass="w-full">
+          </p-dropdown>
+        </div>
+
+        <div class="field-group">
+          <label>Tamanho da Fonte *</label>
+          <p-dropdown 
+            formControlName="tamanhoFonte"
+            [options]="tamanhosFonte"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione o tamanho"
+            styleClass="w-full">
+          </p-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção 5: Exibição -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="pi pi-eye"></i>
+        <h2>Exibição</h2>
+      </div>
+      
+      <div class="section-content">
+        <div class="field-group">
+          <label class="toggle-label">
+            <p-inputSwitch formControlName="exibirPromocoes"></p-inputSwitch>
+            <span>Exibir Promoções</span>
+          </label>
+          <small class="field-hint">Mostra produtos em promoção no topo da página</small>
+        </div>
+
+        <div class="field-group">
+          <label class="toggle-label">
+            <p-inputSwitch formControlName="exibirDestaques"></p-inputSwitch>
+            <span>Exibir Destaques</span>
+          </label>
+          <small class="field-hint">Mostra produtos em destaque no cardápio</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção 6: SEO -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="pi pi-search"></i>
+        <h2>SEO (Otimização para Busca)</h2>
+      </div>
+      
+      <div class="section-content">
+        <div class="field-group">
+          <label>Meta Título</label>
+          <input 
+            type="text" 
+            pInputText 
+            formControlName="metaTitulo"
+            placeholder="Ex: Pizzaria Bella Napoli - Delivery"
+            maxlength="60">
+          <small class="field-hint">Máximo 60 caracteres ({{ form.get('metaTitulo')?.value?.length || 0 }}/60)</small>
+        </div>
+
+        <div class="field-group">
+          <label>Meta Descrição</label>
+          <textarea 
+            pInputTextarea 
+            formControlName="metaDescricao"
+            placeholder="Ex: As melhores pizzas artesanais da região..."
+            rows="3"
+            maxlength="160">
+          </textarea>
+          <small class="field-hint">Máximo 160 caracteres ({{ form.get('metaDescricao')?.value?.length || 0 }}/160)</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção 7: Redes Sociais -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="pi pi-share-alt"></i>
+        <h2>Redes Sociais</h2>
+      </div>
+      
+      <div class="section-content">
+        <div class="field-group">
+          <label>Instagram</label>
+          <input 
+            type="url" 
+            pInputText 
+            formControlName="urlInstagram"
+            placeholder="https://instagram.com/seu_restaurante">
+        </div>
+
+        <div class="field-group">
+          <label>Facebook</label>
+          <input 
+            type="url" 
+            pInputText 
+            formControlName="urlFacebook"
+            placeholder="https://facebook.com/seu_restaurante">
+        </div>
+
+        <div class="field-group">
+          <label>WhatsApp</label>
+          <input 
+            type="tel" 
+            pInputText 
+            formControlName="urlWhatsapp"
+            placeholder="+5511999999999">
+          <small class="field-hint">Formato: +DDI + DDD + Número (ex: +5511999999999)</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção 8: Ações -->
+    <div class="form-actions">
+      <button 
+        pButton 
+        type="button"
+        label="Cancelar" 
+        icon="pi pi-times" 
+        class="p-button-outlined p-button-secondary"
+        (click)="onReset()"
+        [disabled]="loading">
+      </button>
+      <button 
+        pButton 
+        type="submit"
+        label="Salvar Configurações" 
+        icon="pi pi-check" 
+        class="p-button-primary"
+        [loading]="loading"
+        [disabled]="form.invalid">
+      </button>
+    </div>
+
+  </form>
+</div>

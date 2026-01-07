@@ -1,15 +1,34 @@
 <header class="public-header">
-  <div class="container">
-    <div class="header-content">
-      <div class="logo-section">
-        <!-- Logo e nome do restaurante -->
-        <h1>Header Público</h1>
-      </div>
-      
-      <div class="actions">
-        <!-- Badge do carrinho, status, etc -->
-        <span>Carrinho (0)</span>
+  <div class="header-container">
+    <!-- Logo/Nome do Restaurante -->
+    <div class="header-brand">
+      <img 
+        *ngIf="restaurant?.configuracao?.urlLogoHeader" 
+        [src]="restaurant?.configuracao?.urlLogoHeader" 
+        [alt]="restaurant?.nomeFantasia"
+        class="header-logo">
+      <div class="brand-info">
+        <h1 class="restaurant-name">{{ restaurant?.nomeFantasia || 'Carregando...' }}</h1>
+        <span class="restaurant-status" [class.open]="isOpen" [class.closed]="!isOpen">
+          <i class="pi" [class.pi-check-circle]="isOpen" [class.pi-times-circle]="!isOpen"></i>
+          {{ isOpen ? 'Aberto agora' : 'Fechado' }}
+        </span>
       </div>
     </div>
+
+    <!-- Badge do Carrinho -->
+    <button 
+      class="cart-button" 
+      (click)="openCart()"
+      [disabled]="!cart || cart.quantidadeItens === 0">
+      <i class="pi pi-shopping-cart"></i>
+      <span class="cart-badge" *ngIf="cart && cart.quantidadeItens > 0">
+        {{ cart.quantidadeItens }}
+      </span>
+      <span class="cart-total" *ngIf="cart && cart.total > 0">
+        R$ {{ cart.total | number:'1.2-2' }}
+      </span>
+    </button>
   </div>
 </header>
+

@@ -61,6 +61,11 @@ export class SidebarComponent implements OnInit {
             label: 'Estabelecimento',
             icon: 'pi pi-building',
             routerLink: '/dashboard/settings/establishment'
+          },
+          {
+            label: 'Link Público',
+            icon: 'pi pi-globe',
+            routerLink: '/dashboard/settings/link-public'
           }
         ]
       },

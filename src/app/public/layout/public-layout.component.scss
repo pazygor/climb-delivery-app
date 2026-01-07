@@ -2,9 +2,10 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+
+  .public-content {
+    flex: 1;
+    padding-top: 70px; // Altura do header fixo
+  }
 }
 
-.public-content {
-  flex: 1;
-  padding-bottom: 80px; // Espaço para o footer
-}

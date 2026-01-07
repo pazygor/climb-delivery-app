@@ -7,6 +7,7 @@ export interface PublicRestaurant {
   logo?: string;
   telefone?: string;
   whatsapp?: string;
+  email?: string;
   horarioAbertura?: string;
   horarioFechamento?: string;
   taxaEntrega: number;
@@ -17,6 +18,7 @@ export interface PublicRestaurant {
   cidade: string;
   uf: string;
   ativo: boolean;
+  configuracao?: ConfiguracaoVisual;
 }
 
 export interface PublicCategoria {
@@ -33,6 +35,7 @@ export interface PublicProduto {
   descricao?: string;
   preco: number;
   imagem?: string;
+  imagemUrl?: string;
   disponivel: boolean;
   destaque: boolean;
   tempoPreparo?: number;
@@ -73,6 +76,8 @@ export interface ConfiguracaoVisual {
   // Banner
   bannerUrl?: string;
   bannerMobileUrl?: string;
+  urlBannerDesktop?: string;
+  urlBannerMobile?: string;
   exibirBanner: boolean;
   mensagemBanner?: string;
   // Cores
@@ -87,6 +92,9 @@ export interface ConfiguracaoVisual {
   logoUrl?: string;
   faviconUrl?: string;
   logoHeaderUrl?: string;
+  urlLogoHeader?: string;
+  urlLogoPrincipal?: string;
+  urlFavicon?: string;
   // Estilo
   estiloBotao: 'rounded' | 'square' | 'pill';
   estiloCard: 'shadow' | 'border' | 'flat';
@@ -102,6 +110,7 @@ export interface ConfiguracaoVisual {
   urlFacebook?: string;
   urlInstagram?: string;
   urlTwitter?: string;
+  urlWhatsapp?: string;
 }
 
 export interface CardapioResponse {

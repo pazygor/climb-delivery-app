@@ -31,6 +31,12 @@ export const DASHBOARD_ROUTES: Routes = [
     component: SettingsComponent
   },
   {
+    path: 'settings/link-public',
+    loadComponent: () => import('./settings/link-public/link-public.component')
+      .then(m => m.LinkPublicComponent),
+    title: 'Configuração do Link Público'
+  },
+  {
     path: 'account',
     component: AccountComponent
   },

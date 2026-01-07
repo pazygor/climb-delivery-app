@@ -1,0 +1,398 @@
+<div class="configuracao-link-publico">
+  <div class="page-header">
+    <h1>Configuração do Link Público</h1>
+    <p class="subtitle">Personalize a aparência do seu cardápio online</p>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <p>Carregando configurações...</p>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      
+      <!-- Seção 1: Banners -->
+      <section class="config-section">
+        <h2>📷 Banners</h2>
+        <div class="section-content">
+          <div class="form-group">
+            <label for="bannerUrl">Banner Desktop (URL)</label>
+            <input 
+              type="url" 
+              id="bannerUrl" 
+              formControlName="bannerUrl"
+              placeholder="https://exemplo.com/banner-desktop.jpg"
+              class="form-control">
+            <small class="help-text">Tamanho recomendado: 1920x400px</small>
+          </div>
+
+          <div class="form-group">
+            <label for="bannerMobileUrl">Banner Mobile (URL)</label>
+            <input 
+              type="url" 
+              id="bannerMobileUrl" 
+              formControlName="bannerMobileUrl"
+              placeholder="https://exemplo.com/banner-mobile.jpg"
+              class="form-control">
+            <small class="help-text">Tamanho recomendado: 768x300px</small>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" formControlName="exibirBanner">
+              Exibir banner na página inicial
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="mensagemBanner">Mensagem do Banner</label>
+            <input 
+              type="text" 
+              id="mensagemBanner" 
+              formControlName="mensagemBanner"
+              placeholder="Bem-vindo ao nosso cardápio!"
+              class="form-control">
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção 2: Identidade Visual (Logos) -->
+      <section class="config-section">
+        <h2>🎨 Identidade Visual</h2>
+        <div class="section-content">
+          <div class="form-group">
+            <label for="logoUrl">Logo Principal (URL)</label>
+            <input 
+              type="url" 
+              id="logoUrl" 
+              formControlName="logoUrl"
+              placeholder="https://exemplo.com/logo.png"
+              class="form-control">
+            <small class="help-text">Formato: PNG transparente, 400x400px</small>
+          </div>
+
+          <div class="form-group">
+            <label for="logoHeaderUrl">Logo do Header (URL)</label>
+            <input 
+              type="url" 
+              id="logoHeaderUrl" 
+              formControlName="logoHeaderUrl"
+              placeholder="https://exemplo.com/logo-header.png"
+              class="form-control">
+            <small class="help-text">Versão horizontal, 200x60px</small>
+          </div>
+
+          <div class="form-group">
+            <label for="faviconUrl">Favicon (URL)</label>
+            <input 
+              type="url" 
+              id="faviconUrl" 
+              formControlName="faviconUrl"
+              placeholder="https://exemplo.com/favicon.ico"
+              class="form-control">
+            <small class="help-text">Formato: ICO ou PNG, 32x32px</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção 3: Cores Personalizadas -->
+      <section class="config-section">
+        <h2>🎨 Cores Personalizadas</h2>
+        <div class="section-content">
+          <div class="colors-grid">
+            <div class="form-group color-picker">
+              <label for="corPrimaria">Cor Primária</label>
+              <div class="color-input-wrapper">
+                <input 
+                  type="color" 
+                  id="corPrimaria" 
+                  formControlName="corPrimaria"
+                  class="color-control">
+                <input 
+                  type="text" 
+                  formControlName="corPrimaria"
+                  placeholder="#cc0000"
+                  class="form-control color-hex"
+                  maxlength="7">
+              </div>
+              @if (form.get('corPrimaria')?.hasError('pattern')) {
+                <small class="error-text">Cor inválida (use formato #RRGGBB)</small>
+              }
+            </div>
+
+            <div class="form-group color-picker">
+              <label for="corSecundaria">Cor Secundária</label>
+              <div class="color-input-wrapper">
+                <input 
+                  type="color" 
+                  id="corSecundaria" 
+                  formControlName="corSecundaria"
+                  class="color-control">
+                <input 
+                  type="text" 
+                  formControlName="corSecundaria"
+                  placeholder="#ffa000"
+                  class="form-control color-hex"
+                  maxlength="7">
+              </div>
+            </div>
+
+            <div class="form-group color-picker">
+              <label for="corAcento">Cor de Acento</label>
+              <div class="color-input-wrapper">
+                <input 
+                  type="color" 
+                  id="corAcento" 
+                  formControlName="corAcento"
+                  class="color-control">
+                <input 
+                  type="text" 
+                  formControlName="corAcento"
+                  placeholder="#00bfa5"
+                  class="form-control color-hex"
+                  maxlength="7">
+              </div>
+            </div>
+
+            <div class="form-group color-picker">
+              <label for="corTexto">Cor do Texto</label>
+              <div class="color-input-wrapper">
+                <input 
+                  type="color" 
+                  id="corTexto" 
+                  formControlName="corTexto"
+                  class="color-control">
+                <input 
+                  type="text" 
+                  formControlName="corTexto"
+                  placeholder="#212121"
+                  class="form-control color-hex"
+                  maxlength="7">
+              </div>
+            </div>
+
+            <div class="form-group color-picker">
+              <label for="corFundo">Cor de Fundo</label>
+              <div class="color-input-wrapper">
+                <input 
+                  type="color" 
+                  id="corFundo" 
+                  formControlName="corFundo"
+                  class="color-control">
+                <input 
+                  type="text" 
+                  formControlName="corFundo"
+                  placeholder="#ffffff"
+                  class="form-control color-hex"
+                  maxlength="7">
+              </div>
+            </div>
+
+            <div class="form-group color-picker">
+              <label for="corHeaderBackground">Cor do Header (Fundo)</label>
+              <div class="color-input-wrapper">
+                <input 
+                  type="color" 
+                  id="corHeaderBackground" 
+                  formControlName="corHeaderBackground"
+                  class="color-control">
+                <input 
+                  type="text" 
+                  formControlName="corHeaderBackground"
+                  placeholder="#cc0000"
+                  class="form-control color-hex"
+                  maxlength="7">
+              </div>
+            </div>
+
+            <div class="form-group color-picker">
+              <label for="corHeaderTexto">Cor do Header (Texto)</label>
+              <div class="color-input-wrapper">
+                <input 
+                  type="color" 
+                  id="corHeaderTexto" 
+                  formControlName="corHeaderTexto"
+                  class="color-control">
+                <input 
+                  type="text" 
+                  formControlName="corHeaderTexto"
+                  placeholder="#ffffff"
+                  class="form-control color-hex"
+                  maxlength="7">
+              </div>
+            </div>
+          </div>
+          
+          <button type="button" class="btn btn-secondary" (click)="resetarCores()">
+            Resetar Cores Padrão
+          </button>
+        </div>
+      </section>
+
+      <!-- Seção 4: Estilo e Layout -->
+      <section class="config-section">
+        <h2>✨ Estilo e Layout</h2>
+        <div class="section-content">
+          <div class="form-group">
+            <label for="estiloBotao">Estilo dos Botões</label>
+            <select id="estiloBotao" formControlName="estiloBotao" class="form-control">
+              <option value="rounded">Arredondado</option>
+              <option value="square">Quadrado</option>
+              <option value="pill">Pílula (totalmente arredondado)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="estiloCard">Estilo dos Cards</label>
+            <select id="estiloCard" formControlName="estiloCard" class="form-control">
+              <option value="shadow">Com Sombra</option>
+              <option value="border">Com Borda</option>
+              <option value="flat">Flat (sem sombra/borda)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tamanhoFonte">Tamanho da Fonte</label>
+            <select id="tamanhoFonte" formControlName="tamanhoFonte" class="form-control">
+              <option value="small">Pequeno</option>
+              <option value="medium">Médio</option>
+              <option value="large">Grande</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção 5: Exibição de Seções -->
+      <section class="config-section">
+        <h2>👁️ Exibição de Seções</h2>
+        <div class="section-content">
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" formControlName="exibirPromocoes">
+              Exibir seção de Promoções
+            </label>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" formControlName="exibirDestaques">
+              Exibir seção de Produtos em Destaque
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção 6: SEO e Meta Tags -->
+      <section class="config-section">
+        <h2>🔍 SEO e Meta Tags</h2>
+        <div class="section-content">
+          <div class="form-group">
+            <label for="metaTitulo">Meta Título</label>
+            <input 
+              type="text" 
+              id="metaTitulo" 
+              formControlName="metaTitulo"
+              placeholder="Cardápio Online - Nome do Restaurante"
+              class="form-control"
+              maxlength="60">
+            <small class="help-text">Máximo 60 caracteres</small>
+          </div>
+
+          <div class="form-group">
+            <label for="metaDescricao">Meta Descrição</label>
+            <textarea 
+              id="metaDescricao" 
+              formControlName="metaDescricao"
+              placeholder="Descrição que aparece nos resultados de busca..."
+              class="form-control"
+              rows="3"
+              maxlength="160"></textarea>
+            <small class="help-text">Máximo 160 caracteres</small>
+          </div>
+
+          <div class="form-group">
+            <label for="metaKeywords">Palavras-chave (Meta Keywords)</label>
+            <input 
+              type="text" 
+              id="metaKeywords" 
+              formControlName="metaKeywords"
+              placeholder="delivery, pizza, hamburger, restaurante"
+              class="form-control">
+            <small class="help-text">Separe as palavras por vírgula</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção 7: Redes Sociais -->
+      <section class="config-section">
+        <h2>📱 Redes Sociais</h2>
+        <div class="section-content">
+          <div class="form-group">
+            <label for="urlFacebook">Facebook (URL completa)</label>
+            <input 
+              type="url" 
+              id="urlFacebook" 
+              formControlName="urlFacebook"
+              placeholder="https://facebook.com/seu-restaurante"
+              class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="urlInstagram">Instagram (URL completa)</label>
+            <input 
+              type="url" 
+              id="urlInstagram" 
+              formControlName="urlInstagram"
+              placeholder="https://instagram.com/seu-restaurante"
+              class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="urlTwitter">Twitter (URL completa)</label>
+            <input 
+              type="url" 
+              id="urlTwitter" 
+              formControlName="urlTwitter"
+              placeholder="https://twitter.com/seu-restaurante"
+              class="form-control">
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção 8: Ações -->
+      <section class="config-section actions-section">
+        <h2>🚀 Ações</h2>
+        <div class="section-content">
+          @if (publicUrl) {
+            <div class="public-url-box">
+              <label>Link Público do Cardápio:</label>
+              <div class="url-display">
+                <input 
+                  type="text" 
+                  [value]="publicUrl" 
+                  readonly
+                  class="form-control">
+                <button type="button" class="btn btn-secondary" (click)="copiarLinkPublico()">
+                  📋 Copiar Link
+                </button>
+              </div>
+            </div>
+          }
+
+          <div class="action-buttons">
+            <button type="button" class="btn btn-outline" (click)="abrirPreview()">
+              👁️ Visualizar Preview
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+              @if (saving) {
+                Salvando...
+              } @else {
+                💾 Salvar Configurações
+              }
+            </button>
+          </div>
+        </div>
+      </section>
+    </form>
+  }
+</div>

@@ -22,12 +22,27 @@ export class PublicRestaurantService {
   }
 
   getCardapio(slug: string): Observable<CardapioResponse> {
-    // TODO: Implementar na Sprint 6
     return this.http.get<CardapioResponse>(`${this.apiUrl}/${slug}/cardapio`);
   }
 
   isRestauranteAberto(restaurant: PublicRestaurant): boolean {
-    // TODO: implementar lógica de horário na Sprint 6
-    return restaurant.ativo;
+    if (!restaurant || !restaurant.ativo) {
+      return false;
+    }
+
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Domingo, 6 = Sábado
+    const currentTime = now.toTimeString().substring(0, 5); // "HH:MM"
+
+    // Se não tem horários definidos, considera aberto
+    if (!restaurant.horarioAbertura || !restaurant.horarioFechamento) {
+      return restaurant.ativo;
+    }
+
+    // Verifica se está dentro do horário
+    const isWithinHours = currentTime >= restaurant.horarioAbertura && 
+                          currentTime <= restaurant.horarioFechamento;
+
+    return restaurant.ativo && isWithinHours;
   }
 }

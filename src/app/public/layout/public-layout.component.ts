@@ -17,5 +17,5 @@ import { PublicFooterComponent } from './public-footer/public-footer.component';
   styleUrl: './public-layout.component.scss'
 })
 export class PublicLayoutComponent {
-  // TODO: Implementar na Sprint 6
+  // Layout público com header fixo e footer
 }

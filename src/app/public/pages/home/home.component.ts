@@ -85,6 +85,11 @@ export class HomeComponent implements OnInit, OnDestroy {
         next: (cardapio) => {
           this.cardapio = cardapio;
           this.categorias = cardapio.categorias;
+          
+          // Atribui a configuração visual ao restaurant
+          if (cardapio.configuracaoVisual && this.restaurant) {
+            this.restaurant.configuracao = cardapio.configuracaoVisual;
+          }
         },
         error: (err) => {
           console.error('Erro ao carregar cardápio:', err);

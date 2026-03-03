@@ -1,12 +1,21 @@
 .home-page {
   background: var(--background-color, #f8f9fa);
   min-height: calc(100vh - 70px);
+  padding-top: 70px; // Espaço para o header fixo
+  
+  @media (max-width: 768px) {
+    padding-top: 70px;
+  }
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
+  
+  @media (max-width: 480px) {
+    padding: 0 0.75rem;
+  }
 }
 
 // Loading & Error States
@@ -36,6 +45,14 @@
   align-items: center;
   justify-content: center;
   
+  @media (max-width: 768px) {
+    height: 200px;
+  }
+  
+  @media (max-width: 480px) {
+    height: 160px;
+  }
+  
   .banner-overlay {
     background: rgba(0,0,0,0.4);
     width: 100%;
@@ -53,6 +70,12 @@
       
       @media (max-width: 768px) {
         font-size: 1.75rem;
+        padding: 0 1.5rem;
+      }
+      
+      @media (max-width: 480px) {
+        font-size: 1.25rem;
+        padding: 0 1rem;
       }
     }
   }
@@ -80,6 +103,16 @@
       object-fit: contain;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      
+      @media (max-width: 768px) {
+        width: 100px;
+        height: 100px;
+      }
+      
+      @media (max-width: 480px) {
+        width: 80px;
+        height: 80px;
+      }
     }
     
     .restaurant-details {
@@ -128,10 +161,22 @@
   padding: 1.5rem 0;
   border-bottom: 1px solid #e0e0e0;
   
+  @media (max-width: 768px) {
+    padding: 1rem 0;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem 0;
+  }
+  
   &.sticky {
     position: sticky;
     top: 70px;
     z-index: 99;
+    
+    @media (max-width: 768px) {
+      top: 70px;
+    }
   }
   
   .search-wrapper {
@@ -154,6 +199,11 @@
       border-radius: 50px;
       font-size: 1rem;
       
+      @media (max-width: 480px) {
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        font-size: 0.95rem;
+      }
+      
       &:focus {
         border-color: var(--primary-color, #E63946);
         outline: none;
@@ -168,10 +218,26 @@
   padding: 1rem 0;
   border-bottom: 1px solid #e0e0e0;
   
+  @media (max-width: 768px) {
+    padding: 0.75rem 0;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.625rem 0;
+  }
+  
   &.sticky-nav {
     position: sticky;
     top: 130px;
     z-index: 98;
+    
+    @media (max-width: 768px) {
+      top: 120px;
+    }
+    
+    @media (max-width: 480px) {
+      top: 115px;
+    }
   }
   
   .category-scroll {
@@ -194,6 +260,11 @@
       white-space: nowrap;
       transition: all 0.3s;
       
+      @media (max-width: 480px) {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+      
       &:hover {
         border-color: var(--primary-color, #E63946);
         color: var(--primary-color, #E63946);
@@ -211,6 +282,14 @@
 // Products Container
 .products-container {
   padding: 2rem 0;
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem 0;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 1rem 0;
+  }
 }
 
 .section-title {
@@ -221,6 +300,16 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin: 1.5rem 0 1rem 0;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.25rem;
+    margin: 1.25rem 0 0.75rem 0;
+  }
   
   i {
     color: var(--primary-color, #E63946);
@@ -241,6 +330,12 @@
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 
@@ -283,6 +378,14 @@
     height: 200px;
     overflow: hidden;
     
+    @media (max-width: 768px) {
+      height: 180px;
+    }
+    
+    @media (max-width: 480px) {
+      height: 160px;
+    }
+    
     img {
       width: 100%;
       height: 100%;
@@ -306,11 +409,23 @@
   .product-info {
     padding: 1.25rem;
     
+    @media (max-width: 768px) {
+      padding: 1rem;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 0.875rem;
+    }
+    
     .product-name {
       font-size: 1.15rem;
       font-weight: 700;
       color: var(--text-color, #212121);
       margin: 0 0 0.5rem 0;
+      
+      @media (max-width: 480px) {
+        font-size: 1rem;
+      }
     }
     
     .product-description {
@@ -321,17 +436,34 @@
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      
+      @media (max-width: 480px) {
+        font-size: 0.85rem;
+        margin: 0 0 0.75rem 0;
+      }
     }
     
     .product-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 0.5rem;
+      
+      @media (max-width: 480px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
       
       .product-price {
         font-size: 1.25rem;
         font-weight: 700;
         color: var(--primary-color, #E63946);
+        
+        @media (max-width: 480px) {
+          font-size: 1.15rem;
+          text-align: center;
+        }
       }
       
       .add-btn {
@@ -345,6 +477,12 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
+        justify-content: center;
+        
+        @media (max-width: 480px) {
+          width: 100%;
+          padding: 0.75rem 1rem;
+        }
         
         // Estilos de Botão
         &[data-estilo="rounded"] {

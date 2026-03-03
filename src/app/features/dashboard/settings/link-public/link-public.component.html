@@ -49,10 +49,10 @@
       
       <div class="section-content">
         <div class="field-group">
-          <label class="toggle-label">
+          <div class="toggle-label">
             <p-inputSwitch formControlName="exibirBanner"></p-inputSwitch>
-            <span>Exibir Banner</span>
-          </label>
+            <label for="exibirBanner">Exibir Banner</label>
+          </div>
         </div>
 
         <div class="field-group" *ngIf="form.get('exibirBanner')?.value">
@@ -66,23 +66,57 @@
         </div>
 
         <div class="field-group" *ngIf="form.get('exibirBanner')?.value">
-          <label>URL Banner Desktop</label>
-          <input 
-            type="url" 
-            pInputText 
-            formControlName="urlBannerDesktop"
-            placeholder="https://exemplo.com/banner-desktop.jpg">
-          <small class="field-hint">Imagem recomendada: 1920x400px</small>
+          <label>Banner Desktop</label>
+          <div class="upload-wrapper">
+            <p-fileUpload 
+              mode="basic" 
+              name="bannerDesktop"
+              accept="image/*"
+              [maxFileSize]="5000000"
+              [auto]="true"
+              chooseLabel="Escolher Imagem"
+              (onSelect)="onBannerDesktopSelect($event)"
+              [disabled]="loading">
+            </p-fileUpload>
+            <small class="field-hint">Imagem recomendada: 1920x400px (máx. 5MB)</small>
+          </div>
+          <div class="image-preview" *ngIf="bannerDesktopPreview">
+            <img [src]="bannerDesktopPreview" alt="Banner Desktop Preview">
+            <button 
+              pButton 
+              icon="pi pi-times" 
+              class="p-button-rounded p-button-danger p-button-sm"
+              (click)="removeBannerDesktop()"
+              type="button">
+            </button>
+          </div>
         </div>
 
         <div class="field-group" *ngIf="form.get('exibirBanner')?.value">
-          <label>URL Banner Mobile</label>
-          <input 
-            type="url" 
-            pInputText 
-            formControlName="urlBannerMobile"
-            placeholder="https://exemplo.com/banner-mobile.jpg">
-          <small class="field-hint">Imagem recomendada: 800x600px</small>
+          <label>Banner Mobile</label>
+          <div class="upload-wrapper">
+            <p-fileUpload 
+              mode="basic" 
+              name="bannerMobile"
+              accept="image/*"
+              [maxFileSize]="5000000"
+              [auto]="true"
+              chooseLabel="Escolher Imagem"
+              (onSelect)="onBannerMobileSelect($event)"
+              [disabled]="loading">
+            </p-fileUpload>
+            <small class="field-hint">Imagem recomendada: 800x600px (máx. 5MB)</small>
+          </div>
+          <div class="image-preview" *ngIf="bannerMobilePreview">
+            <img [src]="bannerMobilePreview" alt="Banner Mobile Preview">
+            <button 
+              pButton 
+              icon="pi pi-times" 
+              class="p-button-rounded p-button-danger p-button-sm"
+              (click)="removeBannerMobile()"
+              type="button">
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -97,32 +131,83 @@
       <div class="section-content">
         <div class="field-group">
           <label>Logo do Header</label>
-          <input 
-            type="url" 
-            pInputText 
-            formControlName="urlLogoHeader"
-            placeholder="https://exemplo.com/logo-header.png">
-          <small class="field-hint">Imagem recomendada: 200x60px (fundo transparente)</small>
+          <div class="upload-wrapper">
+            <p-fileUpload 
+              mode="basic" 
+              name="logoHeader"
+              accept="image/*"
+              [maxFileSize]="2000000"
+              [auto]="true"
+              chooseLabel="Escolher Logo"
+              (onSelect)="onLogoHeaderSelect($event)"
+              [disabled]="loading">
+            </p-fileUpload>
+            <small class="field-hint">Imagem recomendada: 200x60px, fundo transparente (máx. 2MB)</small>
+          </div>
+          <div class="image-preview" *ngIf="logoHeaderPreview">
+            <img [src]="logoHeaderPreview" alt="Logo Header Preview">
+            <button 
+              pButton 
+              icon="pi pi-times" 
+              class="p-button-rounded p-button-danger p-button-sm"
+              (click)="removeLogoHeader()"
+              type="button">
+            </button>
+          </div>
         </div>
 
         <div class="field-group">
           <label>Logo Principal</label>
-          <input 
-            type="url" 
-            pInputText 
-            formControlName="urlLogoPrincipal"
-            placeholder="https://exemplo.com/logo-principal.png">
-          <small class="field-hint">Imagem recomendada: 400x400px</small>
+          <div class="upload-wrapper">
+            <p-fileUpload 
+              mode="basic" 
+              name="logoPrincipal"
+              accept="image/*"
+              [maxFileSize]="2000000"
+              [auto]="true"
+              chooseLabel="Escolher Logo"
+              (onSelect)="onLogoPrincipalSelect($event)"
+              [disabled]="loading">
+            </p-fileUpload>
+            <small class="field-hint">Imagem recomendada: 400x400px (máx. 2MB)</small>
+          </div>
+          <div class="image-preview" *ngIf="logoPrincipalPreview">
+            <img [src]="logoPrincipalPreview" alt="Logo Principal Preview">
+            <button 
+              pButton 
+              icon="pi pi-times" 
+              class="p-button-rounded p-button-danger p-button-sm"
+              (click)="removeLogoPrincipal()"
+              type="button">
+            </button>
+          </div>
         </div>
 
         <div class="field-group">
           <label>Favicon</label>
-          <input 
-            type="url" 
-            pInputText 
-            formControlName="urlFavicon"
-            placeholder="https://exemplo.com/favicon.ico">
-          <small class="field-hint">Imagem recomendada: 32x32px ou 64x64px</small>
+          <div class="upload-wrapper">
+            <p-fileUpload 
+              mode="basic" 
+              name="favicon"
+              accept="image/*,.ico"
+              [maxFileSize]="500000"
+              [auto]="true"
+              chooseLabel="Escolher Favicon"
+              (onSelect)="onFaviconSelect($event)"
+              [disabled]="loading">
+            </p-fileUpload>
+            <small class="field-hint">Imagem recomendada: 32x32px ou 64x64px (máx. 500KB)</small>
+          </div>
+          <div class="image-preview" *ngIf="faviconPreview">
+            <img [src]="faviconPreview" alt="Favicon Preview">
+            <button 
+              pButton 
+              icon="pi pi-times" 
+              class="p-button-rounded p-button-danger p-button-sm"
+              (click)="removeFavicon()"
+              type="button">
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -283,18 +368,18 @@
       
       <div class="section-content">
         <div class="field-group">
-          <label class="toggle-label">
+          <div class="toggle-label">
             <p-inputSwitch formControlName="exibirPromocoes"></p-inputSwitch>
-            <span>Exibir Promoções</span>
-          </label>
+            <label for="exibirPromocoes">Exibir Promoções</label>
+          </div>
           <small class="field-hint">Mostra produtos em promoção no topo da página</small>
         </div>
 
         <div class="field-group">
-          <label class="toggle-label">
+          <div class="toggle-label">
             <p-inputSwitch formControlName="exibirDestaques"></p-inputSwitch>
-            <span>Exibir Destaques</span>
-          </label>
+            <label for="exibirDestaques">Exibir Destaques</label>
+          </div>
           <small class="field-hint">Mostra produtos em destaque no cardápio</small>
         </div>
       </div>

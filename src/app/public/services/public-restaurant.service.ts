@@ -39,9 +39,23 @@ export class PublicRestaurantService {
       return restaurant.ativo;
     }
 
-    // Verifica se está dentro do horário
-    const isWithinHours = currentTime >= restaurant.horarioAbertura && 
-                          currentTime <= restaurant.horarioFechamento;
+    const abertura = restaurant.horarioAbertura;
+    const fechamento = restaurant.horarioFechamento;
+
+    // Verifica se o horário cruza a meia-noite (ex: 18:00 - 02:00)
+    const cruzaMeiaNoite = fechamento < abertura;
+
+    let isWithinHours: boolean;
+    
+    if (cruzaMeiaNoite) {
+      // Se cruza meia-noite, está aberto se:
+      // currentTime >= abertura (ex: 22:00 >= 18:00) OU
+      // currentTime <= fechamento (ex: 01:00 <= 02:00)
+      isWithinHours = currentTime >= abertura || currentTime <= fechamento;
+    } else {
+      // Horário normal (não cruza meia-noite)
+      isWithinHours = currentTime >= abertura && currentTime <= fechamento;
+    }
 
     return restaurant.ativo && isWithinHours;
   }

@@ -109,9 +109,9 @@
             <div class="products-grid">
               @for (produto of destaques; track produto.id) {
                 <div class="product-card" [attr.data-estilo]="restaurant.configuracao?.estiloCard || 'shadow'">
-                  @if (produto.imagemUrl) {
+                  @if (produto.imagem) {
                     <div class="product-image">
-                      <img [src]="produto.imagemUrl" [alt]="produto.nome">
+                      <img [src]="produto.imagem" [alt]="produto.nome">
                       @if (!produto.disponivel) {
                         <div class="unavailable-badge">Esgotado</div>
                       }
@@ -151,9 +151,9 @@
             <div class="products-grid">
               @for (produto of categoria.produtos; track produto.id) {
                 <div class="product-card" [attr.data-estilo]="restaurant.configuracao?.estiloCard || 'shadow'">
-                  @if (produto.imagemUrl) {
+                  @if (produto.imagem) {
                     <div class="product-image">
-                      <img [src]="produto.imagemUrl" [alt]="produto.nome">
+                      <img [src]="produto.imagem" [alt]="produto.nome">
                       @if (!produto.disponivel) {
                         <div class="unavailable-badge">Esgotado</div>
                       }

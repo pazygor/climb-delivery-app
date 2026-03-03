@@ -5,6 +5,8 @@ export interface ConfiguracaoLinkPublico {
   // Banner
   bannerUrl?: string;
   bannerMobileUrl?: string;
+  urlBannerDesktop?: string;  // Alias para bannerUrl
+  urlBannerMobile?: string;   // Alias para bannerMobileUrl
   exibirBanner?: boolean;
   mensagemBanner?: string;
   
@@ -21,6 +23,9 @@ export interface ConfiguracaoLinkPublico {
   logoUrl?: string;
   faviconUrl?: string;
   logoHeaderUrl?: string;
+  urlLogoHeader?: string;      // Alias para logoHeaderUrl
+  urlLogoPrincipal?: string;   // Alias para logoUrl
+  urlFavicon?: string;         // Alias para faviconUrl
   
   // Estilo
   estiloBotao?: 'rounded' | 'square' | 'pill';
@@ -40,6 +45,7 @@ export interface ConfiguracaoLinkPublico {
   urlFacebook?: string;
   urlInstagram?: string;
   urlTwitter?: string;
+  urlWhatsapp?: string;
   
   // Timestamps
   createdAt?: Date;

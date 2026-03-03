@@ -38,7 +38,14 @@ export class ModalGrupoAdicionalComponent implements OnInit {
   loading: boolean = false;
 
   // Adicionais do grupo
-  adicionais: { nome: string; preco: number; ordem: number; temp?: boolean }[] = [];
+  adicionais: { 
+    id?: number;
+    nome: string; 
+    preco: number; 
+    ordem: number; 
+    temp?: boolean;
+    deleted?: boolean;
+  }[] = [];
   novoAdicionalNome: string = '';
   novoAdicionalPreco: number = 0;
 
@@ -72,14 +79,21 @@ export class ModalGrupoAdicionalComponent implements OnInit {
       this.maximoSelecao = this.grupo.maximoSelecao || undefined;
       this.ativo = this.grupo.ativo;
 
-      // Carregar adicionais existentes
-      if (this.grupo.adicionais) {
-        this.adicionais = this.grupo.adicionais.map((a: Adicional, index: number) => ({
-          nome: a.nome,
-          preco: a.preco,
-          ordem: a.ordem || index
-        }));
-      }
+      // Carregar adicionais existentes para edição
+      this.adicionalService.getAdicionaisByGrupo(this.grupo.id).subscribe({
+        next: (adicionais: Adicional[]) => {
+          this.adicionais = adicionais.map((a: Adicional, index: number) => ({
+            id: a.id, // Mantém o ID para edição
+            nome: a.nome,
+            preco: a.preco,
+            ordem: a.ordem || index,
+            temp: false // Não é temporário, já existe no banco
+          }));
+        },
+        error: (error: any) => {
+          console.error('Erro ao carregar adicionais:', error);
+        }
+      });
     }
   }
 
@@ -117,27 +131,62 @@ export class ModalGrupoAdicionalComponent implements OnInit {
   }
 
   removerItem(index: number): void {
-    this.adicionais.splice(index, 1);
+    const adicional = this.adicionais[index];
+    
+    // Se é um adicional existente (tem ID), marca como deletado
+    if (adicional.id && !adicional.temp) {
+      adicional.deleted = true;
+    } else {
+      // Se é novo (temp), remove da lista
+      this.adicionais.splice(index, 1);
+    }
+    
     // Reordenar
-    this.adicionais.forEach((a, i) => a.ordem = i);
+    this.adicionais
+      .filter(a => !a.deleted)
+      .forEach((a, i) => a.ordem = i);
   }
 
   moverItemCima(index: number): void {
-    if (index === 0) return;
+    const visiveis = this.adicionaisVisiveis;
+    if (visiveis.length === 0) return;
+    
+    const currentItem = this.adicionais[index];
+    const currentIndexVisible = visiveis.indexOf(currentItem);
+    
+    if (currentIndexVisible === 0) return;
+    
+    const previousItem = visiveis[currentIndexVisible - 1];
+    const previousIndex = this.adicionais.indexOf(previousItem);
+    
+    // Troca as posições
     const temp = this.adicionais[index];
-    this.adicionais[index] = this.adicionais[index - 1];
-    this.adicionais[index - 1] = temp;
+    this.adicionais[index] = this.adicionais[previousIndex];
+    this.adicionais[previousIndex] = temp;
+    
     // Reordenar
-    this.adicionais.forEach((a, i) => a.ordem = i);
+    this.adicionaisVisiveis.forEach((a, i) => a.ordem = i);
   }
 
   moverItemBaixo(index: number): void {
-    if (index === this.adicionais.length - 1) return;
+    const visiveis = this.adicionaisVisiveis;
+    if (visiveis.length === 0) return;
+    
+    const currentItem = this.adicionais[index];
+    const currentIndexVisible = visiveis.indexOf(currentItem);
+    
+    if (currentIndexVisible === visiveis.length - 1) return;
+    
+    const nextItem = visiveis[currentIndexVisible + 1];
+    const nextIndex = this.adicionais.indexOf(nextItem);
+    
+    // Troca as posições
     const temp = this.adicionais[index];
-    this.adicionais[index] = this.adicionais[index + 1];
-    this.adicionais[index + 1] = temp;
+    this.adicionais[index] = this.adicionais[nextIndex];
+    this.adicionais[nextIndex] = temp;
+    
     // Reordenar
-    this.adicionais.forEach((a, i) => a.ordem = i);
+    this.adicionaisVisiveis.forEach((a, i) => a.ordem = i);
   }
 
   fechar(): void {
@@ -224,8 +273,8 @@ export class ModalGrupoAdicionalComponent implements OnInit {
 
     this.adicionalService.updateGrupo(this.grupo!.id, dto).subscribe({
       next: (grupoAtualizado: GrupoAdicional) => {
-        // TODO: Implementar lógica de atualização de adicionais (adicionar novos, remover antigos)
-        this.finalizarSalvar(grupoAtualizado);
+        // Processar adicionais: criar novos, atualizar existentes, excluir removidos
+        this.processarAdicionais(this.grupo!.id, grupoAtualizado);
       },
       error: (error: any) => {
         console.error('Erro ao atualizar grupo:', error);
@@ -237,6 +286,55 @@ export class ModalGrupoAdicionalComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  processarAdicionais(grupoId: number, grupo: GrupoAdicional): void {
+    const promises: Promise<any>[] = [];
+
+    // 1. Criar novos adicionais (temp = true)
+    const novos = this.adicionais.filter(a => a.temp && !a.deleted);
+    novos.forEach(adicional => {
+      const dto: CreateAdicionalDto = {
+        grupoAdicionalId: grupoId,
+        nome: adicional.nome,
+        preco: adicional.preco,
+        ordem: adicional.ordem,
+        ativo: true
+      };
+      promises.push(this.adicionalService.createAdicional(dto).toPromise());
+    });
+
+    // 2. Atualizar adicionais existentes que foram modificados
+    const existentes = this.adicionais.filter(a => a.id && !a.temp && !a.deleted);
+    existentes.forEach(adicional => {
+      const dto = {
+        nome: adicional.nome,
+        preco: adicional.preco,
+        ordem: adicional.ordem
+      };
+      promises.push(this.adicionalService.updateAdicional(adicional.id!, dto).toPromise());
+    });
+
+    // 3. Excluir adicionais marcados como deleted
+    const deletados = this.adicionais.filter(a => a.deleted && a.id);
+    deletados.forEach(adicional => {
+      promises.push(this.adicionalService.deleteAdicional(adicional.id!).toPromise());
+    });
+
+    // Executar todas as operações
+    Promise.all(promises)
+      .then(() => {
+        this.finalizarSalvar(grupo);
+      })
+      .catch((error) => {
+        console.error('Erro ao processar adicionais:', error);
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Atenção',
+          detail: 'Grupo atualizado, mas houve problemas com alguns adicionais'
+        });
+        this.finalizarSalvar(grupo);
+      });
   }
 
   criarAdicionaisDoGrupo(grupoId: number, grupo: GrupoAdicional): void {
@@ -283,6 +381,14 @@ export class ModalGrupoAdicionalComponent implements OnInit {
 
   get tituloModal(): string {
     return this.grupo ? 'Editar Grupo de Adicionais' : 'Novo Grupo de Adicionais';
+  }
+
+  get adicionaisVisiveis() {
+    return this.adicionais.filter(a => !a.deleted);
+  }
+
+  getIndexReal(adicional: any): number {
+    return this.adicionais.indexOf(adicional);
   }
 
   formatarPreco(preco: number): string {

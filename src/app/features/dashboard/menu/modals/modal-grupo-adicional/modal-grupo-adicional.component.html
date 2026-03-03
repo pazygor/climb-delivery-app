@@ -138,22 +138,22 @@
       </div>
 
       <!-- Lista de adicionais -->
-      <div class="adicionais-list" *ngIf="adicionais.length > 0">
-        <div class="adicional-item" *ngFor="let adicional of adicionais; let i = index">
+      <div class="adicionais-list" *ngIf="adicionaisVisiveis.length > 0">
+        <div class="adicional-item" *ngFor="let adicional of adicionaisVisiveis; let i = index">
           <div class="item-order">
             <button 
               pButton 
               icon="pi pi-angle-up" 
               class="p-button-text p-button-sm"
-              (click)="moverItemCima(i)"
+              (click)="moverItemCima(getIndexReal(adicional))"
               [disabled]="loading || i === 0"></button>
             <span class="order-number">{{ i + 1 }}</span>
             <button 
               pButton 
               icon="pi pi-angle-down" 
               class="p-button-text p-button-sm"
-              (click)="moverItemBaixo(i)"
-              [disabled]="loading || i === adicionais.length - 1"></button>
+              (click)="moverItemBaixo(getIndexReal(adicional))"
+              [disabled]="loading || i === adicionaisVisiveis.length - 1"></button>
           </div>
 
           <div class="item-info">
@@ -165,12 +165,12 @@
             pButton 
             icon="pi pi-trash" 
             class="p-button-danger p-button-text"
-            (click)="removerItem(i)"
+            (click)="removerItem(getIndexReal(adicional))"
             [disabled]="loading"></button>
         </div>
       </div>
 
-      <p class="hint" *ngIf="adicionais.length === 0">
+      <p class="hint" *ngIf="adicionaisVisiveis.length === 0">
         Adicione itens ao grupo usando o formulário acima
       </p>
     </div>

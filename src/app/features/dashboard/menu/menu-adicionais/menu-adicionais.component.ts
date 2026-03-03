@@ -14,6 +14,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { AdicionalService } from '../../../../core/services/adicional.service';
 import { GrupoAdicional, Adicional } from '../../../../core/models/adicional.model';
 import { ModalGrupoAdicionalComponent } from '../modals/modal-grupo-adicional/modal-grupo-adicional.component';
+import { ModalAdicionalComponent } from '../modals/modal-adicional/modal-adicional.component';
 
 @Component({
   selector: 'app-menu-adicionais',
@@ -29,7 +30,8 @@ import { ModalGrupoAdicionalComponent } from '../modals/modal-grupo-adicional/mo
     TooltipModule,
     ConfirmDialogModule,
     ToastModule,
-    ModalGrupoAdicionalComponent
+    ModalGrupoAdicionalComponent,
+    ModalAdicionalComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './menu-adicionais.component.html',
@@ -48,6 +50,10 @@ export class MenuAdicionaisComponent implements OnInit {
   // Controle do modal
   modalGrupoVisible = false;
   grupoEmEdicao?: GrupoAdicional;
+
+  // Controle do modal de adicional
+  modalAdicionalVisible = false;
+  adicionalEmEdicao?: Adicional;
 
   constructor(
     private adicionalService: AdicionalService,
@@ -246,21 +252,13 @@ export class MenuAdicionaisComponent implements OnInit {
   criarAdicional(): void {
     if (!this.grupoSelecionado) return;
     
-    // TODO: Implementar modal
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Em desenvolvimento',
-      detail: `Criar adicional no grupo: ${this.grupoSelecionado.nome}`
-    });
+    this.adicionalEmEdicao = undefined;
+    this.modalAdicionalVisible = true;
   }
 
   editarAdicional(adicional: Adicional): void {
-    // TODO: Implementar modal
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Em desenvolvimento',
-      detail: `Editar adicional: ${adicional.nome}`
-    });
+    this.adicionalEmEdicao = adicional;
+    this.modalAdicionalVisible = true;
   }
 
   duplicarAdicional(adicional: Adicional): void {
@@ -315,6 +313,12 @@ export class MenuAdicionaisComponent implements OnInit {
         });
       }
     });
+  }
+
+  onAdicionalSalvo(adicional: Adicional): void {
+    if (this.grupoSelecionado) {
+      this.loadAdicionaisGrupo(this.grupoSelecionado.id);
+    }
   }
 
   // ============================================

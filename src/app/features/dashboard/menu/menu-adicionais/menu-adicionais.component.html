@@ -252,9 +252,17 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<!-- Modal -->
+<!-- Modal de Grupo -->
 <app-modal-grupo-adicional
   [(visible)]="modalGrupoVisible"
   [grupo]="grupoEmEdicao"
   (salvou)="onGrupoSalvo($event)">
 </app-modal-grupo-adicional>
+
+<!-- Modal de Adicional -->
+<app-modal-adicional
+  [(visible)]="modalAdicionalVisible"
+  [adicional]="adicionalEmEdicao"
+  [grupoId]="grupoSelecionado?.id || 0"
+  (salvou)="onAdicionalSalvo($event)">
+</app-modal-adicional>

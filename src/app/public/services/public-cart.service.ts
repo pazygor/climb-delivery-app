@@ -1,7 +1,23 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Cart, CartItem, CartAdicional } from '../models/cart.model';
+import { Cart, CartItem } from '../models/cart.model';
 import { PublicProduto } from '../models/public-restaurant.model';
+
+interface CartItemInput {
+  produto: PublicProduto;
+  quantidade: number;
+  adicionaisSelecionados: {
+    grupoId: number;
+    grupoNome: string;
+    adicionais: Array<{
+      id: number;
+      nome: string;
+      preco: number;
+    }>;
+  }[];
+  observacao: string;
+  precoTotal: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +30,8 @@ export class PublicCartService {
   public drawerOpen$ = this.drawerOpenSubject.asObservable();
 
   private readonly STORAGE_KEY = 'climb_delivery_cart';
+  private restaurantSlug: string = '';
+  private taxaEntrega: number = 0;
 
   constructor() {
     this.loadCartFromStorage();
@@ -29,75 +47,199 @@ export class PublicCartService {
     };
   }
 
-  addItem(
-    produto: PublicProduto,
-    quantidade: number,
-    adicionais: CartAdicional[],
-    observacoes?: string
-  ): void {
-    // TODO: Implementar na Sprint 7
-    console.log('addItem - a ser implementado na Sprint 7');
+  /**
+   * Inicializa o carrinho para um restaurante específico
+   */
+  initCart(slug: string, taxaEntrega: number): void {
+    // Se mudou de restaurante, limpa o carrinho
+    if (this.restaurantSlug && this.restaurantSlug !== slug) {
+      this.clearCart();
+    }
+    
+    this.restaurantSlug = slug;
+    this.taxaEntrega = taxaEntrega;
+    this.recalcularTotais();
   }
 
-  removeItem(itemId: string): void {
-    // TODO: Implementar na Sprint 7
-    console.log('removeItem - a ser implementado na Sprint 7');
-  }
-
-  updateItemQuantity(itemId: string, quantidade: number): void {
-    // TODO: Implementar na Sprint 7
-    console.log('updateItemQuantity - a ser implementado na Sprint 7');
-  }
-
-  setTaxaEntrega(taxa: number): void {
+  /**
+   * Adiciona item ao carrinho
+   */
+  addItem(item: CartItemInput): void {
     const cart = this.cartSubject.value;
-    cart.taxaEntrega = taxa;
+    
+    // Converte adicionais para o formato do modelo
+    const adicionaisConvertidos = item.adicionaisSelecionados.flatMap(grupo =>
+      grupo.adicionais.map(adicional => ({
+        adicional: {
+          id: adicional.id,
+          nome: adicional.nome,
+          preco: adicional.preco,
+          grupoAdicionalId: grupo.grupoId,
+          ordem: 0,
+          ativo: true
+        },
+        quantidade: 1
+      }))
+    );
+
+    // Gera ID único para o item
+    const itemId = this.generateItemId();
+    const newItem: CartItem = {
+      id: itemId,
+      produto: item.produto,
+      quantidade: item.quantidade,
+      observacoes: item.observacao,
+      adicionaisSelecionados: adicionaisConvertidos,
+      precoTotal: item.precoTotal
+    };
+
+    cart.items.push(newItem);
     this.updateCart(cart);
   }
 
-  clearCart(): void {
-    this.updateCart(this.getInitialCart());
-    this.saveCartToStorage();
+  /**
+   * Remove item do carrinho
+   */
+  removeItem(itemId: string): void {
+    const cart = this.cartSubject.value;
+    cart.items = cart.items.filter(item => item.id !== itemId);
+    this.updateCart(cart);
   }
 
+  /**
+   * Atualiza quantidade de um item
+   */
+  updateItemQuantity(itemId: string, quantidade: number): void {
+    if (quantidade < 1) return;
+
+    const cart = this.cartSubject.value;
+    const item = cart.items.find(item => item.id === itemId);
+    
+    if (item) {
+      item.quantidade = quantidade;
+      // Recalcula o preço total do item
+      const precoBase = item.produto.preco;
+      const precoAdicionais = this.calcularPrecoAdicionais(item);
+      item.precoTotal = (precoBase + precoAdicionais) * quantidade;
+      
+      this.updateCart(cart);
+    }
+  }
+
+  /**
+   * Limpa o carrinho
+   */
+  clearCart(): void {
+    this.updateCart(this.getInitialCart());
+  }
+
+  /**
+   * Abre o drawer do carrinho
+   */
   openDrawer(): void {
     this.drawerOpenSubject.next(true);
   }
 
+  /**
+   * Fecha o drawer do carrinho
+   */
   closeDrawer(): void {
     this.drawerOpenSubject.next(false);
   }
 
-  toggleDrawer(): void {
-    this.drawerOpenSubject.next(!this.drawerOpenSubject.value);
+  /**
+   * Retorna o carrinho atual
+   */
+  getCart(): Cart {
+    return this.cartSubject.value;
   }
 
+  /**
+   * Retorna quantidade total de itens
+   */
+  getItemCount(): number {
+    return this.cartSubject.value.quantidadeItens;
+  }
+
+  /**
+   * Atualiza o carrinho e recalcula totais
+   */
   private updateCart(cart: Cart): void {
-    cart.subtotal = cart.items.reduce((sum, item) => sum + item.precoTotal, 0);
-    cart.total = cart.subtotal + cart.taxaEntrega;
-    cart.quantidadeItens = cart.items.reduce((sum, item) => sum + item.quantidade, 0);
-    
+    this.recalcularTotais(cart);
     this.cartSubject.next(cart);
-    this.saveCartToStorage();
+    this.saveCartToStorage(cart);
   }
 
-  private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  /**
+   * Recalcula os totais do carrinho
+   */
+  private recalcularTotais(cart?: Cart): void {
+    const currentCart = cart || this.cartSubject.value;
+    
+    // Calcula subtotal
+    currentCart.subtotal = currentCart.items.reduce((total, item) => {
+      return total + item.precoTotal;
+    }, 0);
+
+    // Calcula quantidade total de itens
+    currentCart.quantidadeItens = currentCart.items.reduce((total, item) => {
+      return total + item.quantidade;
+    }, 0);
+
+    // Define taxa de entrega
+    currentCart.taxaEntrega = this.taxaEntrega;
+
+    // Calcula total
+    currentCart.total = currentCart.subtotal + currentCart.taxaEntrega;
   }
 
-  private saveCartToStorage(): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.cartSubject.value));
+  /**
+   * Calcula preço dos adicionais de um item
+   */
+  private calcularPrecoAdicionais(item: CartItem): number {
+    return item.adicionaisSelecionados.reduce((total, cartAdicional) => {
+      return total + (cartAdicional.adicional.preco * cartAdicional.quantidade);
+    }, 0);
   }
 
+  /**
+   * Gera ID único para item do carrinho
+   */
+  private generateItemId(): string {
+    return `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Salva carrinho no localStorage
+   */
+  private saveCartToStorage(cart: Cart): void {
+    try {
+      const cartData = {
+        slug: this.restaurantSlug,
+        cart: cart
+      };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cartData));
+    } catch (error) {
+      console.error('Erro ao salvar carrinho no localStorage:', error);
+    }
+  }
+
+  /**
+   * Carrega carrinho do localStorage
+   */
   private loadCartFromStorage(): void {
-    const saved = localStorage.getItem(this.STORAGE_KEY);
-    if (saved) {
-      try {
-        const cart = JSON.parse(saved);
-        this.cartSubject.next(cart);
-      } catch (e) {
-        console.error('Erro ao carregar carrinho do storage', e);
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      if (stored) {
+        const cartData = JSON.parse(stored);
+        this.restaurantSlug = cartData.slug || '';
+        
+        if (cartData.cart) {
+          this.cartSubject.next(cartData.cart);
+        }
       }
+    } catch (error) {
+      console.error('Erro ao carregar carrinho do localStorage:', error);
     }
   }
 }

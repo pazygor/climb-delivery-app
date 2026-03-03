@@ -347,11 +347,21 @@
   transition: all 0.3s;
   cursor: pointer;
   
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    &:hover {
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  }
+  
   // Estilos de Card
   &[data-estilo="shadow"] {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     
-    &:hover {
+    &:hover:not(.disabled) {
       box-shadow: 0 4px 16px rgba(0,0,0,0.15);
       transform: translateY(-4px);
     }
@@ -360,7 +370,7 @@
   &[data-estilo="border"] {
     border: 2px solid #e0e0e0;
     
-    &:hover {
+    &:hover:not(.disabled) {
       border-color: var(--primary-color, #E63946);
     }
   }
@@ -368,7 +378,7 @@
   &[data-estilo="flat"] {
     border: 1px solid #f0f0f0;
     
-    &:hover {
+    &:hover:not(.disabled) {
       background: #f8f9fa;
     }
   }
@@ -389,7 +399,7 @@
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
     
     .unavailable-badge {

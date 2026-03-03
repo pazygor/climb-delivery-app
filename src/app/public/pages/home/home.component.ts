@@ -10,6 +10,9 @@ import { PublicRestaurant, CardapioResponse, PublicCategoria, PublicProduto } fr
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
+import { ProductModalComponent, ProductModalCartItem } from '../../components/product-modal/product-modal.component';
+import { CartDrawerComponent } from '../../components/cart-drawer/cart-drawer.component';
+import { CartItem } from '../../models/cart.model';
 
 @Component({
   selector: 'app-home',
@@ -19,7 +22,9 @@ import { SkeletonModule } from 'primeng/skeleton';
     FormsModule,
     InputTextModule,
     ButtonModule,
-    SkeletonModule
+    SkeletonModule,
+    ProductModalComponent,
+    CartDrawerComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -43,14 +48,39 @@ export class HomeComponent implements OnInit, OnDestroy {
   searchTerm = '';
   selectedCategory: number | null = null;
 
+  // Modal e Drawer
+  showProductModal = false;
+  showCartDrawer = false;
+  selectedProduct: PublicProduto | null = null;
+  cartItems: CartItem[] = [];
+  cartItemCount = 0;
+
   ngOnInit(): void {
     this.slug = this.route.snapshot.params['slug'];
     this.loadRestaurant();
+    this.subscribeToCart();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  subscribeToCart(): void {
+    // Observa mudanças no carrinho
+    this.cartService.cart$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(cart => {
+        this.cartItems = cart.items;
+        this.cartItemCount = cart.quantidadeItens;
+      });
+
+    // Observa estado do drawer
+    this.cartService.drawerOpen$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(open => {
+        this.showCartDrawer = open;
+      });
   }
 
   loadRestaurant(): void {
@@ -68,6 +98,8 @@ export class HomeComponent implements OnInit, OnDestroy {
           if (restaurant.configuracao) {
             this.applyCustomTheme(restaurant.configuracao);
           }
+          // Inicializa carrinho com dados do restaurante
+          this.cartService.initCart(this.slug, restaurant.taxaEntrega || 0);
           this.loadCardapio();
         },
         error: (err) => {
@@ -77,7 +109,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       });
   }
-
   loadCardapio(): void {
     this.restaurantService.getCardapio(this.slug)
       .pipe(takeUntil(this.destroy$))
@@ -167,5 +198,55 @@ export class HomeComponent implements OnInit, OnDestroy {
   formatPrice(price: number): string {
     return price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
-}
 
+  /**
+   * Abre modal de produto
+   */
+  openProductModal(produto: PublicProduto): void {
+    if (!produto.disponivel || !this.isRestaurantOpen()) {
+      return;
+    }
+    this.selectedProduct = produto;
+    this.showProductModal = true;
+  }
+
+  /**
+   * Adiciona item ao carrinho
+   */
+  onAddToCart(item: ProductModalCartItem): void {
+    this.cartService.addItem(item);
+    this.showProductModal = false;
+    this.selectedProduct = null;
+    
+    // Abre o drawer do carrinho automaticamente
+    this.cartService.openDrawer();
+  }
+
+  /**
+   * Abre drawer do carrinho
+   */
+  openCartDrawer(): void {
+    this.cartService.openDrawer();
+  }
+
+  /**
+   * Remove item do carrinho
+   */
+  onRemoveCartItem(itemId: string): void {
+    this.cartService.removeItem(itemId);
+  }
+
+  /**
+   * Atualiza quantidade de item no carrinho
+   */
+  onUpdateQuantity(event: { itemId: string; quantidade: number }): void {
+    this.cartService.updateItemQuantity(event.itemId, event.quantidade);
+  }
+
+  /**
+   * Limpa o carrinho
+   */
+  onClearCart(): void {
+    this.cartService.clearCart();
+  }
+}

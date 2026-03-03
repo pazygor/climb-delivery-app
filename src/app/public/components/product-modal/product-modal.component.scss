@@ -1,0 +1,331 @@
+.modal-header-custom {
+  width: 100%;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color, #212121);
+    margin: 0;
+  }
+}
+
+.product-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .product-image-container {
+    width: 100%;
+    max-height: 280px;
+    overflow: hidden;
+    border-radius: 12px;
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .product-description {
+    p {
+      color: #666;
+      line-height: 1.6;
+      margin: 0;
+    }
+  }
+
+  .product-price-base {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+
+    .label {
+      font-weight: 600;
+      color: #666;
+    }
+
+    .price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color, #E63946);
+    }
+  }
+
+  .adicionais-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .grupo-adicional {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: white;
+
+      .grupo-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+
+        h3 {
+          font-size: 1.15rem;
+          font-weight: 600;
+          color: var(--text-color, #212121);
+          margin: 0;
+        }
+
+        .badge-obrigatorio {
+          padding: 0.25rem 0.625rem;
+          background: #fee;
+          color: #e63946;
+          font-size: 0.75rem;
+          font-weight: 600;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+      }
+
+      .grupo-descricao {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0 0 0.75rem 0;
+      }
+
+      .grupo-info {
+        margin-bottom: 1rem;
+
+        .info-text {
+          font-size: 0.85rem;
+          color: #999;
+          font-style: italic;
+        }
+      }
+
+      .adicionais-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .adicional-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          border: 1px solid #e0e0e0;
+          border-radius: 6px;
+          transition: all 0.3s;
+          cursor: pointer;
+
+          &:hover {
+            background: #f8f9fa;
+            border-color: var(--primary-color, #E63946);
+          }
+
+          .adicional-label {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            cursor: pointer;
+            gap: 1rem;
+
+            .adicional-info {
+              display: flex;
+              flex-direction: column;
+              gap: 0.25rem;
+
+              .adicional-nome {
+                font-weight: 500;
+                color: var(--text-color, #212121);
+              }
+
+              .adicional-descricao {
+                font-size: 0.85rem;
+                color: #666;
+              }
+            }
+
+            .adicional-preco {
+              font-weight: 600;
+              color: var(--primary-color, #E63946);
+              white-space: nowrap;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .observacao-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-weight: 600;
+      color: var(--text-color, #212121);
+    }
+
+    .observacao-input {
+      width: 100%;
+      resize: vertical;
+      font-family: inherit;
+    }
+  }
+
+  .quantity-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+
+    label {
+      font-weight: 600;
+      color: var(--text-color, #212121);
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .qty-btn {
+        width: 36px;
+        height: 36px;
+        border: 2px solid var(--primary-color, #E63946);
+        background: white;
+        color: var(--primary-color, #E63946);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover:not(:disabled) {
+          background: var(--primary-color, #E63946);
+          color: white;
+        }
+
+        &:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+
+        i {
+          font-size: 0.875rem;
+        }
+      }
+
+      .qty-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        min-width: 40px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.modal-footer-custom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .price-total {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .label {
+      font-size: 0.85rem;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary-color, #E63946);
+    }
+  }
+
+  .btn-add-cart {
+    background: var(--primary-color, #E63946);
+    border-color: var(--primary-color, #E63946);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+
+    &:hover {
+      background: var(--secondary-color, #C2263B);
+      border-color: var(--secondary-color, #C2263B);
+    }
+  }
+}
+
+// Mobile Adjustments
+@media (max-width: 768px) {
+  .product-modal-content {
+    gap: 1.25rem;
+
+    .product-image-container {
+      max-height: 220px;
+    }
+
+    .adicionais-section {
+      gap: 1.25rem;
+
+      .grupo-adicional {
+        padding: 1rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .product-modal-content {
+    gap: 1rem;
+
+    .product-image-container {
+      max-height: 180px;
+    }
+
+    .product-price-base {
+      .price {
+        font-size: 1.25rem;
+      }
+    }
+
+    .adicionais-section {
+      gap: 1rem;
+
+      .grupo-adicional {
+        padding: 0.875rem;
+
+        .grupo-header h3 {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  .modal-footer-custom {
+    .price-total .value {
+      font-size: 1.5rem;
+    }
+  }
+}

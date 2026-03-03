@@ -100,7 +100,7 @@ export class ConfiguracaoLinkPublicoComponent implements OnInit {
 
     const request$ = this.configuracao?.id
       ? this.configuracaoService.update(this.configuracao.id, formData)
-      : this.configuracaoService.create({ ...formData, empresaId: this.empresaId });
+      : this.configuracaoService.create(this.empresaId, formData);
 
     request$.subscribe({
       next: (config) => {

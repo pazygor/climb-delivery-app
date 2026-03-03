@@ -39,7 +39,7 @@ $breakpoint-2xl: 1536px;
   }
 }
 
-@mixin 2xl {
+@mixin xxl {
   @media (min-width: #{$breakpoint-2xl}) {
     @content;
   }

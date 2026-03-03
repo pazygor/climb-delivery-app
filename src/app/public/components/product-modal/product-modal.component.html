@@ -1,0 +1,165 @@
+<p-dialog 
+  [(visible)]="visible" 
+  [modal]="true" 
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '90vw', maxWidth: '600px' }"
+  (onHide)="onHide()">
+  
+  <ng-template pTemplate="header">
+    <div class="modal-header-custom">
+      <h2>{{ produto?.nome }}</h2>
+    </div>
+  </ng-template>
+
+  <div class="product-modal-content" *ngIf="produto">
+    <!-- Imagem do Produto -->
+    @if (produto.imagem) {
+      <div class="product-image-container">
+        <img [src]="produto.imagem" [alt]="produto.nome" class="product-image">
+      </div>
+    }
+
+    <!-- Descrição -->
+    @if (produto.descricao) {
+      <div class="product-description">
+        <p>{{ produto.descricao }}</p>
+      </div>
+    }
+
+    <!-- Preço Base -->
+    <div class="product-price-base">
+      <span class="label">Preço:</span>
+      <span class="price">R$ {{ formatPrice(produto.preco) }}</span>
+    </div>
+
+    <!-- Grupos de Adicionais -->
+    @if (produto.gruposProduto && produto.gruposProduto.length > 0) {
+      <div class="adicionais-section">
+        @for (grupoProduto of produto.gruposProduto; track grupoProduto.id) {
+          @let grupo = grupoProduto.grupoAdicional;
+          <div class="grupo-adicional">
+            <div class="grupo-header">
+              <h3>{{ grupo.nome }}</h3>
+              @if (grupo.obrigatorio) {
+                <span class="badge-obrigatorio">Obrigatório</span>
+              }
+            </div>
+
+            @if (grupo.descricao) {
+              <p class="grupo-descricao">{{ grupo.descricao }}</p>
+            }
+
+            <div class="grupo-info">
+              @if (grupo.tipoSelecao === 'CHECKBOX') {
+                <span class="info-text">
+                  Escolha 
+                  @if (grupo.minimoSelecao === grupo.maximoSelecao) {
+                    {{ grupo.minimoSelecao }}
+                  } @else {
+                    de {{ grupo.minimoSelecao }} a {{ grupo.maximoSelecao }}
+                  }
+                  opção(ões)
+                </span>
+              } @else {
+                <span class="info-text">Escolha 1 opção</span>
+              }
+            </div>
+
+            <!-- Adicionais do Grupo -->
+            <div class="adicionais-list">
+              @for (adicional of grupo.adicionais; track adicional.id) {
+                <div class="adicional-item">
+                  <!-- Radio Button -->
+                  @if (grupo.tipoSelecao === 'RADIO') {
+                    <p-radioButton
+                      [name]="'grupo-' + grupo.id"
+                      [value]="adicional.id"
+                      [(ngModel)]="selectedRadioValues[grupo.id]"
+                      (ngModelChange)="onRadioChange(grupo, $event)"
+                      [inputId]="'adicional-' + adicional.id">
+                    </p-radioButton>
+                  }
+
+                  <!-- Checkbox -->
+                  @if (grupo.tipoSelecao === 'CHECKBOX') {
+                    <p-checkbox
+                      [binary]="true"
+                      [ngModel]="isAdicionalSelecionado(grupo.id, adicional.id)"
+                      (onChange)="onAdicionalCheckboxChange(grupo, adicional, $event.checked)"
+                      [inputId]="'adicional-' + adicional.id">
+                    </p-checkbox>
+                  }
+
+                  <label [for]="'adicional-' + adicional.id" class="adicional-label">
+                    <div class="adicional-info">
+                      <span class="adicional-nome">{{ adicional.nome }}</span>
+                      @if (adicional.descricao) {
+                        <span class="adicional-descricao">{{ adicional.descricao }}</span>
+                      }
+                    </div>
+                    @if (adicional.preco > 0) {
+                      <span class="adicional-preco">+ R$ {{ formatPrice(adicional.preco) }}</span>
+                    }
+                  </label>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Observação -->
+    <div class="observacao-section">
+      <label for="observacao">Observações (opcional)</label>
+      <textarea
+        id="observacao"
+        pInputTextarea
+        [(ngModel)]="observacao"
+        rows="3"
+        placeholder="Ex: Tirar cebola, ponto da carne, etc..."
+        class="observacao-input">
+      </textarea>
+    </div>
+
+    <!-- Controles de Quantidade -->
+    <div class="quantity-section">
+      <label>Quantidade</label>
+      <div class="quantity-controls">
+        <button 
+          type="button" 
+          class="qty-btn" 
+          (click)="diminuirQuantidade()"
+          [disabled]="quantidade <= 1">
+          <i class="pi pi-minus"></i>
+        </button>
+        <span class="qty-value">{{ quantidade }}</span>
+        <button 
+          type="button" 
+          class="qty-btn" 
+          (click)="aumentarQuantidade()">
+          <i class="pi pi-plus"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer-custom">
+      <div class="price-total">
+        <span class="label">Total:</span>
+        <span class="value">R$ {{ formatPrice(calcularPrecoTotal()) }}</span>
+      </div>
+      <button 
+        pButton 
+        type="button" 
+        label="Adicionar ao carrinho"
+        icon="pi pi-shopping-cart"
+        class="btn-add-cart"
+        (click)="adicionarAoCarrinho()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

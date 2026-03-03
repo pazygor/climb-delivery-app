@@ -1,0 +1,146 @@
+<p-sidebar 
+  [(visible)]="visible" 
+  position="right" 
+  [modal]="true"
+  [showCloseIcon]="true"
+  [style]="{ width: '100%', maxWidth: '450px' }"
+  (onHide)="onHide()">
+  
+  <ng-template pTemplate="header">
+    <div class="cart-header">
+      <h2>
+        <i class="pi pi-shopping-cart"></i>
+        Seu Carrinho
+      </h2>
+      @if (items.length > 0) {
+        <button 
+          type="button" 
+          class="btn-clear-cart"
+          (click)="limparCarrinho()"
+          pButton
+          label="Limpar"
+          icon="pi pi-trash"
+          [outlined]="true"
+          severity="danger"
+          size="small">
+        </button>
+      }
+    </div>
+  </ng-template>
+
+  <div class="cart-content">
+    <!-- Carrinho Vazio -->
+    @if (items.length === 0) {
+      <div class="empty-cart">
+        <i class="pi pi-shopping-cart"></i>
+        <h3>Seu carrinho está vazio</h3>
+        <p>Adicione produtos para continuar</p>
+      </div>
+    }
+
+    <!-- Lista de Itens -->
+    @if (items.length > 0) {
+      <div class="cart-items">
+        @for (item of items; track item.id) {
+          <div class="cart-item">
+            <!-- Imagem -->
+            <div class="item-image">
+              @if (item.produto.imagem) {
+                <img [src]="item.produto.imagem" [alt]="item.produto.nome">
+              } @else {
+                <div class="no-image">
+                  <i class="pi pi-image"></i>
+                </div>
+              }
+            </div>
+
+            <!-- Informações -->
+            <div class="item-details">
+              <h4 class="item-name">{{ item.produto.nome }}</h4>
+
+              <!-- Adicionais -->
+              @if (getAdicionaisTexto(item)) {
+                <div class="item-adicionais">
+                  <small>{{ getAdicionaisTexto(item) }}</small>
+                </div>
+              }
+
+              <!-- Observação -->
+              @if (item.observacoes) {
+                <div class="item-observacao">
+                  <small><strong>Obs:</strong> {{ item.observacoes }}</small>
+                </div>
+              }
+
+              <!-- Preço e Controles -->
+              <div class="item-footer">
+                <div class="quantity-controls">
+                  <button 
+                    type="button" 
+                    class="qty-btn" 
+                    (click)="diminuirQuantidade(item)"
+                    [disabled]="item.quantidade <= 1">
+                    <i class="pi pi-minus"></i>
+                  </button>
+                  <span class="qty-value">{{ item.quantidade }}</span>
+                  <button 
+                    type="button" 
+                    class="qty-btn" 
+                    (click)="aumentarQuantidade(item)">
+                    <i class="pi pi-plus"></i>
+                  </button>
+                </div>
+
+                <div class="item-price-actions">
+                  <span class="item-price">R$ {{ formatPrice(item.precoTotal) }}</span>
+                  <button 
+                    type="button" 
+                    class="btn-remove"
+                    (click)="removerItem(item.id!)"
+                    pButton
+                    icon="pi pi-trash"
+                    [text]="true"
+                    severity="danger"
+                    size="small">
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Resumo de Valores -->
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>R$ {{ formatPrice(calcularSubtotal()) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Taxa de Entrega</span>
+          <span>R$ {{ formatPrice(taxaEntrega) }}</span>
+        </div>
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <span>R$ {{ formatPrice(calcularTotal()) }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    @if (items.length > 0) {
+      <div class="cart-footer">
+        <button 
+          type="button" 
+          class="btn-checkout"
+          (click)="finalizarPedido()"
+          pButton
+          label="Finalizar Pedido"
+          icon="pi pi-check"
+          [style]="{ width: '100%' }">
+        </button>
+      </div>
+    }
+  </ng-template>
+</p-sidebar>

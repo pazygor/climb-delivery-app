@@ -108,7 +108,10 @@
             </h2>
             <div class="products-grid">
               @for (produto of destaques; track produto.id) {
-                <div class="product-card" [attr.data-estilo]="restaurant.configuracao?.estiloCard || 'shadow'">
+                <div class="product-card" 
+                     [attr.data-estilo]="restaurant.configuracao?.estiloCard || 'shadow'"
+                     (click)="openProductModal(produto)"
+                     [class.disabled]="!produto.disponivel || !isRestaurantOpen()">
                   @if (produto.imagem) {
                     <div class="product-image">
                       <img [src]="produto.imagem" [alt]="produto.nome">
@@ -127,7 +130,7 @@
                       <button 
                         class="add-btn"
                         [attr.data-estilo]="restaurant.configuracao?.estiloBotao || 'rounded'"
-                        [disabled]="!produto.disponivel">
+                        [disabled]="!produto.disponivel || !isRestaurantOpen()">
                         <i class="pi pi-plus"></i>
                         Adicionar
                       </button>
@@ -150,7 +153,10 @@
             }
             <div class="products-grid">
               @for (produto of categoria.produtos; track produto.id) {
-                <div class="product-card" [attr.data-estilo]="restaurant.configuracao?.estiloCard || 'shadow'">
+                <div class="product-card" 
+                     [attr.data-estilo]="restaurant.configuracao?.estiloCard || 'shadow'"
+                     (click)="openProductModal(produto)"
+                     [class.disabled]="!produto.disponivel || !isRestaurantOpen()">
                   @if (produto.imagem) {
                     <div class="product-image">
                       <img [src]="produto.imagem" [alt]="produto.nome">
@@ -195,3 +201,20 @@
   }
 </div>
 
+<!-- Product Modal -->
+<app-product-modal
+  [(visible)]="showProductModal"
+  [produto]="selectedProduct"
+  (addToCart)="onAddToCart($event)">
+</app-product-modal>
+
+<!-- Cart Drawer -->
+<app-cart-drawer
+  [(visible)]="showCartDrawer"
+  [items]="cartItems"
+  [taxaEntrega]="restaurant?.taxaEntrega || 0"
+  [restaurantSlug]="slug"
+  (removeItem)="onRemoveCartItem($event)"
+  (updateQuantity)="onUpdateQuantity($event)"
+  (clearCart)="onClearCart()">
+</app-cart-drawer>

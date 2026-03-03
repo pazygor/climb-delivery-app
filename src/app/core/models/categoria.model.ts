@@ -3,6 +3,7 @@ export interface Categoria {
   empresaId: number;
   nome: string;
   descricao?: string;
+  imagem?: string;
   ordem: number;
   ativo: boolean;
   createdAt?: Date;

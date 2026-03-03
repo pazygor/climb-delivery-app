@@ -5,6 +5,7 @@ import { SettingsComponent } from './settings/settings.component';
 import { AccountComponent } from './account/account.component';
 import { DeliveryComponent } from './delivery/delivery.component';
 import { ReportsComponent } from './reports/reports.component';
+import { PdvComponent } from './pdv/pdv.component';
 
 export const DASHBOARD_ROUTES: Routes = [
   {
@@ -15,6 +16,10 @@ export const DASHBOARD_ROUTES: Routes = [
   {
     path: 'orders',
     component: OrdersComponent
+  },
+  {
+    path: 'pdv',
+    component: PdvComponent
   },
   {
     path: 'menu',

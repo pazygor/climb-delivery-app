@@ -41,6 +41,11 @@ export class SidebarComponent implements OnInit {
         routerLink: '/dashboard/orders'
       },
       {
+        label: 'Pedidos Balcão (PDV)',
+        icon: 'pi pi-desktop',
+        routerLink: '/dashboard/pdv'
+      },
+      {
         label: 'Gestor de Cardápio',
         icon: 'pi pi-book',
         expanded: false,

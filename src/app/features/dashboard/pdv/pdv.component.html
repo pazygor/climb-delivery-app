@@ -1,0 +1,217 @@
+<div class="container-pdv-screen">
+  <!-- Painel de Menu com Categorias/Produtos -->
+  <div class="container-menu-panel">
+    <!-- Header -->
+    <div class="header-pdv-screen">
+      <div class="container-title container-title__desktop">
+        <span class="title">Pedidos balcão (PDV)</span>
+      </div>
+
+      <!-- Botões de Tipo (Delivery/Mesas) -->
+      <div class="container-types">
+        <div class="toggle-btn-container">
+          <button type="button" class="toggle-button selected">
+            [ D ] Delivery e Balcão
+          </button>
+          <button type="button" class="toggle-button" disabled>
+            [ M ] Mesas e Comandas
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações e Pesquisa -->
+    <div class="menu-panel">
+      <div class="header-action-pdv">
+        <button type="button" class="btn-filter">
+          <i class="pi pi-filter"></i>
+          [F] Filtros
+        </button>
+
+        <div class="info-navigation">
+          <div class="search-container">
+            <input 
+              type="text" 
+              placeholder="[ P ] Pesquisar" 
+              class="search-input"
+              [(ngModel)]="termoPesquisa">
+            <i class="pi pi-search"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu de Categorias -->
+      <div class="container-menu">
+        <div class="menu-pdv">
+          <div class="navigation-items">
+            <span class="option option__navigation">
+              <i class="pi pi-arrow-up-down"></i> Navegação
+            </span>
+            <span class="option option__navigation">
+              <i class="pi pi-check"></i> Selecionar item
+            </span>
+          </div>
+
+          <!-- Lista de Categorias -->
+          <div class="category-menu" *ngIf="!categoriaSelecionada">
+            <div class="category-items">
+              <div 
+                *ngFor="let categoria of categoriasFiltradas" 
+                class="item"
+                (click)="selecionarCategoria(categoria)">
+                <div class="item-title-container">
+                  <span class="item-title" [title]="categoria.nome">
+                    {{ categoria.nome }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lista de Produtos (quando categoria selecionada) -->
+          <div class="products-menu" *ngIf="categoriaSelecionada">
+            <div class="back-button" (click)="categoriaSelecionada = null; produtos = []">
+              <i class="pi pi-arrow-left"></i>
+              Voltar para categorias
+            </div>
+            
+            <h3 class="category-title">{{ categoriaSelecionada.nome }}</h3>
+            
+            <div class="category-items">
+              <div 
+                *ngFor="let produto of produtos" 
+                class="item"
+                (click)="adicionarAoCarrinho(produto)">
+                <div class="item-title-container">
+                  <span class="item-title" [title]="produto.nome">
+                    {{ produto.nome }}
+                  </span>
+                  <span class="item-price">
+                    {{ formatarPreco(produto.preco) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel de Resumo do Pedido -->
+  <div class="order-summary">
+    <div class="container-summary">
+      <!-- Cabeçalho com Ações -->
+      <div class="header-panel">
+        <button type="button" class="btn-action" disabled>
+          [O] Observação
+        </button>
+        <button type="button" class="btn-action" [disabled]="!itemSelecionado">
+          [Q] Editar
+        </button>
+        <button type="button" class="btn-action" [disabled]="!itemSelecionado" (click)="removerDoCarrinho(itemSelecionado!)">
+          [W] Excluir
+        </button>
+      </div>
+
+      <div class="section-separator">
+        <span>Itens do pedido</span>
+        <span>Subtotal</span>
+      </div>
+    </div>
+
+    <!-- Lista de Itens do Carrinho -->
+    <div class="order-summary-pdv">
+      <div class="order-items">
+        <span *ngIf="itensCarrinho.length === 0" class="empty-list-items">
+          Finalize o item ao lado, ele vai aparecer aqui
+        </span>
+
+        <div 
+          *ngFor="let item of itensCarrinho" 
+          class="order-item"
+          [class.selected]="itemSelecionado === item"
+          (click)="selecionarItem(item)">
+          <div class="item-info">
+            <span class="item-quantity">{{ item.quantidade }}x</span>
+            <span class="item-name">{{ item.produto.nome }}</span>
+          </div>
+          <span class="item-subtotal">{{ formatarPreco(item.subtotal) }}</span>
+        </div>
+      </div>
+
+      <!-- Valores -->
+      <div class="order-value-data">
+        <div class="value">
+          <span>Subtotal</span>
+          <span>{{ formatarPreco(calcularSubtotal()) }}</span>
+        </div>
+        <div class="value">
+          <span>Entrega</span>
+          <span class="empty-delivery-value">Grátis</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer com Total e Ações -->
+    <div class="container-summary">
+      <div class="section-separator">
+        <span>Total</span>
+        <span>{{ formatarPreco(calcularTotal()) }}</span>
+      </div>
+
+      <!-- Dados do Cliente -->
+      <div class="container-customer-data">
+        <div class="customer-data">
+          <div class="phone">
+            <div class="input-data">
+              <input 
+                type="text" 
+                placeholder="(XX) X XXXX-XXXX"
+                [(ngModel)]="dadosCliente.telefone"
+                class="input-text"
+                maxlength="15">
+              <div class="form-separator"></div>
+              <input 
+                type="text" 
+                placeholder="Nome do cliente"
+                [(ngModel)]="dadosCliente.nome"
+                class="input-text">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div class="actions">
+        <div class="grid-buttons">
+          <div class="column-btn">
+            <button type="button" class="btn-outline" disabled>
+              [ E ] Entrega
+            </button>
+            <button type="button" class="btn-outline">
+              [ T ] CPF/CNPJ
+            </button>
+          </div>
+          <div class="column-btn">
+            <button type="button" class="btn-outline" disabled>
+              [ R ] Pagamentos
+            </button>
+            <button type="button" class="btn-outline" disabled>
+              [ Y ] Ajustar valor
+            </button>
+          </div>
+        </div>
+
+        <!-- Botão Gerar Pedido -->
+        <button 
+          type="button" 
+          class="btn-primary btn-generate-order"
+          [disabled]="!podeConcluirPedido"
+          (click)="gerarPedido()">
+          [ ENTER ] Gerar pedido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

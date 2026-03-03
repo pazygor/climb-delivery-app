@@ -216,7 +216,7 @@ export class PdvComponent implements OnInit {
       this.messageService.add({
         severity: 'warn',
         summary: 'Atenção',
-        detail: 'Adicione itens ao carrinho e preencha os dados do cliente'
+        detail: 'Adicione pelo menos um item ao pedido'
       });
       return;
     }
@@ -240,23 +240,34 @@ export class PdvComponent implements OnInit {
       return;
     }
 
+    // Monta observações com dados do cliente se fornecidos
+    const observacoes = [];
+    if (this.dadosCliente.nome.trim()) {
+      observacoes.push(`Cliente: ${this.dadosCliente.nome}`);
+    }
+    if (this.dadosCliente.telefone.trim()) {
+      observacoes.push(`Telefone: ${this.dadosCliente.telefone}`);
+    }
+    if (this.dadosCliente.cpfCnpj?.trim()) {
+      observacoes.push(`CPF/CNPJ: ${this.dadosCliente.cpfCnpj}`);
+    }
+
     // Prepara os dados do pedido
     const pedidoManual = {
       empresaId: this.empresaId,
       usuarioId: typeof currentUser.id === 'string' ? parseInt(currentUser.id) : currentUser.id,
       enderecoEntrega: 'BALCÃO - RETIRADA NO LOCAL',
-      numero: '', // Será gerado pelo backend
+      numero: `BAL-${Date.now()}`,
       subtotal: this.converterParaDecimal(this.calcularSubtotal()),
       taxaEntrega: '0.00',
       total: this.converterParaDecimal(this.calcularTotal()),
-      formaPagamento: 'A definir',
-      observacoes: `Cliente: ${this.dadosCliente.nome}\nTelefone: ${this.dadosCliente.telefone}${this.dadosCliente.cpfCnpj ? '\nCPF/CNPJ: ' + this.dadosCliente.cpfCnpj : ''}`,
+      formaPagamento: 'DINHEIRO',
+      observacoes: observacoes.length > 0 ? observacoes.join(' | ') : undefined,
       itens: this.itensCarrinho.map(item => ({
         produtoId: item.produto.id,
         quantidade: item.quantidade,
         precoUnitario: this.converterParaDecimal(item.produto.preco),
-        subtotal: this.converterParaDecimal(item.subtotal),
-        observacoes: item.observacao || ''
+        subtotal: this.converterParaDecimal(item.subtotal)
       }))
     };
 
@@ -334,8 +345,6 @@ export class PdvComponent implements OnInit {
   }
 
   get podeConcluirPedido(): boolean {
-    return this.itensCarrinho.length > 0 && 
-           !!this.dadosCliente.telefone && 
-           !!this.dadosCliente.nome;
+    return this.itensCarrinho.length > 0;
   }
 }

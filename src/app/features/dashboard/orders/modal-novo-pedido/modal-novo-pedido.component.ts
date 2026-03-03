@@ -213,9 +213,7 @@ export class ModalNovoPedidoComponent {
   }
 
   podeConcluirPedido(): boolean {
-    return this.itensCarrinho.length > 0 && 
-           this.dadosCliente.telefone.trim() !== '' && 
-           this.dadosCliente.nome.trim() !== '';
+    return this.itensCarrinho.length > 0;
   }
 
   gerarPedido(): void {
@@ -223,7 +221,7 @@ export class ModalNovoPedidoComponent {
       this.messageService.add({
         severity: 'warn',
         summary: 'Atenção',
-        detail: 'Preencha todos os dados do cliente e adicione pelo menos um item'
+        detail: 'Adicione pelo menos um item ao pedido'
       });
       return;
     }
@@ -232,16 +230,28 @@ export class ModalNovoPedidoComponent {
     const taxaEntrega = 0; // Balcão não tem taxa de entrega
     const total = this.calcularTotal();
 
+    // Monta observações com dados do cliente se fornecidos
+    const observacoes = [];
+    if (this.dadosCliente.nome.trim()) {
+      observacoes.push(`Cliente: ${this.dadosCliente.nome}`);
+    }
+    if (this.dadosCliente.telefone.trim()) {
+      observacoes.push(`Telefone: ${this.dadosCliente.telefone}`);
+    }
+    if (this.dadosCliente.cpfCnpj?.trim()) {
+      observacoes.push(`CPF/CNPJ: ${this.dadosCliente.cpfCnpj}`);
+    }
+
     const pedidoManual = {
       empresaId: this.empresaId,
       usuarioId: this.usuarioId,
-      telefone: this.dadosCliente.telefone,
-      nomeCliente: this.dadosCliente.nome,
-      cpfCnpj: this.dadosCliente.cpfCnpj || undefined,
+      enderecoEntrega: 'BALCÃO - RETIRADA NO LOCAL',
+      numero: `BAL-${Date.now()}`,
       subtotal: this.converterParaDecimal(subtotal),
       taxaEntrega: this.converterParaDecimal(taxaEntrega),
       total: this.converterParaDecimal(total),
-      formaPagamento: 'DINHEIRO', // Pode ser expandido depois
+      formaPagamento: 'DINHEIRO',
+      observacoes: observacoes.length > 0 ? observacoes.join(' | ') : undefined,
       itens: this.itensCarrinho.map(item => ({
         produtoId: item.produto.id,
         quantidade: item.quantidade,

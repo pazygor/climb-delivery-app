@@ -35,7 +35,7 @@ export class ProdutoService {
    * Lista produtos por categoria
    */
   getByCategoria(categoriaId: number): Observable<Produto[]> {
-    return this.http.get<Produto[]>(`${this.API_URL}/categorias/${categoriaId}/produtos`);
+    return this.http.get<Produto[]>(`${this.API_URL}/produtos/categoria/${categoriaId}`);
   }
 
   /**

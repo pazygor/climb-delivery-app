@@ -70,27 +70,81 @@
 
           <!-- Lista de Produtos (quando categoria selecionada) -->
           <div class="products-menu" *ngIf="categoriaSelecionada">
-            <div class="back-button" (click)="categoriaSelecionada = null; produtos = []">
-              <i class="pi pi-arrow-left"></i>
-              Voltar para categorias
+            <div class="category-header">
+              <div class="category-info">
+                <div class="category-icon">
+                  <i class="pi pi-tag"></i>
+                </div>
+                <span class="category-name">{{ categoriaSelecionada.nome }}</span>
+              </div>
+              <div class="category-tab">
+                <span class="tab-active">Itens</span>
+              </div>
             </div>
             
-            <h3 class="category-title">{{ categoriaSelecionada.nome }}</h3>
-            
-            <div class="category-items">
+            <div class="products-grid">
+              <!-- Loading -->
+              <div *ngIf="loading" class="loading-message">
+                <i class="pi pi-spin pi-spinner"></i>
+                <span>Carregando produtos...</span>
+              </div>
+
+              <!-- Nenhum produto encontrado -->
+              <div *ngIf="!loading && produtos.length === 0" class="empty-message">
+                <i class="pi pi-inbox"></i>
+                <span>Nenhum produto disponível nesta categoria</span>
+              </div>
+
+              <!-- Lista de produtos -->
               <div 
                 *ngFor="let produto of produtos" 
-                class="item"
-                (click)="adicionarAoCarrinho(produto)">
-                <div class="item-title-container">
-                  <span class="item-title" [title]="produto.nome">
+                class="product-item"
+                [class.selected]="produtoSelecionado?.id === produto.id"
+                (click)="selecionarProduto(produto)">
+                
+                <!-- Imagem do produto -->
+                <div class="product-image" *ngIf="produto.imagem">
+                  <img [src]="produto.imagem" [alt]="produto.nome">
+                </div>
+                <div class="product-image product-image-placeholder" *ngIf="!produto.imagem">
+                  <i class="pi pi-image"></i>
+                </div>
+                
+                <!-- Info do produto -->
+                <div class="product-info">
+                  <span class="product-name" [title]="produto.nome">
                     {{ produto.nome }}
                   </span>
-                  <span class="item-price">
+                  <span class="product-price">
                     {{ formatarPreco(produto.preco) }}
                   </span>
                 </div>
+
+                <!-- Controles de quantidade (quando selecionado) -->
+                <div class="quantity-controls" *ngIf="produtoSelecionado?.id === produto.id">
+                  <button type="button" class="qty-btn" (click)="diminuirQuantidade(); $event.stopPropagation()">
+                    <i class="pi pi-minus"></i>
+                  </button>
+                  <span class="qty-value">{{ quantidadeSelecionada }}</span>
+                  <button type="button" class="qty-btn" (click)="aumentarQuantidade(); $event.stopPropagation()">
+                    <i class="pi pi-plus"></i>
+                  </button>
+                </div>
               </div>
+            </div>
+
+            <!-- Botões de Ação Inferior -->
+            <div class="bottom-actions">
+              <button type="button" class="btn-secondary-action" (click)="voltarParaCategorias()">
+                [V] Voltar
+              </button>
+              <button 
+                type="button" 
+                class="btn-primary-action"
+                [disabled]="!produtoSelecionado"
+                (click)="finalizarItem()">
+                [A] Finalizar item
+              </button>
             </div>
           </div>
         </div>
@@ -106,10 +160,10 @@
         <button type="button" class="btn-action" disabled>
           [O] Observação
         </button>
-        <button type="button" class="btn-action" [disabled]="!itemSelecionado">
+        <button type="button" class="btn-action" [disabled]="!itemCarrinhoSelecionado">
           [Q] Editar
         </button>
-        <button type="button" class="btn-action" [disabled]="!itemSelecionado" (click)="removerDoCarrinho(itemSelecionado!)">
+        <button type="button" class="btn-action" [disabled]="!itemCarrinhoSelecionado" (click)="removerDoCarrinho(itemCarrinhoSelecionado!)">
           [W] Excluir
         </button>
       </div>
@@ -130,8 +184,8 @@
         <div 
           *ngFor="let item of itensCarrinho" 
           class="order-item"
-          [class.selected]="itemSelecionado === item"
-          (click)="selecionarItem(item)">
+          [class.selected]="itemCarrinhoSelecionado === item"
+          (click)="selecionarItemCarrinho(item)">
           <div class="item-info">
             <span class="item-quantity">{{ item.quantidade }}x</span>
             <span class="item-name">{{ item.produto.nome }}</span>
@@ -215,3 +269,6 @@
     </div>
   </div>
 </div>
+
+<!-- Toast para mensagens -->
+<p-toast position="top-right"></p-toast>

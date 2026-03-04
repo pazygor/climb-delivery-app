@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { SidebarModule } from 'primeng/sidebar';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 // Models
 import { CartItem } from '../../models/cart.model';
@@ -20,10 +22,13 @@ import { CurrencyUtil } from '../../../core/utils/currency.util';
     CommonModule,
     SidebarModule,
     ButtonModule,
-    BadgeModule
+    BadgeModule,
+    ConfirmDialogModule
   ],
+  providers: [ConfirmationService],
   templateUrl: './cart-drawer.component.html',
-  styleUrl: './cart-drawer.component.scss'
+  styleUrl: './cart-drawer.component.scss',
+  encapsulation: ViewEncapsulation.None
 })
 export class CartDrawerComponent {
   @Input() visible: boolean = false;
@@ -35,7 +40,10 @@ export class CartDrawerComponent {
   @Output() updateQuantity = new EventEmitter<{ itemId: string; quantidade: number }>();
   @Output() clearCart = new EventEmitter<void>();
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private confirmationService: ConfirmationService
+  ) {}
 
   onHide(): void {
     this.visible = false;
@@ -43,7 +51,16 @@ export class CartDrawerComponent {
   }
 
   removerItem(itemId: string): void {
-    this.removeItem.emit(itemId);
+    this.confirmationService.confirm({
+      message: 'Tem certeza que deseja remover esse item?',
+      header: 'Confirmar Remoção',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim',
+      rejectLabel: 'Não',
+      accept: () => {
+        this.removeItem.emit(itemId);
+      }
+    });
   }
 
   aumentarQuantidade(item: CartItem): void {
@@ -65,9 +82,17 @@ export class CartDrawerComponent {
   }
 
   limparCarrinho(): void {
-    if (confirm('Deseja realmente limpar o carrinho?')) {
-      this.clearCart.emit();
-    }
+    this.confirmationService.confirm({
+      message: 'Deseja realmente limpar o carrinho?',
+      header: 'Limpar Carrinho',
+      icon: 'pi pi-trash',
+      acceptLabel: 'Sim',
+      rejectLabel: 'Não',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.clearCart.emit();
+      }
+    });
   }
 
   calcularSubtotal(): number {

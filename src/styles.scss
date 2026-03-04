@@ -350,4 +350,17 @@ body {
       box-shadow: 0 4px 12px rgba(145, 219, 36, 0.1);
     }
   }
+
+  // Sidebar/Drawer - Sobrescreve largura padrão
+  .p-sidebar-right .p-sidebar {
+    width: 100% !important;
+    max-width: 450px !important;
+  }
+}
+
+// Override global do PrimeNG Sidebar/Drawer
+.p-sidebar-right .p-sidebar,
+.p-drawer-right .p-drawer {
+  width: 100% !important;
+  max-width: 450px !important;
 }

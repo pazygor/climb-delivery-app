@@ -1,3 +1,14 @@
+// Sobrescreve largura padrão do PrimeNG Drawer
+.p-sidebar-right .p-sidebar,
+.p-drawer-right .p-drawer {
+  width: 100% !important;
+  max-width: 450px !important;
+}
+
+.p-sidebar.p-sidebar-right .p-sidebar-content {
+  width: 100%;
+}
+
 .cart-header {
   display: flex;
   justify-content: space-between;

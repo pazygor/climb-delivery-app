@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Cart, CartItem } from '../models/cart.model';
 import { PublicProduto } from '../models/public-restaurant.model';
+import { CurrencyUtil } from '../../core/utils/currency.util';
 
 interface CartItemInput {
   produto: PublicProduto;
@@ -73,7 +74,7 @@ export class PublicCartService {
         adicional: {
           id: adicional.id,
           nome: adicional.nome,
-          preco: adicional.preco,
+          preco: CurrencyUtil.toNumber(adicional.preco),
           grupoAdicionalId: grupo.grupoId,
           ordem: 0,
           ativo: true
@@ -90,7 +91,7 @@ export class PublicCartService {
       quantidade: item.quantidade,
       observacoes: item.observacao,
       adicionaisSelecionados: adicionaisConvertidos,
-      precoTotal: item.precoTotal
+      precoTotal: CurrencyUtil.toNumber(item.precoTotal)
     };
 
     cart.items.push(newItem);
@@ -117,10 +118,11 @@ export class PublicCartService {
     
     if (item) {
       item.quantidade = quantidade;
-      // Recalcula o preço total do item
-      const precoBase = item.produto.preco;
+      // Recalcula o preço total do item usando CurrencyUtil
+      const precoBase = CurrencyUtil.toNumber(item.produto.preco);
       const precoAdicionais = this.calcularPrecoAdicionais(item);
-      item.precoTotal = (precoBase + precoAdicionais) * quantidade;
+      const precoUnitario = CurrencyUtil.add(precoBase, precoAdicionais);
+      item.precoTotal = CurrencyUtil.multiply(precoUnitario, quantidade);
       
       this.updateCart(cart);
     }
@@ -176,30 +178,50 @@ export class PublicCartService {
   private recalcularTotais(cart?: Cart): void {
     const currentCart = cart || this.cartSubject.value;
     
-    // Calcula subtotal
-    currentCart.subtotal = currentCart.items.reduce((total, item) => {
-      return total + item.precoTotal;
-    }, 0);
+    // Garante que todos os valores sejam números
+    currentCart.items = currentCart.items.map(item => ({
+      ...item,
+      quantidade: CurrencyUtil.toNumber(item.quantidade),
+      precoTotal: CurrencyUtil.toNumber(item.precoTotal),
+      produto: {
+        ...item.produto,
+        preco: CurrencyUtil.toNumber(item.produto.preco)
+      },
+      adicionaisSelecionados: item.adicionaisSelecionados.map(adicional => ({
+        ...adicional,
+        quantidade: CurrencyUtil.toNumber(adicional.quantidade),
+        adicional: {
+          ...adicional.adicional,
+          preco: CurrencyUtil.toNumber(adicional.adicional.preco)
+        }
+      }))
+    }));
+    
+    // Calcula subtotal usando CurrencyUtil para precisão
+    const subtotalValues = currentCart.items.map(item => CurrencyUtil.toNumber(item.precoTotal));
+    currentCart.subtotal = CurrencyUtil.add(...subtotalValues);
 
     // Calcula quantidade total de itens
     currentCart.quantidadeItens = currentCart.items.reduce((total, item) => {
-      return total + item.quantidade;
+      return total + CurrencyUtil.toNumber(item.quantidade);
     }, 0);
 
-    // Define taxa de entrega
-    currentCart.taxaEntrega = this.taxaEntrega;
+    // Define taxa de entrega (somente se houver itens)
+    currentCart.taxaEntrega = currentCart.quantidadeItens > 0 ? CurrencyUtil.toNumber(this.taxaEntrega) : 0;
 
-    // Calcula total
-    currentCart.total = currentCart.subtotal + currentCart.taxaEntrega;
+    // Calcula total usando CurrencyUtil para evitar concatenação de strings
+    currentCart.total = CurrencyUtil.add(currentCart.subtotal, currentCart.taxaEntrega);
   }
 
   /**
    * Calcula preço dos adicionais de um item
    */
   private calcularPrecoAdicionais(item: CartItem): number {
-    return item.adicionaisSelecionados.reduce((total, cartAdicional) => {
-      return total + (cartAdicional.adicional.preco * cartAdicional.quantidade);
-    }, 0);
+    const precos = item.adicionaisSelecionados.map(cartAdicional => {
+      const preco = CurrencyUtil.toNumber(cartAdicional.adicional.preco);
+      return CurrencyUtil.multiply(preco, cartAdicional.quantidade);
+    });
+    return CurrencyUtil.add(...precos);
   }
 
   /**
@@ -235,6 +257,8 @@ export class PublicCartService {
         this.restaurantSlug = cartData.slug || '';
         
         if (cartData.cart) {
+          // Recalcula totais para garantir valores numéricos corretos
+          this.recalcularTotais(cartData.cart);
           this.cartSubject.next(cartData.cart);
         }
       }

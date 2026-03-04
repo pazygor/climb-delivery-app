@@ -25,7 +25,7 @@
       <span class="cart-badge" *ngIf="cart && cart.quantidadeItens > 0">
         {{ cart.quantidadeItens }}
       </span>
-      <span class="cart-total" *ngIf="cart && cart.total > 0">
+      <span class="cart-total" *ngIf="cart && cart.quantidadeItens > 0">
         R$ {{ cart.total | number:'1.2-2' }}
       </span>
     </button>

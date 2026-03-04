@@ -10,6 +10,9 @@ import { BadgeModule } from 'primeng/badge';
 // Models
 import { CartItem } from '../../models/cart.model';
 
+// Utils
+import { CurrencyUtil } from '../../../core/utils/currency.util';
+
 @Component({
   selector: 'app-cart-drawer',
   standalone: true,
@@ -68,11 +71,14 @@ export class CartDrawerComponent {
   }
 
   calcularSubtotal(): number {
-    return this.items.reduce((total, item) => total + item.precoTotal, 0);
+    const valores = this.items.map(item => CurrencyUtil.toNumber(item.precoTotal));
+    return CurrencyUtil.add(...valores);
   }
 
   calcularTotal(): number {
-    return this.calcularSubtotal() + this.taxaEntrega;
+    const subtotal = this.calcularSubtotal();
+    const taxa = CurrencyUtil.toNumber(this.taxaEntrega);
+    return CurrencyUtil.add(subtotal, taxa);
   }
 
   finalizarPedido(): void {
@@ -86,8 +92,9 @@ export class CartDrawerComponent {
     this.onHide();
   }
 
-  formatPrice(value: number): string {
-    return value.toFixed(2).replace('.', ',');
+  formatPrice(value: number | string | undefined | null): string {
+    const numValue = Number(value) || 0;
+    return numValue.toFixed(2).replace('.', ',');
   }
 
   getAdicionaisTexto(item: CartItem): string {

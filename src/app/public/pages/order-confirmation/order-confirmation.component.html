@@ -1,6 +1,183 @@
 <div class="confirmation-page">
-  <div class="container">
-    <h1>Pedido Confirmado! 🎉</h1>
-    <p>TODO: Implementar na Sprint 8</p>
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <p-progressSpinner />
+    <p>Carregando seu pedido...</p>
+  </div>
+
+  <!-- Erro -->
+  <div class="error-container" *ngIf="error && !loading">
+    <p-card>
+      <div class="error-content">
+        <i class="pi pi-exclamation-triangle error-icon"></i>
+        <h2>Pedido não encontrado</h2>
+        <p>Não foi possível encontrar este pedido.</p>
+        <button
+          pButton
+          label="Voltar ao Cardápio"
+          icon="pi pi-arrow-left"
+          (click)="fazerNovoPedido()"
+        ></button>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Sucesso -->
+  <div class="confirmation-container" *ngIf="pedido && !loading && !error">
+    <p-card class="confirmation-card">
+      <!-- Header de Sucesso -->
+      <div class="success-header">
+        <i class="pi pi-check-circle success-icon"></i>
+        <h1>Pedido realizado com sucesso!</h1>
+        <p>Seu pedido foi recebido e está sendo preparado</p>
+      </div>
+
+      <p-divider />
+
+      <!-- Informações do Pedido -->
+      <div class="order-info">
+        <div class="info-row">
+          <span class="label">Número do Pedido:</span>
+          <span class="value pedido-numero">{{ pedido.numero }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Status:</span>
+          <p-tag
+            [value]="pedido.status.nome"
+            [severity]="getStatusSeverity(pedido.status.codigo)"
+          ></p-tag>
+        </div>
+        <div class="info-row" *ngIf="pedido.tempoEstimado">
+          <span class="label">Tempo Estimado:</span>
+          <span class="value">{{ pedido.tempoEstimado }} minutos</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Tipo de Pedido:</span>
+          <span class="value">{{ pedido.tipoPedido === 'entrega' ? 'Entrega' : 'Retirada' }}</span>
+        </div>
+      </div>
+
+      <p-divider />
+
+      <!-- Dados do Cliente -->
+      <div class="customer-info" *ngIf="pedido.cliente">
+        <h3><i class="pi pi-user"></i> Dados do Cliente</h3>
+        <div class="info-grid">
+          <div class="info-item" *ngIf="pedido.cliente.nome">
+            <span class="label">Nome:</span>
+            <span class="value">{{ pedido.cliente.nome }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Telefone:</span>
+            <span class="value">{{ pedido.cliente.telefone }}</span>
+          </div>
+          <div class="info-item" *ngIf="pedido.cliente.email">
+            <span class="label">E-mail:</span>
+            <span class="value">{{ pedido.cliente.email }}</span>
+          </div>
+        </div>
+
+        <!-- Endereço de Entrega -->
+        <div class="delivery-address" *ngIf="pedido.tipoPedido === 'entrega' && pedido.cliente">
+          <h4><i class="pi pi-map-marker"></i> Endereço de Entrega</h4>
+          <p>
+            {{ pedido.cliente.logradouro }}, {{ pedido.cliente.numero }}
+            <span *ngIf="pedido.cliente.complemento"> - {{ pedido.cliente.complemento }}</span>
+            <br>
+            {{ pedido.cliente.bairro }} - {{ pedido.cliente.cidade }}/{{ pedido.cliente.uf }}
+            <br>
+            CEP: {{ pedido.cliente.cep }}
+          </p>
+          <p *ngIf="pedido.cliente.referencia" class="reference">
+            <strong>Referência:</strong> {{ pedido.cliente.referencia }}
+          </p>
+        </div>
+      </div>
+
+      <p-divider />
+
+      <!-- Itens do Pedido -->
+      <div class="order-items">
+        <h3><i class="pi pi-shopping-cart"></i> Itens do Pedido</h3>
+        <div class="items-list">
+          <div class="item" *ngFor="let item of pedido.itens">
+            <div class="item-header">
+              <span class="item-name">{{ item.quantidade }}x {{ item.produto.nome }}</span>
+              <span class="item-price">{{ formatarValor(item.subtotal) }}</span>
+            </div>
+            <div class="item-adicionais" *ngIf="item.adicionais.length > 0">
+              <small *ngFor="let adic of item.adicionais">
+                + {{ adic.quantidade }}x {{ adic.adicional.nome }} ({{ formatarValor(adic.preco) }})
+              </small>
+            </div>
+            <div class="item-obs" *ngIf="item.observacoes">
+              <small>Obs: {{ item.observacoes }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p-divider />
+
+      <!-- Totais -->
+      <div class="order-totals">
+        <div class="total-row">
+          <span>Subtotal:</span>
+          <span>{{ formatarValor(pedido.subtotal) }}</span>
+        </div>
+        <div class="total-row">
+          <span>Taxa de Entrega:</span>
+          <span>{{ formatarValor(pedido.taxaEntrega) }}</span>
+        </div>
+        <div class="total-row total-final">
+          <span>Total:</span>
+          <span>{{ formatarValor(pedido.total) }}</span>
+        </div>
+      </div>
+
+      <p-divider />
+
+      <!-- Forma de Pagamento -->
+      <div class="payment-info">
+        <h3><i class="pi pi-money-bill"></i> Forma de Pagamento</h3>
+        <p>
+          <strong>{{ pedido.formaPagamento === 'dinheiro' ? 'Dinheiro' : pedido.formaPagamento === 'cartao' ? 'Cartão' : 'PIX' }}</strong>
+          <span *ngIf="pedido.trocoPara"> - Troco para: {{ formatarValor(pedido.trocoPara) }}</span>
+        </p>
+      </div>
+
+      <!-- Observações -->
+      <div class="observations" *ngIf="pedido.observacoes">
+        <p-divider />
+        <h3><i class="pi pi-comment"></i> Observações</h3>
+        <p>{{ pedido.observacoes }}</p>
+      </div>
+
+      <p-divider />
+
+      <!-- Ações -->
+      <div class="actions">
+        <button
+          pButton
+          label="Fazer Novo Pedido"
+          icon="pi pi-shopping-cart"
+          class="p-button-outlined"
+          (click)="fazerNovoPedido()"
+        ></button>
+        
+        <a
+          [href]="getWhatsAppLink()"
+          target="_blank"
+          *ngIf="pedido.empresa?.whatsapp"
+        >
+          <button
+            pButton
+            label="Entrar em Contato"
+            icon="pi pi-whatsapp"
+            class="p-button-success"
+          ></button>
+        </a>
+      </div>
+    </p-card>
   </div>
 </div>

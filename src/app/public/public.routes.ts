@@ -22,7 +22,7 @@ export const publicRoutes: Routes = [
         title: 'Finalizar Pedido'
       },
       {
-        path: 'pedido/:id',
+        path: 'pedido/:numero',
         loadComponent: () => import('./pages/order-confirmation/order-confirmation.component').then(m => m.OrderConfirmationComponent),
         title: 'Pedido Confirmado'
       }

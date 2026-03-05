@@ -2078,64 +2078,492 @@ src/app/
 
 ### 📅 Sprint 8 - Frontend Público: Checkout e Finalização (5 dias)
 
-**Objetivo:** Implementar fluxo completo de finalização de pedido.
+**Objetivo:** Implementar fluxo completo de finalização de pedido com cadastro transparente de clientes.
 
-#### Backend - Pedido Service
+---
+
+### 🎯 Conceito: Cadastro Transparente de Clientes
+
+**Estratégia UX:**
+O cliente faz pedidos de forma fluida sem perceber que está criando uma conta. No futuro, poderá acessar histórico de pedidos, receber promoções e acompanhar entregas usando apenas o número de telefone.
+
+**Fluxo:**
+1. Cliente preenche telefone no checkout (obrigatório)
+2. Sistema verifica se já existe cadastro (telefone + empresa)
+3. Se existir: busca dados e preenche automaticamente
+4. Se não existir: cria novo cliente vinculado à empresa
+5. Cliente completa/atualiza dados (nome, email, CPF - todos opcionais)
+6. Finaliza pedido normalmente
+
+**Multi-tenant:**
+- Mesmo número pode existir em empresas diferentes
+- Cliente do Restaurante A pode comprar no Restaurante B
+- Cada empresa tem seus próprios clientes
+
+---
+
+### 📊 Modelagem de Dados
+
+#### Model Cliente (✅ Implementado)
+
+```prisma
+model Cliente {
+  id          Int       @id @default(autoincrement())
+  empresaId   Int       @map("empresa_id")
+  nome        String?   // Opcional
+  telefone    String    @db.VarChar(15) // Obrigatório - identificador único
+  email       String?   // Opcional
+  cpf         String?   @db.VarChar(11) // Opcional
+  
+  // Endereço do Cliente (único nesta versão)
+  cep         String?   @db.VarChar(8)
+  logradouro  String?
+  numero      String?
+  complemento String?
+  bairro      String?
+  cidade      String?
+  uf          String?   @db.VarChar(2)
+  referencia  String?   @db.Text
+  
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  empresa     Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  pedidos     Pedido[]
+
+  // Unicidade: telefone + empresaId (multi-tenant)
+  @@unique([telefone, empresaId])
+  @@map("cliente")
+}
+```
+
+#### Alterações no Model Pedido (✅ Implementado)
+
+```prisma
+model Pedido {
+  // ... campos existentes
+  usuarioId         Int?           @map("usuario_id") // Null para pedidos públicos
+  clienteId         Int?           @map("cliente_id") // NOVO: para pedidos públicos
+  enderecoId        Int?           @map("endereco_id") // Null para pedidos públicos
+  tipoPedido        String         @default("entrega") @map("tipo_pedido") // NOVO: entrega ou retirada
+  trocoPara         Decimal?       @db.Decimal(10, 2) @map("troco_para") // NOVO: se dinheiro
+  
+  // Relacionamentos
+  cliente           Cliente?       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  // ... outros relacionamentos
+}
+```
+
+#### Migration (✅ Criada)
+```bash
+npx prisma migrate dev --name add_cliente_table
+```
+
+---
+
+### 🔧 Backend - API
+
+#### 1. DTOs
+
+**CreateClienteDto**
+```typescript
+// climb-delivery-api/src/cliente/dto/create-cliente.dto.ts
+export class CreateClienteDto {
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^\d{10,11}$/) // DDD + número (10 ou 11 dígitos)
+  telefone: string;
+
+  @IsString()
+  @IsOptional()
+  nome?: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  @Matches(/^\d{11}$/)
+  cpf?: string;
+
+  // Endereço
+  @IsString()
+  @IsOptional()
+  cep?: string;
+
+  @IsString()
+  @IsOptional()
+  logradouro?: string;
+
+  @IsString()
+  @IsOptional()
+  numero?: string;
+
+  @IsString()
+  @IsOptional()
+  complemento?: string;
+
+  @IsString()
+  @IsOptional()
+  bairro?: string;
+
+  @IsString()
+  @IsOptional()
+  cidade?: string;
+
+  @IsString()
+  @IsOptional()
+  @Length(2, 2)
+  uf?: string;
+
+  @IsString()
+  @IsOptional()
+  referencia?: string;
+}
+```
+
+**CreatePedidoPublicoDto**
+```typescript
+// climb-delivery-api/src/public/dto/create-pedido-publico.dto.ts
+export class CreatePedidoPublicoDto {
+  // Dados do Cliente
+  @ValidateNested()
+  @Type(() => CreateClienteDto)
+  cliente: CreateClienteDto;
+
+  // Tipo de Pedido
+  @IsEnum(['entrega', 'retirada'])
+  tipoPedido: 'entrega' | 'retirada';
+
+  // Itens do Pedido
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ItemPedidoDto)
+  itens: ItemPedidoDto[];
+
+  // Pagamento
+  @IsEnum(['dinheiro', 'cartao', 'pix'])
+  formaPagamento: 'dinheiro' | 'cartao' | 'pix';
+
+  @IsOptional()
+  @IsNumber()
+  trocoPara?: number; // Apenas se formaPagamento === 'dinheiro'
+
+  @IsOptional()
+  @IsString()
+  observacoes?: string;
+}
+
+class ItemPedidoDto {
+  @IsNumber()
+  produtoId: number;
+
+  @IsNumber()
+  quantidade: number;
+
+  @IsOptional()
+  @IsString()
+  observacoes?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AdicionalItemDto)
+  adicionais: AdicionalItemDto[];
+}
+
+class AdicionalItemDto {
+  @IsNumber()
+  adicionalId: number;
+
+  @IsNumber()
+  quantidade: number;
+}
+```
+
+#### 2. Cliente Service
+
+```typescript
+// climb-delivery-api/src/cliente/cliente.service.ts
+- [ ] Criar `ClienteService`
+- [ ] Método `findByTelefoneAndEmpresa(telefone: string, empresaId: number)`
+- [ ] Método `create(empresaId: number, data: CreateClienteDto)`
+- [ ] Método `update(id: number, data: UpdateClienteDto)`
+- [ ] Método `findOrCreate(empresaId: number, data: CreateClienteDto)`
+  - Busca cliente por telefone + empresaId
+  - Se existe: atualiza dados (se fornecidos)
+  - Se não existe: cria novo
+  - Retorna cliente
+```
+
+#### 3. Public Pedido Service
+
+```typescript
+// climb-delivery-api/src/public/public-pedido.service.ts
 - [ ] Criar `PublicPedidoService`
-- [ ] Implementar `createPedidoPublico()`
-- [ ] Criar ou buscar cliente existente
-- [ ] Criar endereço (se entrega)
-- [ ] Criar pedido com itens
-- [ ] Criar itens de adicionais
-- [ ] Validações completas
+- [ ] Método `createPedidoPublico(slug: string, data: CreatePedidoPublicoDto)`
+  - [ ] Buscar empresa por slug
+  - [ ] Validar se empresa está ativa
+  - [ ] Validar horário de funcionamento
+  - [ ] Buscar ou criar cliente (via ClienteService.findOrCreate)
+  - [ ] Gerar número do pedido único
+  - [ ] Calcular subtotal dos itens
+  - [ ] Calcular preço dos adicionais
+  - [ ] Adicionar taxa de entrega (se tipoPedido === 'entrega')
+  - [ ] Calcular total
+  - [ ] Criar pedido no banco
+  - [ ] Criar itens do pedido
+  - [ ] Criar adicionais dos itens
+  - [ ] Buscar status inicial (código: 'pendente')
+  - [ ] Criar histórico inicial do pedido
+  - [ ] Retornar pedido completo com cliente e itens
+- [ ] Validações:
+  - [ ] Verificar disponibilidade dos produtos
+  - [ ] Validar grupos de adicionais (mínimo/máximo)
+  - [ ] Validar valores (evitar frontend manipulation)
+  - [ ] Validar troco (se dinheiro, trocoPara >= total)
+```
+
+#### 4. Public Pedido Controller
+
+```typescript
+// climb-delivery-api/src/public/controllers/public-pedido.controller.ts
+- [ ] Criar `PublicPedidoController`
+- [ ] Rota: `POST /public/:slug/pedidos`
+- [ ] Adicionar decorator `@Public()`
+- [ ] Validar DTO
+- [ ] Chamar `PublicPedidoService.createPedidoPublico()`
+- [ ] Retornar pedido criado com status 201
+- [ ] Tratamento de erros:
+  - 404: Empresa não encontrada
+  - 400: Horário fechado, produtos indisponíveis
+  - 422: Validação de dados
+```
+
+#### 5. CEP Service (Backend)
+
+```typescript
+// climb-delivery-api/src/common/services/cep.service.ts
+- [ ] Criar `CepService`
+- [ ] Usar API ViaCEP: `https://viacep.com.br/ws/{cep}/json/`
+- [ ] Método `buscarEnderecoPorCep(cep: string)`
+  - [ ] Validar formato do CEP
+  - [ ] Fazer requisição HTTP
+  - [ ] Tratar CEP não encontrado
+  - [ ] Retornar dados estruturados (logradouro, bairro, cidade, uf)
+- [ ] Configurar timeout de 5 segundos
+- [ ] Cache de respostas (opcional)
+```
+
+---
+
+### 💻 Frontend - Angular
+
+#### 1. Services
+
+**CepService (Frontend)**
+```typescript
+// src/app/core/services/cep.service.ts
+- [ ] Criar `CepService`
+- [ ] Método `buscarCep(cep: string): Observable<EnderecoViaCep>`
+- [ ] Integrar com ViaCEP API diretamente
+- [ ] Tratamento de erros (CEP inválido, não encontrado)
+- [ ] Debounce de 500ms para evitar múltiplas chamadas
+```
+
+**PublicOrderService**
+```typescript
+// src/app/public/services/public-order.service.ts
+- [ ] Criar `PublicOrderService`
+- [ ] Propriedade: `currentOrder$: BehaviorSubject<Pedido | null>`
+- [ ] Método `createPedido(slug: string, data: CreatePedidoDto): Observable<Pedido>`
+- [ ] Método `getPedido(numero: string): Observable<Pedido>`
+- [ ] Método `clearOrder()`
+- [ ] Integração com API: `POST /api/public/:slug/pedidos`
+- [ ] Salvar pedido confirmado em localStorage temporariamente
+- [ ] Tratamento de erros com mensagens amigáveis
+```
+
+#### 2. Types & Interfaces
+
+```typescript
+// src/app/public/models/checkout.model.ts
+export interface CheckoutFormData {
+  cliente: {
+    telefone: string;
+    nome?: string;
+    email?: string;
+    cpf?: string;
+  };
+  tipoPedido: 'entrega' | 'retirada';
+  endereco?: {
+    cep: string;
+    logradouro: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    cidade: string;
+    uf: string;
+    referencia?: string;
+  };
+  formaPagamento: 'dinheiro' | 'cartao' | 'pix';
+  trocoPara?: number;
+  observacoes?: string;
+}
+
+export interface EnderecoViaCep {
+  cep: string;
+  logradouro: string;
+  complemento: string;
+  bairro: string;
+  localidade: string; // cidade
+  uf: string;
+  erro?: boolean;
+}
+```
+
+#### 3. Checkout Component
+
+```typescript
+// src/app/public/pages/checkout/checkout.component.ts
+- [ ] Implementar `CheckoutComponent`
+- [ ] FormGroup reativo com validações
+- [ ] Campos:
+  - [ ] Telefone (obrigatório, mask: (XX) XXXXX-XXXX)
+  - [ ] Nome (opcional)
+  - [ ] Email (opcional, validação)
+  - [ ] CPF (opcional, mask: XXX.XXX.XXX-XX)
+  - [ ] Tipo Pedido: Radio (Entrega/Retirada)
+  - [ ] Endereço (condicional: apenas se tipoPedido === 'entrega')
+    - [ ] CEP (obrigatório se entrega, buscar via ViaCEP)
+    - [ ] Logradouro (preenchido automaticamente)
+    - [ ] Número (obrigatório)
+    - [ ] Complemento (opcional)
+    - [ ] Bairro (preenchido automaticamente)
+    - [ ] Cidade (preenchido automaticamente)
+    - [ ] UF (preenchido automaticamente)
+    - [ ] Referência (opcional)
+  - [ ] Forma Pagamento: Dropdown (Dinheiro/Cartão/PIX)
+  - [ ] Troco Para (condicional: apenas se formaPagamento === 'dinheiro')
+  - [ ] Observações (opcional)
+- [ ] Integração com PublicCartService para pegar itens
+- [ ] Resumo do pedido (itens, subtotal, taxa, total)
+- [ ] Botão "Finalizar Pedido"
+- [ ] Loading state durante envio
+- [ ] Validações:
+  - [ ] Se entrega: endereço obrigatório
+  - [ ] Se dinheiro: trocoPara >= total
+  - [ ] Carrinho não pode estar vazio
+- [ ] Ao confirmar:
+  - [ ] Validar formulário
+  - [ ] Preparar DTO
+  - [ ] Chamar PublicOrderService.createPedido()
+  - [ ] Navegar para /confirmation/:numero
+```
+
+**Template:**
+```html
+- [ ] Layout responsivo (2 colunas desktop, 1 coluna mobile)
+- [ ] Coluna Esquerda: Formulário
+  - [ ] Seção: Dados de Contato
+  - [ ] Seção: Tipo de Pedido (Radio buttons)
+  - [ ] Seção: Endereço de Entrega (condicional)
+  - [ ] Seção: Forma de Pagamento
+  - [ ] Seção: Observações
+- [ ] Coluna Direita: Resumo do Pedido (sticky)
+  - [ ] Lista de itens do carrinho
+  - [ ] Subtotal
+  - [ ] Taxa de entrega
+  - [ ] Total
+  - [ ] Botão "Finalizar Pedido"
+- [ ] Loading overlay durante envio
+- [ ] Mensagens de erro (PrimeNG Toast)
+```
+
+#### 4. Order Confirmation Component
+
+```typescript
+// src/app/public/pages/order-confirmation/order-confirmation.component.ts
+- [ ] Implementar `OrderConfirmationComponent`
+- [ ] Receber número do pedido via Route Params
+- [ ] Buscar pedido via PublicOrderService.getPedido(numero)
+- [ ] Exibir:
+  - [ ] Ícone de sucesso
+  - [ ] Mensagem: "Pedido realizado com sucesso!"
+  - [ ] Número do pedido (destaque)
+  - [ ] Status atual
+  - [ ] Tempo estimado
+  - [ ] Tipo de pedido (entrega/retirada)
+  - [ ] Endereço (se entrega)
+  - [ ] Resumo dos itens
+  - [ ] Totalizadores
+  - [ ] Forma de pagamento
+- [ ] Botões:
+  - [ ] "Entrar em Contato" (abre WhatsApp do restaurante)
+  - [ ] "Fazer Novo Pedido" (limpa carrinho e volta para home)
+- [ ] Limpar carrinho ao montar componente
+```
+
+**Template:**
+```html
+- [ ] Card centralizado
+- [ ] Ícone de sucesso (animado)
+- [ ] Número do pedido em destaque
+- [ ] Timeline de status
+- [ ] Detalhes do pedido (accordion)
+- [ ] Botões de ação
+- [ ] Link para WhatsApp formatado: 
+      `https://wa.me/55{whatsapp}?text=Olá!%20Meu%20pedido%20é%20{numero}`
+```
+
+#### 5. Rotas
+
+```typescript
+// src/app/public/public.routes.ts
+- [ ] Adicionar rota: `/p/:slug/checkout`
+- [ ] Adicionar rota: `/p/:slug/pedido/:numero`
+- [ ] Guards: verificar se carrinho não está vazio (checkout)
+```
+
+---
+
+### ✅ Checklist de Implementação
+
+#### Backend
+- [x] Model Cliente criado
+- [x] Migration gerada e aplicada
+- [x] Model Pedido atualizado
+- [ ] CreateClienteDto
+- [ ] CreatePedidoPublicoDto
+- [ ] ClienteService
+- [ ] PublicPedidoService
+- [ ] PublicPedidoController
+- [ ] CepService (backend)
 - [ ] Testes unitários
 
-#### Backend - Pedido Controller
-- [ ] Implementar `POST /public/:slug/pedidos`
-- [ ] Adicionar decorator `@Public()`
-- [ ] Validação do DTO
-- [ ] Tratamento de erros
-- [ ] Documentação Swagger
-
-#### Integração ViaCEP
-- [ ] Criar `CepService`
-- [ ] Método `buscarEnderecoPorCep()`
-- [ ] Tratamento de CEP inválido
-- [ ] Auto-preenchimento de campos
-
-#### Página de Checkout
-- [ ] Implementar `CheckoutComponent` completo
-- [ ] Criar `CustomerFormComponent` (nome, telefone, email)
-- [ ] Tipo de Pedido: Radio (Entrega/Retirada)
-- [ ] Criar `AddressFormComponent` (mostrar apenas se Entrega)
-- [ ] Integração com ViaCEP
-- [ ] Criar `PaymentFormComponent` (forma de pagamento)
-- [ ] Campo "Troco para" (se Dinheiro)
-- [ ] Campo de observações gerais
-- [ ] Criar `OrderSummaryComponent` (resumo + totalizadores)
+#### Frontend
+- [ ] CepService
+- [ ] PublicOrderService
+- [ ] Interfaces/Models
+- [ ] CheckoutComponent
+- [ ] OrderConfirmationComponent
+- [ ] Rotas atualizadas
+- [ ] Máscaras de input (telefone, CPF, CEP)
 - [ ] Validações de formulário
-- [ ] Botão "Confirmar Pedido"
-- [ ] Loading durante envio
 - [ ] Responsividade
+- [ ] Loading states
+- [ ] Error handling
 
-#### Frontend - Order Service
-- [ ] Implementar `PublicOrderService`
-- [ ] Método `createPedido()`
-- [ ] Método `getPedido()` (para confirmação)
-- [ ] Tratamento de erros
-
-#### Página de Confirmação
-- [ ] Implementar `OrderConfirmationComponent`
-- [ ] Exibir número do pedido
-- [ ] Exibir tempo estimado
-- [ ] Exibir resumo do pedido
-- [ ] Link WhatsApp do restaurante
-- [ ] Botão "Fazer novo pedido"
-- [ ] Limpar carrinho ao confirmar
+#### Integrações
+- [ ] ViaCEP funcionando
+- [ ] WhatsApp link funcionando
+- [ ] Carrinho integrado com checkout
 
 **Entregáveis:**
+- ✅ Cadastro transparente de clientes
+- ✅ Multi-tenant (telefone + empresa)
 - ✅ Checkout completo
-- ✅ Pedidos criados no banco
+- ✅ Pedidos públicos criados
 - ✅ ViaCEP integrado
 - ✅ Confirmação funcionando
 - ✅ WhatsApp funcionando

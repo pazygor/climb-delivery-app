@@ -1,6 +1,257 @@
 <div class="checkout-page">
-  <div class="container">
-    <h1>Finalizar Pedido</h1>
-    <p>TODO: Implementar na Sprint 8</p>
+  <p-toast />
+  
+  <div class="checkout-container" *ngIf="!loading">
+    <div class="checkout-grid">
+      <!-- Coluna Esquerda: Formulário -->
+      <div class="checkout-form">
+        <p-card>
+          <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
+            
+            <!-- Dados de Contato -->
+            <div class="form-section">
+              <h3>Dados de Contato</h3>
+              <div class="p-fluid">
+                <div class="field">
+                  <label for="telefone">Telefone * (WhatsApp)</label>
+                  <input
+                    pInputText
+                    id="telefone"
+                    formControlName="telefone"
+                    placeholder="(11) 98765-4321"
+                    maxlength="11"
+                  />
+                  <small class="p-error" *ngIf="checkoutForm.get('telefone')?.invalid && checkoutForm.get('telefone')?.touched">
+                    Telefone obrigatório (10 ou 11 dígitos)
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label for="nome">Nome</label>
+                  <input pInputText id="nome" formControlName="nome" placeholder="Seu nome completo" />
+                </div>
+
+                <div class="field">
+                  <label for="email">E-mail</label>
+                  <input pInputText id="email" type="email" formControlName="email" placeholder="seu@email.com" />
+                  <small class="p-error" *ngIf="checkoutForm.get('email')?.invalid && checkoutForm.get('email')?.touched">
+                    E-mail inválido
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label for="cpf">CPF</label>
+                  <input pInputText id="cpf" formControlName="cpf" placeholder="000.000.000-00" maxlength="11" />
+                  <small class="p-error" *ngIf="checkoutForm.get('cpf')?.invalid && checkoutForm.get('cpf')?.touched">
+                    CPF deve conter 11 dígitos
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <p-divider />
+
+            <!-- Tipo de Pedido -->
+            <div class="form-section">
+              <h3>Tipo de Pedido</h3>
+              <div class="radio-group">
+                <div *ngFor="let tipo of tiposPedido" class="field-radiobutton">
+                  <p-radioButton
+                    [inputId]="tipo.value"
+                    [value]="tipo.value"
+                    formControlName="tipoPedido"
+                  ></p-radioButton>
+                  <label [for]="tipo.value">{{ tipo.label }}</label>
+                </div>
+              </div>
+            </div>
+
+            <p-divider />
+
+            <!-- Endereço de Entrega (condicional) -->
+            <div class="form-section" *ngIf="checkoutForm.get('tipoPedido')?.value === 'entrega'">
+              <h3>Endereço de Entrega</h3>
+              <div class="p-fluid">
+                <div class="field">
+                  <label for="cep">CEP *</label>
+                  <div class="p-inputgroup">
+                    <input pInputText id="cep" formControlName="cep" placeholder="00000-000" maxlength="8" />
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-search"
+                      [loading]="buscandoCep"
+                      (click)="buscarCep(checkoutForm.get('cep')?.value)"
+                    ></button>
+                  </div>
+                  <small class="p-error" *ngIf="checkoutForm.get('cep')?.invalid && checkoutForm.get('cep')?.touched">
+                    CEP obrigatório
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label for="logradouro">Logradouro *</label>
+                  <input pInputText id="logradouro" formControlName="logradouro" placeholder="Rua, Avenida..." />
+                  <small class="p-error" *ngIf="checkoutForm.get('logradouro')?.invalid && checkoutForm.get('logradouro')?.touched">
+                    Logradouro obrigatório
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label for="numero">Número *</label>
+                  <input pInputText id="numero" formControlName="numero" placeholder="123" />
+                  <small class="p-error" *ngIf="checkoutForm.get('numero')?.invalid && checkoutForm.get('numero')?.touched">
+                    Número obrigatório
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label for="complemento">Complemento</label>
+                  <input pInputText id="complemento" formControlName="complemento" placeholder="Apto, Bloco..." />
+                </div>
+
+                <div class="field">
+                  <label for="bairro">Bairro *</label>
+                  <input pInputText id="bairro" formControlName="bairro" placeholder="Seu bairro" />
+                  <small class="p-error" *ngIf="checkoutForm.get('bairro')?.invalid && checkoutForm.get('bairro')?.touched">
+                    Bairro obrigatório
+                  </small>
+                </div>
+
+                <div class="field-group">
+                  <div class="field">
+                    <label for="cidade">Cidade *</label>
+                    <input pInputText id="cidade" formControlName="cidade" placeholder="Sua cidade" />
+                    <small class="p-error" *ngIf="checkoutForm.get('cidade')?.invalid && checkoutForm.get('cidade')?.touched">
+                      Cidade obrigatória
+                    </small>
+                  </div>
+
+                  <div class="field">
+                    <label for="uf">UF *</label>
+                    <input pInputText id="uf" formControlName="uf" placeholder="SP" maxlength="2" />
+                    <small class="p-error" *ngIf="checkoutForm.get('uf')?.invalid && checkoutForm.get('uf')?.touched">
+                      UF obrigatória
+                    </small>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label for="referencia">Ponto de Referência</label>
+                  <textarea pInputTextarea id="referencia" formControlName="referencia" rows="2" placeholder="Ex: Próximo ao mercado..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <p-divider />
+
+            <!-- Forma de Pagamento -->
+            <div class="form-section">
+              <h3>Forma de Pagamento</h3>
+              <div class="p-fluid">
+                <div class="field">
+                  <p-dropdown
+                    [options]="formasPagamento"
+                    formControlName="formaPagamento"
+                    placeholder="Selecione"
+                    optionLabel="label"
+                    optionValue="value"
+                  ></p-dropdown>
+                </div>
+
+                <div class="field" *ngIf="checkoutForm.get('formaPagamento')?.value === 'dinheiro'">
+                  <label for="trocoPara">Troco para *</label>
+                  <input
+                    pInputText
+                    id="trocoPara"
+                    type="number"
+                    formControlName="trocoPara"
+                    placeholder="Ex: 100.00"
+                    [min]="calcularTotal()"
+                  />
+                  <small>Total do pedido: {{ formatarValor(calcularTotal()) }}</small>
+                  <small class="p-error" *ngIf="checkoutForm.get('trocoPara')?.invalid && checkoutForm.get('trocoPara')?.touched">
+                    Valor deve ser maior ou igual ao total
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <p-divider />
+
+            <!-- Observações -->
+            <div class="form-section">
+              <h3>Observações</h3>
+              <div class="p-fluid">
+                <div class="field">
+                  <textarea
+                    pInputTextarea
+                    formControlName="observacoes"
+                    rows="3"
+                    placeholder="Alguma observação sobre seu pedido?"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </form>
+        </p-card>
+      </div>
+
+      <!-- Coluna Direita: Resumo do Pedido -->
+      <div class="checkout-summary">
+        <p-card>
+          <h3>Resumo do Pedido</h3>
+          
+          <div class="summary-items">
+            <div class="item" *ngFor="let item of items">
+              <div class="item-header">
+                <span class="item-name">{{ item.quantidade }}x {{ item.produto.nome }}</span>
+                <span class="item-price">{{ formatarValor(item.precoTotal) }}</span>
+              </div>
+              <div class="item-adicionais" *ngIf="item.adicionaisSelecionados.length > 0">
+                <small *ngFor="let adic of item.adicionaisSelecionados">
+                  + {{ adic.quantidade }}x {{ adic.adicional.nome }}
+                </small>
+              </div>
+              <div class="item-obs" *ngIf="item.observacoes">
+                <small>Obs: {{ item.observacoes }}</small>
+              </div>
+            </div>
+          </div>
+
+          <p-divider />
+
+          <div class="summary-totals">
+            <div class="total-row">
+              <span>Subtotal</span>
+              <span>{{ formatarValor(calcularSubtotal()) }}</span>
+            </div>
+            <div class="total-row">
+              <span>Taxa de Entrega</span>
+              <span>{{ formatarValor(calcularTaxaEntrega()) }}</span>
+            </div>
+            <div class="total-row total-final">
+              <span>Total</span>
+              <span>{{ formatarValor(calcularTotal()) }}</span>
+            </div>
+          </div>
+
+          <button
+            pButton
+            type="submit"
+            label="Finalizar Pedido"
+            icon="pi pi-check"
+            class="p-button-success w-full mt-3"
+            [disabled]="checkoutForm.invalid || items.length === 0"
+            (click)="onSubmit()"
+          ></button>
+        </p-card>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-overlay" *ngIf="loading">
+    <p-progressSpinner />
+    <p>Criando seu pedido...</p>
   </div>
 </div>

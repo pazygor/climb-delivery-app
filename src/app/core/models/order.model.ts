@@ -2,9 +2,11 @@
 export interface Order {
   id: number;
   empresaId: number;
-  usuarioId: number;
-  enderecoId: number;
+  usuarioId?: number | null;
+  clienteId?: number | null;
+  enderecoId?: number | null;
   numero: string;
+  tipoPedido: string;
   status: {
     id: number;
     codigo: string;
@@ -18,6 +20,7 @@ export interface Order {
   taxaEntrega: number;
   total: number;
   formaPagamento: string;
+  trocoPara?: number | null;
   observacoes?: string;
   tempoEstimado?: number;
   motivoCancelamento?: string;
@@ -36,6 +39,7 @@ export interface Order {
     telefone?: string;
     email?: string;
   };
+  cliente?: Cliente;
   endereco?: {
     id: number;
     logradouro: string;
@@ -50,6 +54,25 @@ export interface Order {
   _count?: {
     itens: number;
   };
+}
+
+export interface Cliente {
+  id: number;
+  empresaId: number;
+  nome?: string | null;
+  telefone: string;
+  email?: string | null;
+  cpf?: string | null;
+  cep?: string | null;
+  logradouro?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  uf?: string | null;
+  referencia?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface OrderItem {

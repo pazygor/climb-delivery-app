@@ -46,7 +46,8 @@ export class OrderConfirmationComponent implements OnInit {
   slug = '';
 
   ngOnInit(): void {
-    this.slug = this.route.snapshot.paramMap.get('slug') || '';
+    // Pegar slug do parent route (já que pedido/:numero é child route)
+    this.slug = this.route.parent?.snapshot.paramMap.get('slug') || '';
     const numero = this.route.snapshot.paramMap.get('numero') || '';
 
     if (!numero) {

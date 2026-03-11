@@ -13,6 +13,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { MessageService } from 'primeng/api';
 
 interface ItemCarrinho {
@@ -28,6 +29,17 @@ interface DadosCliente {
   cpfCnpj?: string;
 }
 
+interface DadosEndereco {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  referencia?: string;
+}
+
 @Component({
   selector: 'app-pdv',
   standalone: true,
@@ -37,7 +49,8 @@ interface DadosCliente {
     ButtonModule,
     InputTextModule,
     TooltipModule,
-    ToastModule
+    ToastModule,
+    RadioButtonModule
   ],
   providers: [MessageService],
   templateUrl: './pdv.component.html',
@@ -61,6 +74,24 @@ export class PdvComponent implements OnInit {
     telefone: '',
     nome: ''
   };
+
+  // Tipo de pedido
+  tipoPedido: 'entrega' | 'retirada' = 'retirada';
+
+  // Dados de endereço (para entrega)
+  dadosEndereco: DadosEndereco = {
+    cep: '',
+    logradouro: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
+    referencia: ''
+  };
+
+  // Controle de visualização de endereço
+  mostrarEnderecoEntrega: boolean = false;
 
   // Filtros e pesquisa
   termoPesquisa: string = '';
@@ -197,8 +228,13 @@ export class PdvComponent implements OnInit {
   }
 
   calcularTotal(): number {
-    // Por enquanto, o total é igual ao subtotal (sem taxa de entrega)
-    return this.calcularSubtotal();
+    const subtotal = this.calcularSubtotal();
+    const taxaEntrega = this.tipoPedido === 'entrega' ? 5.00 : 0;
+    return subtotal + taxaEntrega;
+  }
+
+  calcularTaxaEntrega(): number {
+    return this.tipoPedido === 'entrega' ? 5.00 : 0;
   }
 
   converterParaDecimal(valor: number | string): string {
@@ -221,6 +257,30 @@ export class PdvComponent implements OnInit {
       return;
     }
 
+    // Validar telefone obrigatório
+    if (!this.dadosCliente.telefone.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Informe o telefone do cliente'
+      });
+      return;
+    }
+
+    // Validar endereço se for entrega
+    if (this.tipoPedido === 'entrega') {
+      if (!this.dadosEndereco.cep.trim() || !this.dadosEndereco.logradouro.trim() || 
+          !this.dadosEndereco.numero.trim() || !this.dadosEndereco.bairro.trim() || 
+          !this.dadosEndereco.cidade.trim() || !this.dadosEndereco.uf.trim()) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Atenção',
+          detail: 'Preencha todos os campos obrigatórios do endereço'
+        });
+        return;
+      }
+    }
+
     if (!this.empresaId) {
       this.messageService.add({
         severity: 'error',
@@ -240,29 +300,29 @@ export class PdvComponent implements OnInit {
       return;
     }
 
-    // Monta observações com dados do cliente se fornecidos
-    const observacoes = [];
-    if (this.dadosCliente.nome.trim()) {
-      observacoes.push(`Cliente: ${this.dadosCliente.nome}`);
-    }
-    if (this.dadosCliente.telefone.trim()) {
-      observacoes.push(`Telefone: ${this.dadosCliente.telefone}`);
-    }
-    if (this.dadosCliente.cpfCnpj?.trim()) {
-      observacoes.push(`CPF/CNPJ: ${this.dadosCliente.cpfCnpj}`);
-    }
-
-    // Prepara os dados do pedido
-    const pedidoManual = {
+    // FASE 2: Novo formato do DTO com cliente estruturado
+    const pedidoManual: any = {
       empresaId: this.empresaId,
       usuarioId: typeof currentUser.id === 'string' ? parseInt(currentUser.id) : currentUser.id,
-      enderecoEntrega: 'BALCÃO - RETIRADA NO LOCAL',
-      numero: `BAL-${Date.now()}`,
+      
+      // Cliente estruturado (telefone obrigatório)
+      cliente: {
+        telefone: this.dadosCliente.telefone.trim(),
+        nome: this.dadosCliente.nome.trim() || undefined,
+        cpf: this.dadosCliente.cpfCnpj?.trim() || undefined
+      },
+      
+      // Tipo do pedido
+      tipoPedido: this.tipoPedido,
+      
       subtotal: this.converterParaDecimal(this.calcularSubtotal()),
-      taxaEntrega: '0.00',
+      taxaEntrega: this.converterParaDecimal(this.calcularTaxaEntrega()),
       total: this.converterParaDecimal(this.calcularTotal()),
-      formaPagamento: 'DINHEIRO',
-      observacoes: observacoes.length > 0 ? observacoes.join(' | ') : undefined,
+      formaPagamento: 'dinheiro', // Padrão
+      
+      // Observações agora só para observações reais
+      observacoes: undefined,
+      
       itens: this.itensCarrinho.map(item => ({
         produtoId: item.produto.id,
         quantidade: item.quantidade,
@@ -270,6 +330,20 @@ export class PdvComponent implements OnInit {
         subtotal: this.converterParaDecimal(item.subtotal)
       }))
     };
+
+    // Adicionar endereço se for entrega
+    if (this.tipoPedido === 'entrega') {
+      pedidoManual.endereco = {
+        cep: this.dadosEndereco.cep.trim(),
+        logradouro: this.dadosEndereco.logradouro.trim(),
+        numero: this.dadosEndereco.numero.trim(),
+        complemento: this.dadosEndereco.complemento?.trim() || undefined,
+        bairro: this.dadosEndereco.bairro.trim(),
+        cidade: this.dadosEndereco.cidade.trim(),
+        uf: this.dadosEndereco.uf.trim().toUpperCase(),
+        referencia: this.dadosEndereco.referencia?.trim() || undefined
+      };
+    }
 
     console.log('Dados do pedido a ser enviado:', pedidoManual);
 
@@ -307,6 +381,29 @@ export class PdvComponent implements OnInit {
       telefone: '',
       nome: ''
     };
+    this.dadosEndereco = {
+      cep: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      uf: '',
+      referencia: ''
+    };
+    this.tipoPedido = 'retirada';
+    this.mostrarEnderecoEntrega = false;
+  }
+
+  selecionarTipoPedido(tipo: 'entrega' | 'retirada'): void {
+    this.tipoPedido = tipo;
+    this.mostrarEnderecoEntrega = false;
+  }
+
+  toggleEnderecoEntrega(): void {
+    if (this.tipoPedido === 'entrega') {
+      this.mostrarEnderecoEntrega = !this.mostrarEnderecoEntrega;
+    }
   }
 
   voltarTelaInicial(): void {
@@ -317,6 +414,18 @@ export class PdvComponent implements OnInit {
       telefone: '',
       nome: ''
     };
+    this.dadosEndereco = {
+      cep: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      uf: '',
+      referencia: ''
+    };
+    this.tipoPedido = 'retirada';
+    this.mostrarEnderecoEntrega = false;
     this.categoriaSelecionada = null;
     this.produtoSelecionado = null;
     this.quantidadeSelecionada = 1;

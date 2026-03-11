@@ -202,7 +202,9 @@
         </div>
         <div class="value">
           <span>Entrega</span>
-          <span class="empty-delivery-value">Grátis</span>
+          <span [class.empty-delivery-value]="tipoPedido === 'retirada'">
+            {{ tipoPedido === 'entrega' ? formatarPreco(5.00) : 'Grátis' }}
+          </span>
         </div>
       </div>
     </div>
@@ -216,15 +218,44 @@
 
       <!-- Dados do Cliente -->
       <div class="container-customer-data">
+        <!-- Tipo de Pedido -->
+        <div class="tipo-pedido-section" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--surface-100); border-radius: 6px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">Tipo de Pedido</label>
+          <div style="display: flex; gap: 1rem;">
+            <div class="field-radiobutton" style="display: flex; align-items: center; gap: 0.5rem;">
+              <p-radioButton 
+                name="tipoPedido" 
+                value="retirada" 
+                [(ngModel)]="tipoPedido"
+                (onClick)="selecionarTipoPedido('retirada')"
+                inputId="tipo-retirada">
+              </p-radioButton>
+              <label for="tipo-retirada" style="margin: 0; cursor: pointer;">Retirada no Local</label>
+            </div>
+            <div class="field-radiobutton" style="display: flex; align-items: center; gap: 0.5rem;">
+              <p-radioButton 
+                name="tipoPedido" 
+                value="entrega" 
+                [(ngModel)]="tipoPedido"
+                (onClick)="selecionarTipoPedido('entrega')"
+                inputId="tipo-entrega">
+              </p-radioButton>
+              <label for="tipo-entrega" style="margin: 0; cursor: pointer;">Entrega</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dados do Cliente -->
         <div class="customer-data">
           <div class="phone">
             <div class="input-data">
               <input 
                 type="text" 
-                placeholder="(XX) X XXXX-XXXX"
+                placeholder="(XX) X XXXX-XXXX *"
                 [(ngModel)]="dadosCliente.telefone"
                 class="input-text"
-                maxlength="15">
+                maxlength="15"
+                required>
               <div class="form-separator"></div>
               <input 
                 type="text" 
@@ -234,16 +265,96 @@
             </div>
           </div>
         </div>
+
+        <!-- Formulário de Endereço (condicional - só aparece para entrega) -->
+        <div *ngIf="tipoPedido === 'entrega'" class="endereco-entrega" style="margin-top: 0.75rem; padding: 0.75rem; background: var(--surface-50); border-radius: 6px; border: 1px solid var(--surface-300);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label style="font-weight: 600; font-size: 0.9rem;">Endereço de Entrega</label>
+            <button 
+              type="button" 
+              (click)="toggleEnderecoEntrega()"
+              style="background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 0.85rem;">
+              {{ mostrarEnderecoEntrega ? '▼ Ocultar' : '▶ Expandir' }}
+            </button>
+          </div>
+
+          <div *ngIf="mostrarEnderecoEntrega" style="display: grid; gap: 0.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <input 
+                type="text" 
+                placeholder="CEP *"
+                [(ngModel)]="dadosEndereco.cep"
+                class="input-text"
+                maxlength="8"
+                style="padding: 0.5rem; border: 1px solid var(--surface-400); border-radius: 4px;">
+              <input 
+                type="text" 
+                placeholder="Logradouro *"
+                [(ngModel)]="dadosEndereco.logradouro"
+                class="input-text"
+                style="padding: 0.5rem; border: 1px solid var(--surface-400); border-radius: 4px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem;">
+              <input 
+                type="text" 
+                placeholder="Número *"
+                [(ngModel)]="dadosEndereco.numero"
+                class="input-text"
+                style="padding: 0.5rem; border: 1px solid var(--surface-400); border-radius: 4px;">
+              <input 
+                type="text" 
+                placeholder="Complemento"
+                [(ngModel)]="dadosEndereco.complemento"
+                class="input-text"
+                style="padding: 0.5rem; border: 1px solid var(--surface-400); border-radius: 4px;">
+            </div>
+
+            <input 
+              type="text" 
+              placeholder="Bairro *"
+              [(ngModel)]="dadosEndereco.bairro"
+              class="input-text"
+              style="padding: 0.5rem; border: 1px solid var(--surface-400); border-radius: 4px;">
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.5rem;">
+              <input 
+                type="text" 
+                placeholder="Cidade *"
+                [(ngModel)]="dadosEndereco.cidade"
+                class="input-text"
+                style="padding: 0.5rem; border: 1px solid var(--surface-400); border-radius: 4px;">
+              <input 
+                type="text" 
+                placeholder="UF *"
+                [(ngModel)]="dadosEndereco.uf"
+                class="input-text"
+                maxlength="2"
+                style="padding: 0.5rem; border: 1px solid var(--surface-400); border-radius: 4px; text-transform: uppercase;">
+            </div>
+
+            <input 
+              type="text" 
+              placeholder="Referência"
+              [(ngModel)]="dadosEndereco.referencia"
+              class="input-text"
+              style="padding: 0.5rem; border: 1px solid var(--surface-400); border-radius: 4px;">
+          </div>
+        </div>
       </div>
 
       <!-- Botões de Ação -->
       <div class="actions">
         <div class="grid-buttons">
           <div class="column-btn">
-            <button type="button" class="btn-outline" disabled>
-              [ E ] Entrega
+            <button 
+              type="button" 
+              class="btn-outline"
+              *ngIf="tipoPedido === 'entrega'"
+              (click)="toggleEnderecoEntrega()">
+              [ E ] {{ mostrarEnderecoEntrega ? 'Ocultar' : 'Endereço' }}
             </button>
-            <button type="button" class="btn-outline">
+            <button type="button" class="btn-outline" disabled>
               [ T ] CPF/CNPJ
             </button>
           </div>
@@ -251,8 +362,11 @@
             <button type="button" class="btn-outline" disabled>
               [ R ] Pagamentos
             </button>
-            <button type="button" class="btn-outline" disabled>
-              [ Y ] Ajustar valor
+            <button 
+              type="button" 
+              class="btn-outline"
+              (click)="limparCarrinho()">
+              [ L ] Limpar
             </button>
           </div>
         </div>

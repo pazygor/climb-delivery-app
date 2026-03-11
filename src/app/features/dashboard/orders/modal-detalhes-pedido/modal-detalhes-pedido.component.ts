@@ -39,6 +39,27 @@ export class ModalDetalhesPedidoComponent {
     this.visibleChange.emit(false);
   }
 
+  // Helpers para dados do cliente
+  getCustomerName(): string {
+    if (!this.pedido) return 'Cliente';
+    return this.pedido.cliente?.nome || this.pedido.usuario?.nome || 'Cliente';
+  }
+
+  getCustomerPhone(): string {
+    if (!this.pedido) return '';
+    return this.pedido.cliente?.telefone || this.pedido.usuario?.telefone || '';
+  }
+
+  getCustomerEmail(): string {
+    if (!this.pedido) return '';
+    return this.pedido.cliente?.email || this.pedido.usuario?.email || '';
+  }
+
+  getTipoPedido(): string {
+    if (!this.pedido) return '';
+    return this.pedido.tipoPedido === 'entrega' ? 'Entrega' : 'Retirada no Local';
+  }
+
   getStatusSeverity(codigo: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | null {
     const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
       'pendente': 'warn',
@@ -183,13 +204,26 @@ export class ModalDetalhesPedidoComponent {
   }
 
   getDeliveryAddress(): string {
-    if (!this.pedido?.endereco) return 'Retirada no local';
+    if (!this.pedido) return '';
     
-    const { logradouro, numero, complemento, bairro, cidade, estado } = this.pedido.endereco;
-    let endereco = `${logradouro}, ${numero}`;
-    if (complemento) endereco += ` - ${complemento}`;
-    endereco += ` - ${bairro}, ${cidade}/${estado}`;
-    return endereco;
+    // Prioridade: endereço do cliente > endereço legado
+    if (this.pedido.cliente?.logradouro) {
+      const c = this.pedido.cliente;
+      let endereco = `${c.logradouro}, ${c.numero}`;
+      if (c.complemento) endereco += ` - ${c.complemento}`;
+      endereco += ` - ${c.bairro}, ${c.cidade}/${c.uf}`;
+      return endereco;
+    }
+    
+    if (this.pedido.endereco) {
+      const { logradouro, numero, complemento, bairro, cidade, estado } = this.pedido.endereco;
+      let endereco = `${logradouro}, ${numero}`;
+      if (complemento) endereco += ` - ${complemento}`;
+      endereco += ` - ${bairro}, ${cidade}/${estado}`;
+      return endereco;
+    }
+    
+    return '';
   }
 
   getTotalItens(): number {

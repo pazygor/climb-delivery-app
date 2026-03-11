@@ -20,6 +20,18 @@ Bem-vindo à documentação do projeto ClimbDelivery! Este diretório contém to
 ### Documentação de Features
 - [Tela Meus Pedidos](./TELA_MEUS_PEDIDOS.md) - Componente de listagem de pedidos
 - [Aprimoramento Tela Meus Pedidos](./APRIMORAR_TELA_MEUS_PEDIDOS.md) - Melhorias planejadas
+- [Área Administrativa SaaS](./AREA_ADMINISTRATIVA.md) - Sistema administrativo multi-tenant
+- [Schema do Prisma](./SCHEMA_PRISMA.md) - Documentação do banco de dados
+
+### Padronização de Pedidos (Sprint 8.5)
+- [📋 Plano de Padronização](./PLANO_PADRONIZACAO_PEDIDOS.md) - Análise inicial e plano de ação
+- [✅ FASE 2 - Implementação](./FASE2_IMPLEMENTADO.md) - DTO + Service refatorado
+- [🧪 FASE 4 - Testes e Validação](./FASE4_TESTES_E_VALIDACAO.md) - Guia completo de testes
+- [🎉 Implementação Completa](./IMPLEMENTACAO_COMPLETA.md) - Resumo final e métricas
+
+> **Status**: ✅ Concluído (11/03/2026)  
+> **Objetivo**: Padronizar os 3 fluxos de criação de pedidos (Link Público, Modal, PDV)  
+> **Resultado**: Cliente único, validações rigorosas, backward compatibility
 
 ## 🚀 Stack Tecnológica
 

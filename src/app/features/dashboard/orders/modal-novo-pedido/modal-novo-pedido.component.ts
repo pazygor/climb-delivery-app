@@ -226,32 +226,44 @@ export class ModalNovoPedidoComponent {
       return;
     }
 
+    // Validar telefone obrigatório
+    if (!this.dadosCliente.telefone.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Informe o telefone do cliente'
+      });
+      return;
+    }
+
     const subtotal = this.calcularSubtotal();
     const taxaEntrega = 0; // Balcão não tem taxa de entrega
     const total = this.calcularTotal();
 
-    // Monta observações com dados do cliente se fornecidos
-    const observacoes = [];
-    if (this.dadosCliente.nome.trim()) {
-      observacoes.push(`Cliente: ${this.dadosCliente.nome}`);
-    }
-    if (this.dadosCliente.telefone.trim()) {
-      observacoes.push(`Telefone: ${this.dadosCliente.telefone}`);
-    }
-    if (this.dadosCliente.cpfCnpj?.trim()) {
-      observacoes.push(`CPF/CNPJ: ${this.dadosCliente.cpfCnpj}`);
-    }
-
+    // FASE 2: Novo formato do DTO com cliente estruturado
     const pedidoManual = {
       empresaId: this.empresaId,
       usuarioId: this.usuarioId,
-      enderecoEntrega: 'BALCÃO - RETIRADA NO LOCAL',
+      
+      // Cliente estruturado (telefone obrigatório)
+      cliente: {
+        telefone: this.dadosCliente.telefone.trim(),
+        nome: this.dadosCliente.nome.trim() || undefined,
+        cpf: this.dadosCliente.cpfCnpj?.trim() || undefined
+      },
+      
+      // Tipo do pedido (sempre retirada neste modal)
+      tipoPedido: 'retirada',
+      
       numero: `BAL-${Date.now()}`,
       subtotal: this.converterParaDecimal(subtotal),
       taxaEntrega: this.converterParaDecimal(taxaEntrega),
       total: this.converterParaDecimal(total),
-      formaPagamento: 'DINHEIRO',
-      observacoes: observacoes.length > 0 ? observacoes.join(' | ') : undefined,
+      formaPagamento: 'dinheiro', // Padrão, pode ser alterado depois
+      
+      // Observações agora só para observações reais do pedido
+      observacoes: undefined,
+      
       itens: this.itensCarrinho.map(item => ({
         produtoId: item.produto.id,
         quantidade: item.quantidade,

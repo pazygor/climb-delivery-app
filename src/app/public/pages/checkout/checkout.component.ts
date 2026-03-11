@@ -81,7 +81,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
-    this.slug = this.route.snapshot.paramMap.get('slug') || '';
+    // Pegar slug do parent route (já que checkout é child route)
+    this.slug = this.route.parent?.snapshot.paramMap.get('slug') || '';
     
    // Carregar restaurante
     this.restaurantService.restaurant$

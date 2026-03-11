@@ -32,14 +32,18 @@
       <div class="grid">
         <div class="col-12 md:col-6">
           <p class="text-600 text-sm m-0 mb-1">Nome</p>
-          <p class="text-900 font-semibold m-0">{{ pedido.usuario?.nome || 'Cliente' }}</p>
+          <p class="text-900 font-semibold m-0">{{ getCustomerName() }}</p>
         </div>
-        <div class="col-12 md:col-6" *ngIf="pedido.usuario?.telefone">
+        <div class="col-12 md:col-6">
           <p class="text-600 text-sm m-0 mb-1">Telefone</p>
           <p class="text-900 font-semibold m-0">
             <i class="pi pi-phone mr-1"></i>
-            {{ pedido.usuario!.telefone }}
+            {{ getCustomerPhone() }}
           </p>
+        </div>
+        <div class="col-12" *ngIf="getCustomerEmail()">
+          <p class="text-600 text-sm m-0 mb-1">E-mail</p>
+          <p class="text-900 m-0">{{ getCustomerEmail() }}</p>
         </div>
       </div>
     </div>
@@ -47,19 +51,25 @@
     <!-- Endereço de Entrega -->
     <div class="surface-section p-3 border-round mb-3">
       <h4 class="mt-0 mb-3 flex align-items-center gap-2">
-        <i class="pi pi-map-marker text-primary"></i>
-        {{ pedido.endereco ? 'Endereço de Entrega' : 'Tipo de Pedido' }}
+        <i [class]="pedido.tipoPedido === 'entrega' ? 'pi pi-map-marker' : 'pi pi-shopping-bag'" class="text-primary"></i>
+        {{ getTipoPedido() }}
       </h4>
-      <div *ngIf="pedido.endereco">
+      
+      <div *ngIf="pedido.tipoPedido === 'entrega' && getDeliveryAddress()">
         <p class="text-900 m-0 mb-2">{{ getDeliveryAddress() }}</p>
-        <p class="text-600 text-sm m-0" *ngIf="pedido.endereco.cep">
-          CEP: {{ pedido.endereco.cep }}
+        <p class="text-600 text-sm m-0" *ngIf="pedido.cliente?.cep">
+          CEP: {{ pedido.cliente?.cep }}
+        </p>
+        <p class="text-600 text-sm m-0" *ngIf="pedido.cliente?.referencia">
+          <i class="pi pi-info-circle mr-1"></i>
+          Referência: {{ pedido.cliente?.referencia }}
         </p>
       </div>
-      <div *ngIf="!pedido.endereco">
+      
+      <div *ngIf="pedido.tipoPedido === 'retirada'">
         <p class="text-900 font-semibold m-0">
           <i class="pi pi-shopping-bag mr-2"></i>
-          Retirada no Local
+          Cliente retirará o pedido no local
         </p>
       </div>
     </div>

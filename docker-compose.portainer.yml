@@ -5,19 +5,49 @@ version: '3.8'
 # ============================================
 # Stack otimizado para deploy via Portainer UI
 # Usa imagens locais (build na VM)
+#
+# 🎯 O QUE ESTE ARQUIVO FAZ:
+# 
+# 1. 🗄️ Cria container MySQL (banco de dados)
+#    - Acessível internamente via "mysql:3306"
+#    - Dados persistem em volume "mysql_data"
+# 
+# 2. 🔧 Cria container Backend (NestJS API)
+#    - Conecta no MySQL via DATABASE_URL
+#    - Exposto na internet via Traefik: api.climbdelivery.com.br
+# 
+# 3. 🌐 Cria container Frontend (Angular)
+#    - Serve arquivos estáticos via Nginx
+#    - Exposto na internet via Traefik: climbdelivery.com.br
+# 
+# 🔗 CONEXÕES:
+#   Frontend → Backend (via https://api.climbdelivery.com.br)
+#   Backend → MySQL (via rede Docker interna: mysql:3306)
+#   Internet → Frontend/Backend (via Traefik + SSL automático)
+#
+# 📋 ANTES DE USAR:
+#   1. Fazer build das imagens:
+#      docker build -t climb-delivery-backend:latest /opt/climb-delivery-api
+#      docker build -t climb-delivery-frontend:latest /opt/climb-delivery-app
+#   2. Configurar variáveis de ambiente no Portainer
+#   3. Verificar que rede "traefik_public" existe
+# ============================================
 
 services:
   # ==========================================
   # MySQL Database
   # ==========================================
+  # Container do banco de dados MySQL 8.0
+  # Backend conecta aqui via "mysql:3306"
+  
   mysql:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # ⚠️ OBRIGATÓRIO - Configure no Portainer!
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-climbdelivery}
+      MYSQL_USER: ${MYSQL_USER:-climbdelivery_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}  # ⚠️ OBRIGATÓRIO - Configure no Portainer!
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -31,6 +61,10 @@ services:
   # ==========================================
   # Backend API (NestJS)
   # ==========================================
+  # Container da API REST em Node.js
+  # Conecta no MySQL via DATABASE_URL (mysql:3306)
+  # Exposto na internet via Traefik
+  
   backend:
     image: climb-delivery-backend:latest
     restart: unless-stopped
@@ -38,34 +72,39 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      NODE_ENV: production
-      PORT: 3000
-      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
-      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      # 🔗 Conexão com MySQL - usa nome do serviço "mysql"
+      DATABASE_URL: mysql://${MYSQL_USER:-climbdelivery_user}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-climbdelivery}
+      JWT_SECRET: ${JWT_SECRET}  # ⚠️ OBRIGATÓRIO - Configure no Portainer!
       JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
-      CORS_ORIGIN: ${CORS_ORIGIN}
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_USER: ${MAIL_USER}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MAIL_FROM: ${MAIL_FROM}
-      FRONTEND_URL: ${FRONTEND_URL}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://${WEB_DOMAIN:-climbdelivery.com.br}}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USER: ${MAIL_USER}  # ⚠️ OBRIGATÓRIO para emails - Configure no Portainer!
+      MAIL_PASSWORD: ${MAIL_PASSWORD}  # ⚠️ OBRIGATÓRIO para emails - Configure no Portainer!
+      MAIL_FROM: ${MAIL_FROM:-noreply@climbdelivery.com.br}
+      FRONTEND_URL: ${FRONTEND_URL:-https://${WEB_DOMAIN:-climbdelivery.com.br}}
       MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
     networks:
-      - climb_network
-      - traefik_public
+      - climb_network      # Rede interna - conecta com MySQL
+      - traefik_public     # Rede externa - expõe via Traefik
     labels:
-      # Traefik Labels para roteamento automático
+      # ===== LABELS DO TRAEFIK =====
+      # Estes labels instruem o Traefik a rotear tráfego para este container
+      
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_public"
       
-      # HTTP Router
-      - "traefik.http.routers.climb-api.rule=Host(`${API_DOMAIN}`)"
+      # 🌐 Roteamento: api.climbdelivery.com.br → este container
+      - "traefik.http.routers.climb-api.rule=Host(`${API_DOMAIN:-api.climbdelivery.com.br}`)"
       - "traefik.http.routers.climb-api.entrypoints=websecure"
+      
+      # 🔒 SSL automático via Let's Encrypt
       - "traefik.http.routers.climb-api.tls=true"
       - "traefik.http.routers.climb-api.tls.certresolver=letsencrypt"
       
-      # Service
+      # ⚙️ Porta interna do container (Node.js roda na 3000)
       - "traefik.http.services.climb-api.loadbalancer.server.port=3000"
       
       # Middlewares (opcional)
@@ -75,28 +114,36 @@ services:
   # ==========================================
   # Frontend (Angular)
   # ==========================================
+  # Container do frontend em Nginx
+  # Serve arquivos estáticos do Angular compilado
+  # Exposto na internet via Traefik
+  
   frontend:
     image: climb-delivery-frontend:latest
     restart: unless-stopped
     depends_on:
       - backend
     networks:
-      - traefik_public
+      - traefik_public     # Rede externa - expõe via Traefik
     labels:
-      # Traefik Labels
+      # ===== LABELS DO TRAEFIK =====
+      
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_public"
       
-      # HTTP Router (com e sem www)
-      - "traefik.http.routers.climb-web.rule=Host(`${WEB_DOMAIN}`) || Host(`www.${WEB_DOMAIN}`)"
+      # 🌐 Roteamento: climbdelivery.com.br → este container
+      # Aceita com e sem www
+      - "traefik.http.routers.climb-web.rule=Host(`${WEB_DOMAIN:-climbdelivery.com.br}`) || Host(`www.${WEB_DOMAIN:-climbdelivery.com.br}`)"
       - "traefik.http.routers.climb-web.entrypoints=websecure"
+      
+      # 🔒 SSL automático via Let's Encrypt
       - "traefik.http.routers.climb-web.tls=true"
       - "traefik.http.routers.climb-web.tls.certresolver=letsencrypt"
       
-      # Service
-      - "traefik.http.services.climb-web.loadbalancer.server.port=80"
+      # ⚙️ Porta interna do container (Nginx roda na 8080 - veja nginx.conf)
+      - "traefik.http.services.climb-web.loadbalancer.server.port=8080"
       
-      # Redirect www para non-www (opcional - descomente se quiser)
+      # Redirect www → non-www (OPCIONAL - descomente se quiser)
       # - "traefik.http.middlewares.climb-web-redirect.redirectregex.regex=^https://www\\.(.+)"
       # - "traefik.http.middlewares.climb-web-redirect.redirectregex.replacement=https://$$1"
       # - "traefik.http.middlewares.climb-web-redirect.redirectregex.permanent=true"
@@ -105,6 +152,9 @@ services:
 # ==========================================
 # Networks
 # ==========================================
+# climb_network: Rede interna para Backend ↔ MySQL
+# traefik_public: Rede externa para Traefik ↔ Frontend/Backend
+
 networks:
   climb_network:
     driver: bridge
@@ -118,15 +168,54 @@ volumes:
   mysql_data:
     driver: local
 
-# ==========================================
+# ============================================
 # NOTAS IMPORTANTES
-# ==========================================
+# ============================================
 # 1. Build das imagens ANTES de criar a stack:
-#    docker build -t climb-delivery-backend:latest ./climb-delivery-api
+#    cd /opt/climb-delivery-api
+#    docker build -t climb-delivery-backend:latest .
+#    cd /opt/climb-delivery-app
 #    docker build -t climb-delivery-frontend:latest .
 #
-# 2. Configure as variáveis de ambiente no Portainer UI
+# 2. Configure as variáveis de ambiente no Portainer UI:
+#    - WEB_DOMAIN (padrão: climbdelivery.com.br)
+#    - API_DOMAIN (padrão: api.climbdelivery.com.br)
+#    - MYSQL_ROOT_PASSWORD (sem padrão - OBRIGATÓRIO!)
+#    - MYSQL_PASSWORD (sem padrão - OBRIGATÓRIO!)
+#    - JWT_SECRET (sem padrão - OBRIGATÓRIO!)
+#    - MAIL_USER, MAIL_PASSWORD (obrigatório para envio de emails)
 #
 # 3. A rede traefik_public deve existir (criada pelo seu Traefik)
+#
+# 4. SSL é configurado automaticamente pelo Traefik via Let's Encrypt
+#
+# ============================================
+# VARIÁVEIS COM VALORES PADRÃO
+# ============================================
+# Estas variáveis têm valores padrão e podem ser sobrescritas:
+#
+# WEB_DOMAIN: climbdelivery.com.br
+# API_DOMAIN: api.climbdelivery.com.br
+# MYSQL_DATABASE: climbdelivery
+# MYSQL_USER: climbdelivery_user
+# NODE_ENV: production
+# PORT: 3000
+# JWT_EXPIRATION: 7d
+# MAX_FILE_SIZE: 10485760 (10MB)
+# MAIL_HOST: smtp.gmail.com
+# MAIL_PORT: 587
+# MAIL_FROM: noreply@climbdelivery.com.br
+#
+# ============================================
+# VARIÁVEIS SEM PADRÃO (OBRIGATÓRIAS)
+# ============================================
+# Estas DEVEM ser configuradas no Portainer:
+#
+# MYSQL_ROOT_PASSWORD - Senha root do MySQL
+# MYSQL_PASSWORD - Senha do usuário MySQL
+# JWT_SECRET - Chave secreta JWT (use senha forte!)
+# MAIL_USER - Email SMTP
+# MAIL_PASSWORD - Senha do email SMTP
+# ============================================
 #
 # 4. SSL é configurado automaticamente pelo Traefik via Let's Encrypt

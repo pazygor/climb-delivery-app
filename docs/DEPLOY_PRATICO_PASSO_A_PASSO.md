@@ -323,6 +323,42 @@ O script faz o build dos 2 Dockerfiles automaticamente! ✨
 
 ## 📋 PARTE 5: Deploy via Portainer
 
+> **🎯 ENTENDA O QUE VAI ACONTECER:**
+> 
+> Quando você criar a Stack no Portainer, **3 containers serão criados automaticamente**:
+> 
+> 1. **📦 MySQL** - Banco de dados da aplicação
+>    - Imagem: `mysql:8.0` (baixada do Docker Hub)
+>    - Porta interna: 3306
+>    - Dados salvos em volume persistente
+> 
+> 2. **🔧 Backend (NestJS)** - API REST
+>    - Imagem: `climb-delivery-backend:latest` (que você fez build)
+>    - Conecta automaticamente no MySQL via `mysql:3306`
+>    - Acessível em: `https://api.climbdelivery.com.br` (Traefik faz o roteamento)
+> 
+> 3. **🌐 Frontend (Angular)** - Interface web
+>    - Imagem: `climb-delivery-frontend:latest` (que você fez build)
+>    - Acessível em: `https://climbdelivery.com.br` (Traefik faz o roteamento)
+> 
+> **🔐 Como funciona a conexão:**
+> ```
+> Frontend (climbdelivery.com.br)
+>     ↓ faz requisições para
+> Backend (api.climbdelivery.com.br)
+>     ↓ conecta via DATABASE_URL
+> MySQL (mysql:3306 - rede interna Docker)
+> ```
+> 
+> **✨ Traefik faz TUDO automaticamente:**
+> - Detecta os labels nos containers
+> - Roteia `climbdelivery.com.br` → container frontend
+> - Roteia `api.climbdelivery.com.br` → container backend
+> - Gera certificados SSL via Let's Encrypt
+> - Renova certificados automaticamente
+
+---
+
 ### Passo 5.1: Acessar Portainer
 Abra no navegador: `https://SEU_PORTAINER_DOMAIN` (ou IP:9000)
 
@@ -338,29 +374,69 @@ Abra no navegador: `https://SEU_PORTAINER_DOMAIN` (ou IP:9000)
 4. Cole no editor do Portainer
 
 ### Passo 5.4: Configurar Environment Variables
-Role até **Environment variables** e adicione:
 
-```
+Role até **Environment variables** e adicione as seguintes variáveis:
+
+> **📋 IMPORTANTE - O que cada grupo faz:**
+> 
+> **🌐 Domínios (Roteamento do Traefik):**
+> - `WEB_DOMAIN` → Onde o **frontend** será acessado
+> - `API_DOMAIN` → Onde o **backend** será acessado
+> 
+> **🗄️ MySQL (Banco de Dados):**
+> - `MYSQL_ROOT_PASSWORD` → Senha do root do MySQL
+> - `MYSQL_DATABASE` → Nome do banco de dados
+> - `MYSQL_USER` → Usuário da aplicação
+> - `MYSQL_PASSWORD` → Senha do usuário
+> 
+> **🔗 Conexão Backend ↔ MySQL:**
+> - `DATABASE_URL` → String de conexão (usa o nome do serviço `mysql:3306`)
+>   - Formato: `mysql://USUARIO:SENHA@mysql:3306/BANCO`
+>   - ⚠️ Use as MESMAS credenciais configuradas em MYSQL_USER e MYSQL_PASSWORD
+> 
+> **🔐 Segurança:**
+> - `JWT_SECRET` → Chave para assinar tokens JWT (use senha forte!)
+> 
+> **📧 Email:**
+> - Credenciais SMTP para envio de emails
+
+```bash
+# === DOMÍNIOS (ROTEAMENTO) ===
 WEB_DOMAIN=climbdelivery.com.br
 API_DOMAIN=api.climbdelivery.com.br
+
+# === BANCO DE DADOS MYSQL ===
 MYSQL_ROOT_PASSWORD=SenhaRootSuperSegura123!
 MYSQL_DATABASE=climbdelivery
 MYSQL_USER=climbdelivery_user
 MYSQL_PASSWORD=SenhaMySQLSegura456!
+
+# === CONEXÃO BACKEND -> MYSQL ===
+# ⚠️ O host é "mysql" (nome do serviço Docker)
+# ⚠️ Use as MESMAS credenciais de MYSQL_USER e MYSQL_PASSWORD
 DATABASE_URL=mysql://climbdelivery_user:SenhaMySQLSegura456!@mysql:3306/climbdelivery
+
+# === SEGURANÇA ===
 JWT_SECRET=chave-jwt-super-secreta-aqui-mude-isso
 JWT_EXPIRATION=7d
+
+# === EMAIL (SMTP) ===
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USER=seu-email@gmail.com
 MAIL_PASSWORD=sua-senha-app-gmail
 MAIL_FROM=noreply@climbdelivery.com.br
+
+# === CONFIGURAÇÕES GERAIS ===
 NODE_ENV=production
 PORT=3000
 API_URL=https://api.climbdelivery.com.br
 ```
 
-> ⚠️ **Use as MESMAS senhas que você configurou no Passo 3.2**
+> **🔑 IMPORTANTE:** 
+> - Troque TODAS as senhas marcadas com `!` por senhas fortes e únicas
+> - A senha em `DATABASE_URL` deve ser IGUAL a `MYSQL_PASSWORD`
+> - O usuário em `DATABASE_URL` deve ser IGUAL a `MYSQL_USER`
 
 ### Passo 5.5: Deploy!
 1. Role até o final
@@ -368,6 +444,75 @@ API_URL=https://api.climbdelivery.com.br
 3. Aguarde 1-2 minutos...
 
 ✅ **Sucesso:** Containers aparecem como "running" (verde)
+
+---
+
+### 🎉 Parabéns! Seu sistema está rodando!
+
+**📊 Verifique os 3 containers criados:**
+
+```bash
+# Na VM
+docker ps
+
+# Deve mostrar algo como:
+# climb-delivery_frontend_1   Up 2 minutes   climb-delivery-frontend:latest
+# climb-delivery_backend_1    Up 2 minutes   climb-delivery-backend:latest
+# climb-delivery_mysql_1      Up 2 minutes   mysql:8.0
+```
+
+**🔗 Como tudo se conecta:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                           INTERNET                              │
+└─────────────────────┬───────────────────┬───────────────────────┘
+                      │                   │
+         ┌────────────▼────────┐ ┌────────▼─────────┐
+         │ climbdelivery.com.br│ │api.climbdelivery │
+         │                     │ │     .com.br      │
+         └────────────┬────────┘ └────────┬─────────┘
+                      │                   │
+┌─────────────────────▼───────────────────▼─────────────────────┐
+│                      TRAEFIK (reverse proxy)                   │
+│  - Detecta labels nos containers                              │
+│  - Gera SSL automático (Let's Encrypt)                        │
+│  - Roteia tráfego para os containers corretos                 │
+└───────────┬────────────────────────────┬──────────────────────┘
+            │                            │
+   ┌────────▼─────────┐        ┌─────────▼────────┐
+   │   FRONTEND       │        │    BACKEND       │
+   │   Container      │───────►│   Container      │
+   │  (Nginx:8080)    │ API    │  (Node:3000)     │
+   │  climb-delivery  │ calls  │  climb-delivery  │
+   │  -frontend       │        │  -backend        │
+   └──────────────────┘        └────────┬─────────┘
+                                        │
+                                        │ DATABASE_URL
+                                        │ mysql://user:pass@mysql:3306/db
+                                        │
+                               ┌────────▼─────────┐
+                               │     MYSQL        │
+                               │   Container      │
+                               │   (Port 3306)    │
+                               │  climb-delivery  │
+                               │  -mysql          │
+                               └──────────────────┘
+                                        │
+                                        ▼
+                               ┌──────────────────┐
+                               │  Volume mysql_data│
+                               │ (dados persistem)│
+                               └──────────────────┘
+```
+
+**✨ Resumo:**
+- ✅ MySQL roda na porta **3306** (rede interna Docker)
+- ✅ Backend conecta no MySQL via DNS interno `mysql:3306`
+- ✅ Frontend roda Nginx na porta **8080** (interna)
+- ✅ Backend roda Node.js na porta **3000** (interna)
+- ✅ Traefik expõe tudo via HTTPS nas portas **80/443**
+- ✅ SSL é gerado automaticamente pelo Traefik
 
 ---
 
@@ -559,6 +704,148 @@ Seu sistema está no ar em:
 - 📊 **Monitoramento:** Via Portainer
 
 **Tempo estimado total:** 30-45 minutos (+ tempo de propagação DNS)
+
+---
+
+## ❓ Perguntas Frequentes sobre a Infraestrutura
+
+### 1️⃣ Onde está rodando o MySQL?
+
+O MySQL **roda em um container Docker** criado automaticamente quando você fez deploy da Stack no Portainer.
+
+```bash
+# Ver o container MySQL rodando
+docker ps | grep mysql
+
+# Ver logs do MySQL
+docker logs climb-delivery_mysql_1
+
+# Entrar no MySQL (se precisar)
+docker exec -it climb-delivery_mysql_1 mysql -u root -p
+# Use a senha do MYSQL_ROOT_PASSWORD
+```
+
+**Dados persistem** mesmo se o container for recriado (volume `mysql_data`).
+
+---
+
+### 2️⃣ Como o Backend conecta no MySQL?
+
+O Backend conecta **automaticamente** via rede Docker usando o nome do serviço `mysql`.
+
+**Variável de ambiente do backend:**
+```bash
+DATABASE_URL=mysql://climbdelivery_user:senha@mysql:3306/climbdelivery
+#                                             ↑
+#                                    Nome do serviço Docker
+```
+
+Quando containers estão na mesma rede Docker (`climb_network`), eles podem se comunicar usando os nomes dos serviços!
+
+**Não precisa usar IP** - o Docker resolve `mysql` para o IP interno automaticamente.
+
+---
+
+### 3️⃣ Como climbdelivery.com.br cai no Frontend?
+
+Isso é feito pelo **Traefik** (seu reverse proxy) através dos **labels** no container do frontend:
+
+```yaml
+# No docker-compose.portainer.yml - serviço frontend
+labels:
+  - "traefik.http.routers.climb-web.rule=Host(`${WEB_DOMAIN}`)"
+  - "traefik.http.routers.climb-web.entrypoints=websecure"
+  - "traefik.http.routers.climb-web.tls.certresolver=letsencrypt"
+```
+
+**Como funciona:**
+
+1. Você acessa `https://climbdelivery.com.br` no navegador
+2. DNS resolve para `37.27.219.39` (IP da VM)
+3. Requisição chega na porta **443** (HTTPS)
+4. **Traefik** recebe a requisição
+5. Traefik lê os **labels** dos containers
+6. Encontra: "Host(`climbdelivery.com.br`)` → container frontend
+7. Traefik roteia a requisição para **climb-delivery_frontend_1:8080**
+8. Nginx do frontend serve a página
+
+**Mesma coisa para a API:**
+
+- `api.climbdelivery.com.br` → Traefik → backend container (porta 3000)
+
+---
+
+### 4️⃣ E o SSL/HTTPS?
+
+Traefik gera **automaticamente** via Let's Encrypt quando detecta:
+
+```yaml
+- "traefik.http.routers.climb-web.tls=true"
+- "traefik.http.routers.climb-web.tls.certresolver=letsencrypt"
+```
+
+**Processo:**
+1. Traefik detecta novo container com labels TLS
+2. Faz requisição ao Let's Encrypt
+3. Valida domínio via challenge HTTP
+4. Baixa certificado SSL
+5. Configura HTTPS automaticamente
+6. Renova certificados antes de expirar
+
+**Você não precisa fazer NADA!** ✨
+
+---
+
+### 5️⃣ Como atualizar o código?
+
+```bash
+# Na VM
+
+# Atualizar Frontend
+cd /opt/climb-delivery-app
+git pull
+docker build -t climb-delivery-frontend:latest .
+
+# Atualizar Backend
+cd /opt/climb-delivery-api
+git pull
+docker build -t climb-delivery-backend:latest .
+
+# Reiniciar Stack no Portainer (via UI) ou:
+docker-compose -f /opt/docker-compose.portainer.yml up -d --force-recreate
+```
+
+---
+
+## 📊 Arquitetura Final
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      Hetzner VM                         │
+│                    37.27.219.39                         │
+│                                                         │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │              Traefik (Reverse Proxy)              │  │
+│  │  Porta 80/443 (SSL automático)                    │  │
+│  └──────────┬────────────────────────┬────────────────┘  │
+│             │                        │                   │
+│  ┌──────────▼──────────┐  ┌──────────▼──────────┐       │
+│  │  Frontend Container │  │  Backend Container  │       │
+│  │  climb-delivery-app │  │  climb-delivery-api │       │
+│  │  Nginx:8080        │  │  Node.js:3000      │       │
+│  └─────────────────────┘  └──────────┬──────────┘       │
+│                                      │                   │
+│                           ┌──────────▼──────────┐        │
+│                           │   MySQL Container   │        │
+│                           │   mysql:3306        │        │
+│                           │   Volume persistente│        │
+│                           └─────────────────────┘        │
+│                                                          │
+│  Redes Docker:                                          │
+│  - traefik_public (externa - frontend/backend)         │
+│  - climb_network (interna - backend/mysql)             │
+└──────────────────────────────────────────────────────────┘
+```
 
 ---
 

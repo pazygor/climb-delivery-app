@@ -5,6 +5,7 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../../core/services/auth.service';
 import { CategoriaService } from '../../../../core/services/categoria.service';
@@ -25,6 +26,17 @@ interface DadosCliente {
   cpfCnpj?: string;
 }
 
+interface DadosEndereco {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  referencia?: string;
+}
+
 @Component({
   selector: 'app-modal-novo-pedido',
   standalone: true,
@@ -34,7 +46,8 @@ interface DadosCliente {
     DialogModule,
     ButtonModule,
     InputTextModule,
-    ToastModule
+    ToastModule,
+    RadioButtonModule
   ],
   providers: [MessageService],
   templateUrl: './modal-novo-pedido.component.html',
@@ -64,6 +77,24 @@ export class ModalNovoPedidoComponent {
     nome: '',
     cpfCnpj: ''
   };
+
+  // Tipo de pedido
+  tipoPedido: 'entrega' | 'retirada' = 'retirada';
+
+  // Dados de endereço (para entrega)
+  dadosEndereco: DadosEndereco = {
+    cep: '',
+    logradouro: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
+    referencia: ''
+  };
+
+  // Controle de visualização de endereço
+  mostrarEnderecoEntrega: boolean = false;
   
   // Pesquisa
   searchTerm: string = '';
@@ -194,7 +225,24 @@ export class ModalNovoPedidoComponent {
   }
 
   calcularTotal(): number {
-    return this.calcularSubtotal(); // Taxa de entrega 0 para balcão
+    const subtotal = this.calcularSubtotal();
+    const taxaEntrega = this.calcularTaxaEntrega();
+    return subtotal + taxaEntrega;
+  }
+
+  calcularTaxaEntrega(): number {
+    return this.tipoPedido === 'entrega' ? 5.00 : 0;
+  }
+
+  selecionarTipoPedido(tipo: 'entrega' | 'retirada'): void {
+    this.tipoPedido = tipo;
+    this.mostrarEnderecoEntrega = false;
+  }
+
+  toggleEnderecoEntrega(): void {
+    if (this.tipoPedido === 'entrega') {
+      this.mostrarEnderecoEntrega = !this.mostrarEnderecoEntrega;
+    }
   }
 
   formatarPreco(valor: number | string): string {
@@ -236,12 +284,26 @@ export class ModalNovoPedidoComponent {
       return;
     }
 
+    // Validar endereço se for entrega
+    if (this.tipoPedido === 'entrega') {
+      if (!this.dadosEndereco.cep.trim() || !this.dadosEndereco.logradouro.trim() || 
+          !this.dadosEndereco.numero.trim() || !this.dadosEndereco.bairro.trim() || 
+          !this.dadosEndereco.cidade.trim() || !this.dadosEndereco.uf.trim()) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Atenção',
+          detail: 'Preencha todos os campos obrigatórios do endereço'
+        });
+        return;
+      }
+    }
+
     const subtotal = this.calcularSubtotal();
-    const taxaEntrega = 0; // Balcão não tem taxa de entrega
+    const taxaEntrega = this.calcularTaxaEntrega();
     const total = this.calcularTotal();
 
     // FASE 2: Novo formato do DTO com cliente estruturado
-    const pedidoManual = {
+    const pedidoManual: any = {
       empresaId: this.empresaId,
       usuarioId: this.usuarioId,
       
@@ -252,8 +314,8 @@ export class ModalNovoPedidoComponent {
         cpf: this.dadosCliente.cpfCnpj?.trim() || undefined
       },
       
-      // Tipo do pedido (sempre retirada neste modal)
-      tipoPedido: 'retirada',
+      // Tipo do pedido (agora pode ser entrega ou retirada)
+      tipoPedido: this.tipoPedido,
       
       numero: `BAL-${Date.now()}`,
       subtotal: this.converterParaDecimal(subtotal),
@@ -271,6 +333,20 @@ export class ModalNovoPedidoComponent {
         subtotal: this.converterParaDecimal(item.subtotal)
       }))
     };
+
+    // Adicionar endereço se for entrega
+    if (this.tipoPedido === 'entrega') {
+      pedidoManual.endereco = {
+        cep: this.dadosEndereco.cep.trim(),
+        logradouro: this.dadosEndereco.logradouro.trim(),
+        numero: this.dadosEndereco.numero.trim(),
+        complemento: this.dadosEndereco.complemento?.trim() || undefined,
+        bairro: this.dadosEndereco.bairro.trim(),
+        cidade: this.dadosEndereco.cidade.trim(),
+        uf: this.dadosEndereco.uf.trim().toUpperCase(),
+        referencia: this.dadosEndereco.referencia?.trim() || undefined
+      };
+    }
 
     this.orderService.createManualOrder(pedidoManual).subscribe({
       next: (response) => {
@@ -318,6 +394,18 @@ export class ModalNovoPedidoComponent {
       nome: '',
       cpfCnpj: ''
     };
+    this.dadosEndereco = {
+      cep: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      uf: '',
+      referencia: ''
+    };
+    this.tipoPedido = 'retirada';
+    this.mostrarEnderecoEntrega = false;
     this.searchTerm = '';
   }
 

@@ -183,10 +183,73 @@ npm test              # Executa testes unitários
 ### Área do Restaurante
 - [ ] Implementar CRUD completo de produtos
 - [ ] Implementar CRUD de categorias e adicionais
-- [ ] Impressão de pedidos
+- [x] Impressão de pedidos (via navegador)
 - [ ] Relatórios avançados com gráficos
 - [ ] Módulo de cupons e promoções
 - [ ] Gestão de estoque
+
+---
+
+## 🚀 Deploy em Produção
+
+> **📦 Projeto com 2 Repositórios:**
+> - Frontend: https://github.com/pazygor/climb-delivery-app
+> - Backend: https://github.com/pazygor/climb-delivery-api
+> 
+> **📄 Arquivos de deploy neste diretório:** [DEPLOY_README.md](DEPLOY_README.md)
+
+**🎯 Qual método escolher?** [Comparação completa dos 3 métodos](docs/COMPARACAO_METODOS_DEPLOY.md)
+
+### Guia Rápido de Deploy
+
+**📖 Passo a Passo Completo:** [Deploy Prático - climbdelivery.com.br](docs/DEPLOY_PRATICO_PASSO_A_PASSO.md)
+
+1. **Configurar DNS** → Apontar domínio para `37.27.219.39`
+2. **Clonar repos** → `git clone` dos 2 repositórios na VM
+3. **Build Docker** → Build manual do backend e frontend
+4. **Deploy Portainer** → Stack com `docker-compose.portainer.yml`
+5. **Migrations** → `docker exec ... npx prisma migrate deploy`
+
+**📁 Estrutura na VM:** 
+```
+/opt/
+├── climb-delivery-app/     ← Frontend (repo)
+└── climb-delivery-api/     ← Backend (repo)
+```
+
+**📚 Mais detalhes:** [Estrutura de Deploy](docs/ESTRUTURAS_DEPLOY.md)
+
+### Portainer Stacks (⭐ Recomendado)
+
+Melhor método se você já tem Portainer instalado:
+
+1. **Build na VM:**
+   ```bash
+   cd /opt/climb-delivery
+   ./build.sh
+   ```
+
+2. **Deploy via Portainer UI:**
+   - Acesse Portainer → Stacks → Add stack
+   - Use `docker-compose.portainer.yml`
+   - Configure variáveis de ambiente
+   - Deploy!
+
+**📘 Guia completo:** [docs/DEPLOY_PORTAINER_STACKS.md](docs/DEPLOY_PORTAINER_STACKS.md)
+
+### Métodos Alternativos
+
+- **GitHub Actions:** Pipeline CI/CD automático - [docs/GUIA_DEPLOY_DOCKER.md](docs/GUIA_DEPLOY_DOCKER.md)
+- **Deploy Tradicional:** Nginx + PM2 - [docs/GUIA_DEPLOY_HETZNER.md](docs/GUIA_DEPLOY_HETZNER.md)
+
+### Requisitos de Infraestrutura
+
+| Componente | Mínimo | Recomendado |
+|------------|--------|-------------|
+| RAM | 2GB | 4GB+ |
+| CPU | 1 vCPU | 2+ vCPUs |
+| Disco | 20GB | 40GB+ |
+| Containers | MySQL, Backend, Frontend | + Redis (cache) |
 
 ---
 

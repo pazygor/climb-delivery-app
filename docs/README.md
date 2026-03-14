@@ -222,4 +222,44 @@ Para dúvidas sobre os padrões ou estrutura do projeto, consulte os documentos 
 
 ---
 
-**Documentação atualizada:** 11/11/2025
+## 🚀 Deploy e Infraestrutura
+
+### 🎯 COMEÇE AQUI - Deploy Prático
+- [**🚀 Deploy Passo a Passo - climbdelivery.com.br**](./DEPLOY_PRATICO_PASSO_A_PASSO.md) - **GUIA COMPLETO PRÁTICO!**
+- [**📁 Estruturas de Pastas na VM**](./ESTRUTURAS_DEPLOY.md) - Monorepo vs Separado
+- [**✅ Checklist de Deploy**](./CHECKLIST_DEPLOY.md) - Marque cada etapa
+- [**📄 Variáveis de Ambiente Prontas**](../.env.portainer) - Copie e cole
+
+### 🎯 Escolha o Melhor Método
+- [**Comparação de Métodos**](./COMPARACAO_METODOS_DEPLOY.md) - Escolha o melhor para você
+
+### Deploy com Portainer Stacks (⭐⭐⭐ RECOMENDADO!)
+- [🎯 Portainer Stacks](./DEPLOY_PORTAINER_STACKS.md) - **Deploy visual em 3 passos** (MAIS FÁCIL!)
+- [🐳 Setup Rápido](./SETUP_DOCKER_RAPIDO.md) - Overview e resumo
+
+> **✅ Melhor método para sua infra:**
+> - Interface visual no Portainer (sem comandos!)
+> - Build direto na VM (sem Docker Hub)
+> - Deploy em 1 clique
+> - SSL automático via Traefik
+> - 6GB RAM disponível (~600MB necessário)
+
+### Métodos Alternativos
+- [📦 Deploy com GitHub Actions](./GUIA_DEPLOY_DOCKER.md) - Pipeline CI/CD automático
+- [📘 Deploy Tradicional](./GUIA_DEPLOY_HETZNER.md) - Nginx + PM2 (sem Docker)
+- [⚡ Referência Rápida](./DEPLOY_QUICK_REFERENCE.md) - Comandos úteis
+- [❓ FAQ](./DEPLOY_FAQ.md) - Perguntas frequentes
+
+### Deploy Tradicional (Alternativa)
+- [📘 Guia Completo Tradicional](./GUIA_DEPLOY_HETZNER.md) - Deploy com Nginx + PM2
+- [⚡ Referência Rápida](./DEPLOY_QUICK_REFERENCE.md) - Comandos e configurações
+- [❓ FAQ de Deploy](./DEPLOY_FAQ.md) - Perguntas frequentes
+
+> **📦 Recursos Inclusos:**
+> - Scripts de backup e healthcheck
+> - Configurações Nginx + PM2 + MySQL
+> - SSL/HTTPS com Let's Encrypt
+
+---
+
+**Documentação atualizada:** 13/03/2026

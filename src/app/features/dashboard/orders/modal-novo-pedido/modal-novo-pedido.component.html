@@ -189,7 +189,9 @@
         </div>
         <div class="summary-row">
           <span>Entrega:</span>
-          <span class="text-green-500">Grátis</span>
+          <span [class.text-green-500]="tipoPedido === 'retirada'">
+            {{ tipoPedido === 'entrega' ? formatarPreco(5.00) : 'Grátis' }}
+          </span>
         </div>
         <div class="summary-row total-row">
           <span>Total:</span>
@@ -197,6 +199,34 @@
         </div>
       </div>
 
+      <!-- Tipo de Pedido -->
+      <div class="tipo-pedido-section">
+        <h4>Tipo de Pedido</h4>
+        <div class="tipo-pedido-options">
+          <div class="tipo-option">
+            <p-radioButton 
+              name="tipoPedido" 
+              value="retirada" 
+              [(ngModel)]="tipoPedido"
+              (onClick)="selecionarTipoPedido('retirada')"
+              inputId="tipo-retirada"
+            ></p-radioButton>
+            <label for="tipo-retirada">Retirada no Local</label>
+          </div>
+          <div class="tipo-option">
+            <p-radioButton 
+              name="tipoPedido" 
+              value="entrega" 
+              [(ngModel)]="tipoPedido"
+              (onClick)="selecionarTipoPedido('entrega')"
+              inputId="tipo-entrega"
+            ></p-radioButton>
+            <label for="tipo-entrega">Entrega</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dados do Cliente -->
       <div class="customer-data">
         <h4>Dados do Cliente</h4>
         <input 
@@ -213,6 +243,97 @@
           placeholder="Nome do cliente"
           class="w-full"
         />
+      </div>
+
+      <!-- Endereço de Entrega (Condicional) -->
+      <div *ngIf="tipoPedido === 'entrega'" class="endereco-entrega-section">
+        <div class="endereco-header" (click)="toggleEnderecoEntrega()">
+          <h4>Endereço de Entrega</h4>
+          <button 
+            type="button"
+            class="toggle-button"
+          >
+            <i [class]="mostrarEnderecoEntrega ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+            {{ mostrarEnderecoEntrega ? 'Ocultar' : 'Expandir' }}
+          </button>
+        </div>
+        
+        <div *ngIf="mostrarEnderecoEntrega" class="endereco-form">
+          <div class="form-row">
+            <input 
+              type="text" 
+              pInputText 
+              [(ngModel)]="dadosEndereco.cep"
+              placeholder="CEP *"
+              class="w-full"
+              maxlength="9"
+            />
+          </div>
+          <div class="form-row">
+            <input 
+              type="text" 
+              pInputText 
+              [(ngModel)]="dadosEndereco.logradouro"
+              placeholder="Logradouro *"
+              class="w-full"
+            />
+          </div>
+          <div class="form-row">
+            <input 
+              type="text" 
+              pInputText 
+              [(ngModel)]="dadosEndereco.numero"
+              placeholder="Número *"
+              class="w-full"
+            />
+          </div>
+          <div class="form-row">
+            <input 
+              type="text" 
+              pInputText 
+              [(ngModel)]="dadosEndereco.complemento"
+              placeholder="Complemento"
+              class="w-full"
+            />
+          </div>
+          <div class="form-row">
+            <input 
+              type="text" 
+              pInputText 
+              [(ngModel)]="dadosEndereco.bairro"
+              placeholder="Bairro *"
+              class="w-full"
+            />
+          </div>
+          <div class="form-row">
+            <input 
+              type="text" 
+              pInputText 
+              [(ngModel)]="dadosEndereco.cidade"
+              placeholder="Cidade *"
+              class="w-full"
+            />
+          </div>
+          <div class="form-row">
+            <input 
+              type="text" 
+              pInputText 
+              [(ngModel)]="dadosEndereco.uf"
+              placeholder="UF *"
+              class="w-full"
+              maxlength="2"
+            />
+          </div>
+          <div class="form-row">
+            <input 
+              type="text" 
+              pInputText 
+              [(ngModel)]="dadosEndereco.referencia"
+              placeholder="Referência"
+              class="w-full"
+            />
+          </div>
+        </div>
       </div>
 
       <button 

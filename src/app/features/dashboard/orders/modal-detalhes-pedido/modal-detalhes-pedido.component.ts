@@ -7,6 +7,7 @@ import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { Order } from '../../../../core/models/order.model';
 import { OrderService } from '../../../../core/services/order.service';
+import { PrintService } from '../../../../core/services/print.service';
 
 @Component({
   selector: 'app-modal-detalhes-pedido',
@@ -32,7 +33,10 @@ export class ModalDetalhesPedidoComponent {
   modalCancelamentoVisible = false;
   motivoCancelamento = '';
 
-  constructor(public orderService: OrderService) {}
+  constructor(
+    public orderService: OrderService,
+    private printService: PrintService
+  ) {}
 
   fecharModal(): void {
     this.visible = false;
@@ -199,8 +203,11 @@ export class ModalDetalhesPedidoComponent {
   reimprimir(): void {
     if (!this.pedido) return;
     
-    // TODO: Implementar lógica de reimpressão
-    alert('Funcionalidade de reimpressão será implementada com o agente de impressão.');
+    // Buscar nome do restaurante (pode vir do pedido.empresa ou de um service de contexto)
+    const nomeRestaurante = this.pedido.empresa?.nomeFantasia || 'ClimbDelivery';
+    
+    // Chamar serviço de impressão
+    this.printService.printOrder(this.pedido, nomeRestaurante);
   }
 
   getDeliveryAddress(): string {

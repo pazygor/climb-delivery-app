@@ -1,0 +1,132 @@
+version: '3.8'
+
+# ============================================
+# Climb Delivery - Portainer Stack
+# ============================================
+# Stack otimizado para deploy via Portainer UI
+# Usa imagens locais (build na VM)
+
+services:
+  # ==========================================
+  # MySQL Database
+  # ==========================================
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - climb_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Backend API (NestJS)
+  # ==========================================
+  backend:
+    image: climb-delivery-backend:latest
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      FRONTEND_URL: ${FRONTEND_URL}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
+    networks:
+      - climb_network
+      - traefik_public
+    labels:
+      # Traefik Labels para roteamento automático
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_public"
+      
+      # HTTP Router
+      - "traefik.http.routers.climb-api.rule=Host(`${API_DOMAIN}`)"
+      - "traefik.http.routers.climb-api.entrypoints=websecure"
+      - "traefik.http.routers.climb-api.tls=true"
+      - "traefik.http.routers.climb-api.tls.certresolver=letsencrypt"
+      
+      # Service
+      - "traefik.http.services.climb-api.loadbalancer.server.port=3000"
+      
+      # Middlewares (opcional)
+      - "traefik.http.routers.climb-api.middlewares=climb-headers"
+      - "traefik.http.middlewares.climb-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+
+  # ==========================================
+  # Frontend (Angular)
+  # ==========================================
+  frontend:
+    image: climb-delivery-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - traefik_public
+    labels:
+      # Traefik Labels
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_public"
+      
+      # HTTP Router (com e sem www)
+      - "traefik.http.routers.climb-web.rule=Host(`${WEB_DOMAIN}`) || Host(`www.${WEB_DOMAIN}`)"
+      - "traefik.http.routers.climb-web.entrypoints=websecure"
+      - "traefik.http.routers.climb-web.tls=true"
+      - "traefik.http.routers.climb-web.tls.certresolver=letsencrypt"
+      
+      # Service
+      - "traefik.http.services.climb-web.loadbalancer.server.port=80"
+      
+      # Redirect www para non-www (opcional - descomente se quiser)
+      # - "traefik.http.middlewares.climb-web-redirect.redirectregex.regex=^https://www\\.(.+)"
+      # - "traefik.http.middlewares.climb-web-redirect.redirectregex.replacement=https://$$1"
+      # - "traefik.http.middlewares.climb-web-redirect.redirectregex.permanent=true"
+      # - "traefik.http.routers.climb-web.middlewares=climb-web-redirect"
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  climb_network:
+    driver: bridge
+  traefik_public:
+    external: true
+
+# ==========================================
+# Volumes
+# ==========================================
+volumes:
+  mysql_data:
+    driver: local
+
+# ==========================================
+# NOTAS IMPORTANTES
+# ==========================================
+# 1. Build das imagens ANTES de criar a stack:
+#    docker build -t climb-delivery-backend:latest ./climb-delivery-api
+#    docker build -t climb-delivery-frontend:latest .
+#
+# 2. Configure as variáveis de ambiente no Portainer UI
+#
+# 3. A rede traefik_public deve existir (criada pelo seu Traefik)
+#
+# 4. SSL é configurado automaticamente pelo Traefik via Let's Encrypt

@@ -101,9 +101,9 @@ services:
       # Estes labels instruem o Traefik a rotear tráfego para este container
       
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik_public"
+      - "traefik.docker.network=network_public"
       
-      # 🌐 Roteamento: api.climbdelivery.com.br → este container
+      # 🌐 Roteamento HTTPS: api.climbdelivery.com.br → este container
       - "traefik.http.routers.climb-api.rule=Host(`${API_DOMAIN:-api.climbdelivery.com.br}`)"
       - "traefik.http.routers.climb-api.entrypoints=websecure"
       
@@ -111,12 +111,15 @@ services:
       - "traefik.http.routers.climb-api.tls=true"
       - "traefik.http.routers.climb-api.tls.certresolver=letsencrypt"
       
+      # 🌐 Roteamento HTTP: redireciona para HTTPS
+      - "traefik.http.routers.climb-api-http.rule=Host(`${API_DOMAIN:-api.climbdelivery.com.br}`)"
+      - "traefik.http.routers.climb-api-http.entrypoints=web"
+      - "traefik.http.routers.climb-api-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+      
       # ⚙️ Porta interna do container (Node.js roda na 3000)
       - "traefik.http.services.climb-api.loadbalancer.server.port=3000"
-      
-      # Middlewares (opcional)
-      - "traefik.http.routers.climb-api.middlewares=climb-headers"
-      - "traefik.http.middlewares.climb-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
 
   # ==========================================
   # Frontend (Angular)
@@ -140,9 +143,9 @@ services:
       # ===== LABELS DO TRAEFIK =====
       
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik_public"
+      - "traefik.docker.network=network_public"
       
-      # 🌐 Roteamento: climbdelivery.com.br → este container
+      # 🌐 Roteamento HTTPS: climbdelivery.com.br → este container
       # Aceita com e sem www
       - "traefik.http.routers.climb-web.rule=Host(`${WEB_DOMAIN:-climbdelivery.com.br}`) || Host(`www.${WEB_DOMAIN:-climbdelivery.com.br}`)"
       - "traefik.http.routers.climb-web.entrypoints=websecure"
@@ -150,6 +153,11 @@ services:
       # 🔒 SSL automático via Let's Encrypt
       - "traefik.http.routers.climb-web.tls=true"
       - "traefik.http.routers.climb-web.tls.certresolver=letsencrypt"
+      
+      # 🌐 Roteamento HTTP: redireciona para HTTPS
+      - "traefik.http.routers.climb-web-http.rule=Host(`${WEB_DOMAIN:-climbdelivery.com.br}`) || Host(`www.${WEB_DOMAIN:-climbdelivery.com.br}`)"
+      - "traefik.http.routers.climb-web-http.entrypoints=web"
+      - "traefik.http.routers.climb-web-http.middlewares=redirect-to-https"
       
       # ⚙️ Porta interna do container (Nginx roda na 8080 - veja nginx.conf)
       - "traefik.http.services.climb-web.loadbalancer.server.port=8080"

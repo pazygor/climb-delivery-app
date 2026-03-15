@@ -42,7 +42,11 @@ services:
   
   mysql:
     image: mysql:8.0
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # ⚠️ OBRIGATÓRIO - Configure no Portainer!
       MYSQL_DATABASE: ${MYSQL_DATABASE:-climbdelivery}
@@ -67,10 +71,13 @@ services:
   
   backend:
     image: climb-delivery-backend:latest
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${PORT:-3000}
@@ -120,7 +127,11 @@ services:
   
   frontend:
     image: climb-delivery-frontend:latest
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
     depends_on:
       - backend
     networks:
@@ -153,12 +164,14 @@ services:
 # Networks
 # ==========================================
 # climb_network: Rede interna para Backend ↔ MySQL
-# traefik_public: Rede externa para Traefik ↔ Frontend/Backend
+# network_public: Rede externa para Traefik ↔ Frontend/Backend
 
 networks:
   climb_network:
-    driver: bridge
+    driver: overlay
+    attachable: true
   traefik_public:
+    name: network_public
     external: true
 
 # ==========================================

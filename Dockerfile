@@ -28,12 +28,14 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copiar build do Angular
 COPY --from=builder /app/dist/climb-delivery/browser /usr/share/nginx/html
 
-# Criar usuário nginx não-root
+# Criar diretórios e permissões para usuário nginx não-root
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \
-    touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid
+    chmod -R 755 /var/cache/nginx && \
+    chmod -R 755 /var/log/nginx && \
+    mkdir -p /tmp/client_temp /tmp/proxy_temp_path /tmp/fastcgi_temp /tmp/uwsgi_temp /tmp/scgi_temp && \
+    chown -R nginx:nginx /tmp/client_temp /tmp/proxy_temp_path /tmp/fastcgi_temp /tmp/uwsgi_temp /tmp/scgi_temp
 
 # Mudar para usuário nginx
 USER nginx

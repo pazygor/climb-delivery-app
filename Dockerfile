@@ -43,9 +43,9 @@ USER nginx
 # Expor porta
 EXPOSE 8080
 
-# Health check
+# Health check - usar 127.0.0.1 ao invés de localhost (problema IPv6)
 HEALTHCHECK --interval=30s --timeout=3s \
-  CMD wget --quiet --tries=1 --spider http://localhost:8080/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/health || exit 1
 
 # Comando para rodar nginx
 CMD ["nginx", "-g", "daemon off;"]

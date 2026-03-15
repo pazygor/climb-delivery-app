@@ -109,7 +109,7 @@ services:
       
       # 🔒 SSL automático via Let's Encrypt
       - "traefik.http.routers.climb-api.tls=true"
-      - "traefik.http.routers.climb-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.climb-api.tls.certresolver=letsencryptresolver"
       
       # 🌐 Roteamento HTTP: redireciona para HTTPS
       - "traefik.http.routers.climb-api-http.rule=Host(`${API_DOMAIN:-api.climbdelivery.com.br}`)"
@@ -152,7 +152,7 @@ services:
       
       # 🔒 SSL automático via Let's Encrypt
       - "traefik.http.routers.climb-web.tls=true"
-      - "traefik.http.routers.climb-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.climb-web.tls.certresolver=letsencryptresolver"
       
       # 🌐 Roteamento HTTP: redireciona para HTTPS
       - "traefik.http.routers.climb-web-http.rule=Host(`${WEB_DOMAIN:-climbdelivery.com.br}`) || Host(`www.${WEB_DOMAIN:-climbdelivery.com.br}`)"

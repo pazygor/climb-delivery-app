@@ -76,6 +76,30 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+      labels:
+        # ===== LABELS DO TRAEFIK =====
+        # Estes labels instruem o Traefik a rotear tráfego para este container
+        
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_public"
+        
+        # 🌐 Roteamento HTTPS: api.climbdelivery.com.br → este container
+        - "traefik.http.routers.climb-api.rule=Host(`${API_DOMAIN:-api.climbdelivery.com.br}`)"
+        - "traefik.http.routers.climb-api.entrypoints=websecure"
+        
+        # 🔒 SSL automático via Let's Encrypt
+        - "traefik.http.routers.climb-api.tls=true"
+        - "traefik.http.routers.climb-api.tls.certresolver=letsencryptresolver"
+        
+        # 🌐 Roteamento HTTP: redireciona para HTTPS
+        - "traefik.http.routers.climb-api-http.rule=Host(`${API_DOMAIN:-api.climbdelivery.com.br}`)"
+        - "traefik.http.routers.climb-api-http.entrypoints=web"
+        - "traefik.http.routers.climb-api-http.middlewares=redirect-to-https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+        
+        # ⚙️ Porta interna do container (Node.js roda na 3000)
+        - "traefik.http.services.climb-api.loadbalancer.server.port=3000"
     depends_on:
       - mysql
     environment:
@@ -96,30 +120,6 @@ services:
     networks:
       - climb_network      # Rede interna - conecta com MySQL
       - traefik_public     # Rede externa - expõe via Traefik
-    labels:
-      # ===== LABELS DO TRAEFIK =====
-      # Estes labels instruem o Traefik a rotear tráfego para este container
-      
-      - "traefik.enable=true"
-      - "traefik.docker.network=network_public"
-      
-      # 🌐 Roteamento HTTPS: api.climbdelivery.com.br → este container
-      - "traefik.http.routers.climb-api.rule=Host(`${API_DOMAIN:-api.climbdelivery.com.br}`)"
-      - "traefik.http.routers.climb-api.entrypoints=websecure"
-      
-      # 🔒 SSL automático via Let's Encrypt
-      - "traefik.http.routers.climb-api.tls=true"
-      - "traefik.http.routers.climb-api.tls.certresolver=letsencryptresolver"
-      
-      # 🌐 Roteamento HTTP: redireciona para HTTPS
-      - "traefik.http.routers.climb-api-http.rule=Host(`${API_DOMAIN:-api.climbdelivery.com.br}`)"
-      - "traefik.http.routers.climb-api-http.entrypoints=web"
-      - "traefik.http.routers.climb-api-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
-      
-      # ⚙️ Porta interna do container (Node.js roda na 3000)
-      - "traefik.http.services.climb-api.loadbalancer.server.port=3000"
 
   # ==========================================
   # Frontend (Angular)
@@ -135,32 +135,32 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+      labels:
+        # ===== LABELS DO TRAEFIK =====
+        
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_public"
+        
+        # 🌐 Roteamento HTTPS: climbdelivery.com.br → este container
+        # Aceita com e sem www
+        - "traefik.http.routers.climb-web.rule=Host(`${WEB_DOMAIN:-climbdelivery.com.br}`) || Host(`www.${WEB_DOMAIN:-climbdelivery.com.br}`)"
+        - "traefik.http.routers.climb-web.entrypoints=websecure"
+        
+        # 🔒 SSL automático via Let's Encrypt
+        - "traefik.http.routers.climb-web.tls=true"
+        - "traefik.http.routers.climb-web.tls.certresolver=letsencryptresolver"
+        
+        # 🌐 Roteamento HTTP: redireciona para HTTPS
+        - "traefik.http.routers.climb-web-http.rule=Host(`${WEB_DOMAIN:-climbdelivery.com.br}`) || Host(`www.${WEB_DOMAIN:-climbdelivery.com.br}`)"
+        - "traefik.http.routers.climb-web-http.entrypoints=web"
+        - "traefik.http.routers.climb-web-http.middlewares=redirect-to-https"
+        
+        # ⚙️ Porta interna do container (Nginx roda na 8080 - veja nginx.conf)
+        - "traefik.http.services.climb-web.loadbalancer.server.port=8080"
     depends_on:
       - backend
     networks:
       - traefik_public     # Rede externa - expõe via Traefik
-    labels:
-      # ===== LABELS DO TRAEFIK =====
-      
-      - "traefik.enable=true"
-      - "traefik.docker.network=network_public"
-      
-      # 🌐 Roteamento HTTPS: climbdelivery.com.br → este container
-      # Aceita com e sem www
-      - "traefik.http.routers.climb-web.rule=Host(`${WEB_DOMAIN:-climbdelivery.com.br}`) || Host(`www.${WEB_DOMAIN:-climbdelivery.com.br}`)"
-      - "traefik.http.routers.climb-web.entrypoints=websecure"
-      
-      # 🔒 SSL automático via Let's Encrypt
-      - "traefik.http.routers.climb-web.tls=true"
-      - "traefik.http.routers.climb-web.tls.certresolver=letsencryptresolver"
-      
-      # 🌐 Roteamento HTTP: redireciona para HTTPS
-      - "traefik.http.routers.climb-web-http.rule=Host(`${WEB_DOMAIN:-climbdelivery.com.br}`) || Host(`www.${WEB_DOMAIN:-climbdelivery.com.br}`)"
-      - "traefik.http.routers.climb-web-http.entrypoints=web"
-      - "traefik.http.routers.climb-web-http.middlewares=redirect-to-https"
-      
-      # ⚙️ Porta interna do container (Nginx roda na 8080 - veja nginx.conf)
-      - "traefik.http.services.climb-web.loadbalancer.server.port=8080"
       
       # Redirect www → non-www (OPCIONAL - descomente se quiser)
       # - "traefik.http.middlewares.climb-web-redirect.redirectregex.regex=^https://www\\.(.+)"
